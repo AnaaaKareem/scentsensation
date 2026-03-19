@@ -1,0 +1,202 @@
+body {
+    background-color: black;
+    font-family: "Times New Roman", Times, serif;
+    position: relative;
+}
+
+/* Style the navigation bar */
+/* Smooth scrolling IF user doesn't have a preference due to motion sensitivities */
+@media screen and (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+.back-to-top-wrapper {
+    color: white;
+    position: fixed;
+    bottom: 60px;
+    right: 60px;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+.back-to-top-wrapper.show {
+    opacity: 1;
+    visibility: visible;
+}
+.back-to-top-link {
+    display: block;
+    width: 60px;
+    height: 60px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #000;
+    font-size: 20px;
+    text-decoration: none;
+}
+.back-to-top-link:hover {
+    background-color: #555;
+}
+
+.img-thumbnail {
+    box-shadow: 0 0 0 0 white;
+    transition: box-shadow 0.2s ease-out;
+}
+
+.img-thumbnail:hover {
+    box-shadow: 0 5px 10px 5px white;
+    transition: box-shadow 0.2s ease-in;
+}
+
+/*For The Opening Page*/
+.title {
+    font-size: 110px;
+    padding-top: 1%;
+    width: 100%;
+    height: 100%;
+}
+
+.sub {
+    font-size: 50px;
+    padding-top: 1%;
+    width: 100%;
+    height: 100%;
+}
+
+#titleLogo, #subLogo, #himLine, #herLine, #brandLine {
+    fill: none;
+}
+
+/* For title of opening*/
+.titleAnim {
+    fill: none;
+    stroke: white;
+    stroke-width: 2px;
+    stroke-dasharray: 0% 100%;
+    stroke-dashoffset: 0%;
+    animation: textanimation 5s linear forwards;
+} @keyframes textanimation {
+    100% {
+        stroke-dashoffset: calc(100% + (2 * 3.14 * 0.5 * (100 / 100))); /* changed from -38% */
+        stroke-dasharray: 100% 0%; /* added this line */
+
+    }
+  }
+
+  /* For subtitle of opening*/
+.subAnim {
+    fill: none;
+    stroke: white;
+    stroke-width: 2px;
+    stroke-dasharray: 100% 20%;
+    stroke-dashoffset: 0%;
+    animation: textanimation2 5s linear infinite;
+} @keyframes textanimation2 {
+      100% {
+          stroke-dashoffset: -55%; /* changed from -38% */
+      }
+  }
+
+.u1 {
+    stroke: white;
+    animation-delay: -1s;
+}
+
+.u2 {
+    stroke: white;
+    animation-delay: -10s;
+}
+
+.u3 {
+    stroke:  white;
+    animation-delay: -20s;
+}
+
+
+.himAnim {
+    fill: none;
+    stroke: white;
+    stroke-width: 1px;
+    stroke-dasharray: 100% 5%;
+    stroke-dashoffset: 0%;
+    animation: textanimation3 4s linear infinite;
+} @keyframes textanimation3 {
+      100% {
+          stroke-dashoffset: -55%; /* changed from -38% */
+      }
+  }
+
+.u1 {
+    stroke: white;
+    animation-delay: -1s;
+}
+
+.u2 {
+    stroke: white;
+    animation-delay: -6s;
+}
+
+.u3 {
+    stroke: white;
+    animation-delay: -10s;
+}
+
+.herAnim {
+    fill: none;
+    stroke: white;
+    stroke-width: 1px;
+    stroke-dasharray: 100% 5%;
+    stroke-dashoffset: 0%;
+    animation: textanimation4 4s linear infinite;
+} @keyframes textanimation4 {
+      100% {
+          stroke-dashoffset: -55%; /* changed from -38% */
+      }
+  }
+
+.u1 {
+    stroke: white;
+    animation-delay: -1s;
+}
+
+.u2 {
+    stroke: white;
+    animation-delay: -6s;
+}
+
+.u3 {
+    stroke: white;
+    animation-delay: -10s;
+}
+
+.brandAnim {
+    fill: none;
+    stroke: white;
+    stroke-width: 1px;
+    stroke-dasharray: 100% 5%;
+    stroke-dashoffset: 0%;
+    animation: textanimation5 4s linear infinite;
+} @keyframes textanimation5 {
+      100% {
+          stroke-dashoffset: -55%; /* changed from -38% */
+      }
+  }
+
+.u1 {
+    stroke: white;
+    animation-delay: -1s;
+}
+
+.u2 {
+    stroke: white;
+    animation-delay: -6s;
+}
+
+.u3 {
+    stroke: white;
+    animation-delay: -10s;
+}

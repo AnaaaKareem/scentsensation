@@ -1,0 +1,141 @@
+{% load static %}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <!-- viewport meta tag for responsive design -->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% if title %}
+        <title>Store - {{ title }}</title>
+    {% else %}
+        <title>Store</title>
+    {% endif %}
+    <!-- favicon icon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'store/Pictures/Interaction-Icons/Logo-Black.png' %}">
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'store/bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+    <!-- Bootstrap JavaScript bundle -->
+    <script src="{% static 'store/bootstrap/js/bootstrap.js' %}"></script>
+    <!-- custom stylesheet -->
+    <link href="{% static 'store/Homepage.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: none;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+        }
+        .card-title,
+        .text-muted,
+        label {
+            color: #fff;
+        }
+        .code-input {
+            width: 3rem;
+            height: 3rem;
+            text-align: center;
+            font-size: 1.5rem;
+            background-color: #000;
+            border: 2px solid #fff;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+        }
+        .code-box {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: #fff;
+            color: #000;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #ddd;
+            color: #000;
+        }
+    </style>
+</head>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- viewport meta tag for responsive design -->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Home</title>
+    <!-- favicon icon -->
+    <link rel="icon" type="image/x-icon" href="Pictures/Interation-Icons/Logo-Black.png">
+    <!-- Bootstrap CSS -->
+    {% load static %}
+    <link href="{% static 'store/bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'store/Homepage.css' %}" rel="stylesheet">
+    <style>
+        .titleAnim {
+            fill: none;
+            stroke: white;
+            stroke-width: 2px;
+            stroke-dasharray: 100% 20%;
+            stroke-dashoffset: 0%;
+            animation: textanimation2 5s linear infinite;
+        }
+        @keyframes textanimation2 {
+            100% {
+                stroke-dashoffset: -55%;
+            }
+        }
+    </style>
+    <!-- Bootstrap JavaScript bundle -->
+    {% load static %}
+    <script src="{% static 'store/bootstrap/js/bootstrap.js' %}"></script>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-black">
+    <a href="{% url 'homepage' %}">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <div class="position-absolute top-50 start-50 translate-middle" style="top: -50%;">
+                <!-- Title -->
+                <svg viewBox="0 0 980 400" width="400" height="400" class="title">
+                    <text id="titleLogo" text-anchor="middle" x="50%" y="70%">SCENT SENSATION</text>
+                    <!-- Title animation -->
+                    <use xlink:href="#titleLogo" class="titleAnim 1"></use>
+                    <use xlink:href="#titleLogo" class="titleAnim 2"></use>
+                    <use xlink:href="#titleLogo" class="titleAnim 3"></use>
+                    <use xlink:href="#titleLogo" class="titleAnim 4"></use>
+                    <use xlink:href="#titleLogo" class="titleAnim 5"></use>
+                </svg>
+            </div>
+        </div>
+    </a>
+</nav>
+
+<br>
+
+<main>
+
+  {% block content %}{% endblock %}
+
+    <!--Back to top button-->
+    <button class="btn btn-sm btn-primary rounded-circle position-fixed bottom-0 end-0 translate-middle d-none btn-outline-dark" onclick="backToTopButton()" id="back-to-up">
+        <!--Arrow up icon-->
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </button>
+        <div class="back-to-top-wrapper">
+            <a href="#top" class="back-to-top-link" aria-label="Scroll to Top">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-up" viewBox="0 -5 16 16">
+                    <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+                </svg>
+            </a>
+        </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+<script src="{% static 'store/Homepage.js' %}"></script>
+</body>
+</html>

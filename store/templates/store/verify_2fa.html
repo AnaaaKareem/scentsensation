@@ -1,0 +1,49 @@
+{% extends "store/base_2.html" %}
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%;">
+        <div class="card-body text-center">
+            <h4 class="card-title mb-3">Two-Factor Authentication</h4>
+            <p class="text-muted">Enter the 6-digit code sent to your email</p>
+
+            <form method="post" id="verify-form">
+                {% csrf_token %}
+                <div class="code-box">
+                    {% for i in "123456" %}
+                        <input type="text" name="code{{ forloop.counter }}" maxlength="1" class="form-control code-input" required>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="code" id="final-code">
+                <button type="submit" class="btn btn-primary w-100 d-none" id="submit-btn">Verify</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('.code-input');
+    const form = document.getElementById('verify-form');
+    const finalCodeInput = document.getElementById('final-code');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', () => {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            if (input.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+            const code = Array.from(inputs).map(i => i.value).join('');
+            if (code.length === 6) {
+                finalCodeInput.value = code;
+                form.submit();
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+</script>
+{% endblock %}

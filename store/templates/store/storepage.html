@@ -1,0 +1,142 @@
+{% extends "store/base_1.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left Panel: Filters (Optional) -->
+        <div class="col-md-3">
+            <div class="card text-white border-light p-3" style="background-color: #000;">
+                <h4>Filter</h4>
+                <hr>
+                <form method="get">
+
+                    <!-- Fragrance Category -->
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="category" value="Personal Fragrances" id="category1"
+                            <label class="form-check-label" for="category1">Personal Fragrances</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="category" value="Home Fragrances" id="category2"
+                            <label class="form-check-label" for="category2">Home Fragrances</label>
+                        </div>
+                    </div>
+
+
+                    <!-- Gender Filter -->
+                    <div class="mb-3">
+                        <label class="form-label">Gender</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="gender" value="Male" id="gender1">
+                            <label class="form-check-label" for="gender1">Male</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="gender" value="Female" id="gender2">
+                            <label class="form-check-label" for="gender2">Female</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="gender" value="Unisex" id="gender3">
+                            <label class="form-check-label" for="gender3">Unisex</label>
+                        </div>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div class="mb-3">
+                        <label class="form-label">Price Range (£)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="min_price" placeholder="Min">
+                            <input type="number" class="form-control" name="max_price" placeholder="Max">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-outline-dark w-100">Apply Filters</button>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Right Panel: Products -->
+        <div class="col-md-9">
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card text-white border-light " style="background-color: #000;">
+                    {% with product_images=product.product_images.all %}
+                        {% if product_images %}
+                        <div id="carousel{{ product.product_id }}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for image in product_images %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ image.image }}"
+                                         class="d-block w-100"
+                                         alt="{{ product.product_name }}"
+                                         style="height: 300px; object-fit: cover;">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if product_images.count > 1 %}
+                            <button class="carousel-control-prev"
+                                    type="button"
+                                    data-bs-target="#carousel{{ product.product_id }}"
+                                    data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next"
+                                    type="button"
+                                    data-bs-target="#carousel{{ product.product_id }}"
+                                    data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.product_name }}</h5>
+                            <h6 class="card-subtitle mb-2">{{ product.brand }}</h6>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="h5">£{{ product.price }}</p>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <div class="d-flex align-items-center">
+                                    <button type="submit" name="add_basket" class="btn btn-outline-light me-2">Add Basket</button>
+                                    <input type="number" class="form-control" name="quantity" style="width: 60px;" value="1" min="1">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if is_paginated %}
+        <div class="d-flex flex-wrap justify-content-center">
+    {% if page_obj.has_previous %}
+        <a class="btn btn-outline-light mx-1 mb-2" href="?page=1">First</a>
+        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a class="btn btn-dark mx-1 mb-2" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.next_page_number }}">Next</a>
+        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+</div>
+{% endif %}
+
+</div>
+</div>
+{% endblock content %}

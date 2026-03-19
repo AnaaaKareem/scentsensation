@@ -1,0 +1,112 @@
+{% extends "store/base_1.html" %}
+{% block content %}
+
+<br>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Product List (Left Side) -->
+        <div class="col-md-8">
+            {% for item in items %}
+                <div class="card mb-3">
+                    <div class="row g-0">
+                        <!-- Product Image (Left) -->
+                        <div class="col-md-3 d-flex align-items-center justify-content-center">
+                            {% if item.image %}
+                                <img src="{{ item.image.image }}" alt="{{ item.product.product_name }}" class="img-fluid" style="max-width: 100px;">
+                            {% endif %}
+                        </div>
+
+                        <!-- Product Information (Right) -->
+                        <div class="col-md-9">
+                            <div class="card-body bg-black text-white">
+                                <h5 class="card-title">{{ item.product.brand }} - {{ item.product.product_name }}</h5>
+
+                                {% if item.personal %}
+                                <div class="d-flex">
+                                    <p class="me-3"><strong>Fragrance Family:</strong> {{ item.personal.fragrance_family }}</p>
+                                    <p><strong>Strength:</strong> {{ item.personal.strength }}</p>
+                                </div>
+                                {% elif item.home %}
+                                <div class="d-flex">
+                                    <p class="mb-1"><strong>Type:</strong> {{ item.home.product_type }}</p>
+                                    <p class="mb-1"><strong>Bundle:</strong> {{ item.home.bundle }}</p>
+                                </div>
+                                {% endif %}
+                                <!-- Quantity and Price -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <form action="{% url 'remove_quantity' item.product.product_id %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-light btn-sm px-2">-</button>
+                                    </form>
+
+                                    <h5 class="mb-0 fs-5">{{ item.quantity }}</h5>
+
+                                    <form action="{% url 'add_quantity' item.product.product_id %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-light btn-sm px-2">+</button>
+                                    </form>
+
+                                    <span class="fw-bold">${{ item.product.price }}</span>
+                                </div>
+
+
+                                <!-- Delete Button -->
+                                <form action="{% url 'delete_from_basket' item.product.product_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm mt-2">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Order Summary (Right Side) -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body bg-black text-white">
+                    <h3 class="card-title">Order Summary</h3>
+                    <h4 class="card-text">Price: ${{ subtotal }}</h4>
+                    <h5 class="card-text">Discount ({{ discount_rate }}%): ${{ discount }}</h5>
+                    <h5 class="card-text">Total: ${{ total }}</h5>
+                    <hr>
+                    <form action="{% url 'checkout' %}" method="post">
+                    {% csrf_token %}
+                        <h5 class="card-text mb-2">Payment Method</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="card" value="Card" checked>
+                            <label class="form-check-label" for="card">Card</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="PayPal">
+                            <label class="form-check-label" for="paypal">PayPal</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="cash" value="Cash">
+                            <label class="form-check-label" for="cash">Cash</label>
+                        </div>
+
+                        <h5 class="card-text mb-2">Fulfilment</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="fulfilment" id="pickup" value="Pickup" checked>
+                            <label class="form-check-label" for="pickup">Pickup</label>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="radio" name="fulfilment" id="delivery" value="Delivery">
+                            <label class="form-check-label" for="delivery">Delivery</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-outline-light w-100">Checkout</button>
+                    </form>
+                </div>
+            </div>
+    </div>
+
+    </div>
+</div>
+
+<br>
+
+{% endblock content %}

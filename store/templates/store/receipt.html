@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #fff; color: #000; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; }
+    .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+    .footer { margin-top: 20px; text-align: center; font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Thanks for your purchase from Scent Sensation!</h2>
+    <p><strong>Order ID:</strong> #{{ order_id }}</p>
+
+    {% for item in items %}
+      <div class="item">
+        <p><strong>{{ item.brand }} - {{ item.product_name }}</strong></p>
+        <p>Qty: {{ item.quantity }} | £{{ item.price }}</p>
+      </div>
+    {% endfor %}
+
+    <hr>
+    <p>Subtotal: £{{ subtotal }}</p>
+    <p>Discount ({{ discount_rate }}%): -£{{ discount }}</p>
+    <p><strong>Total: £{{ total }}</strong></p>
+
+    <div class="footer">
+      <p>Need help? Just reply to this email.</p>
+      <p>Scent Sensation • contact@scent.com</p>
+    </div>
+  </div>
+</body>
+</html>

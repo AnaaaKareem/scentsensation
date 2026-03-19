@@ -1,0 +1,127 @@
+{% extends "store/base_2.html" %}
+{% block content %}
+
+<br>
+<br>
+
+<div class="card text-white border-white w-75 mx-auto" style="background-color: #000;">
+    <div class="card-body border-white">
+        <!-- Display error messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <h5 class="card-title text-center">Account Information</h5>
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Full Name Section -->
+            <div class="mb-3">
+                <label for="first_name" class="form-label">First Name</label>
+                <input type="text" class="form-control" name="first_name" value="{{ first_name }}">
+            </div>
+            <div class="mb-3">
+                <label for="middle_name" class="form-label">Middle Name</label>
+                <input type="text" class="form-control" name="middle_name" value="{{ middle_name }}">
+            </div>
+            <div class="mb-3">
+                <label for="last_name" class="form-label">Last Name</label>
+                <input type="text" class="form-control" name="last_name" value="{{ last_name }}">
+            </div>
+
+            <!-- Email Section -->
+            <div class="mb-3">
+                <label for="email_address" class="form-label">Email address</label>
+                <input type="email" class="form-control" name="email" value="{{ email_address }}">
+            </div>
+
+            <!-- Date of Birth Section -->
+            <div class="mb-3">
+                <label for="DOB" class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" name="DOB" value="{{ DOB }}">
+            </div>
+
+            <!-- Phone Numbers Section -->
+            <div class="mb-3">
+                <label for="phone_numbers" class="form-label">Phone Numbers</label>
+                <!-- Loop through each phone number -->
+                {% if phone_numbers %}
+                    {% for phone_number in phone_numbers %}
+                        <form method="POST" class="mb-2 phone-number-form">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <!-- Input field for phone number -->
+                                <input type="text" class="form-control" name="phone_number" value="{{ phone_number }}">
+                                <div class="input-group-append">
+                                    <!-- Button to delete this phone number -->
+                                    <button type="submit" class="btn btn-danger btn-sm" name="delete_phone_number" value="{{ phone_number }}">Delete</button>
+                                    <!-- Button to update this phone number -->
+                                    <button type="submit" class="btn btn-primary btn-sm" name="edit_phone_number" value="{{ phone_number }}">Update</button>
+                                </div>
+                            </div>
+                        </form>
+                    {% endfor %}
+                {% else %}
+                    <p>No phone numbers available.</p>
+                {% endif %}
+            </div>
+
+
+            <!-- Address Section -->
+            <div class="mb-3">
+                <label for="house" class="form-label">House</label>
+                <input type="text" class="form-control" name="house" value="{{ house }}">
+            </div>
+            <div class="mb-3">
+                <label for="street_name" class="form-label">Street Name</label>
+                <input type="text" class="form-control" name="street_name" value="{{ street_name }}">
+            </div>
+            <div class="mb-3">
+                <label for="town_city" class="form-label">Town/City</label>
+                <input type="text" class="form-control" name="town_city" value="{{ town_city }}">
+            </div>
+            <div class="mb-3">
+                <label for="county" class="form-label">County</label>
+                <input type="text" class="form-control" name="county" value="{{ county }}">
+            </div>
+            <div class="mb-3">
+                <label for="postcode" class="form-label">Postcode</label>
+                <input type="text" class="form-control" name="postcode" value="{{ postcode }}">
+            </div>
+
+            <!-- Country Section -->
+            <div class="mb-3">
+                <label for="country" class="form-label">Country</label>
+                <select class="form-select" name="country" value="{{ country }}">
+                    <option value="England" {% if country == 'England' %}selected{% endif %}>England</option>
+                    <option value="Scotland" {% if country == 'Scotland' %}selected{% endif %}>Scotland</option>
+                    <option value="Wales" {% if country == 'Wales' %}selected{% endif %}>Wales</option>
+                    <option value="Northern Ireland" {% if country == 'Northern Ireland' %}selected{% endif %}>Northern Ireland</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="membership" class="form-label">Membership</label>
+                <select class="form-select" name="membership" value="{{ membership }}">
+                    <option value="None" {% if membership == 'None' %}selected{% endif %}>None</option>
+                    <option value="Standard" {% if membership == 'Standard' %}selected{% endif %}>Standard</option>
+                    <option value="Premium" {% if membership == 'Premium' %}selected{% endif %}>Premium</option>
+                    <option value="Student" {% if membership == 'Student' %}selected{% endif %}>Student</option>
+                </select>
+            </div>
+
+            <!-- Save Changes Button -->
+            <div class="d-flex justify-content-center mt-3">
+                <button type="submit" name="update" class="btn btn-outline-light w-50">Save Changes</button>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-center mt-3">
+                <button type="submit" name="delete" class="btn btn-outline-danger w-50">Delete Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
