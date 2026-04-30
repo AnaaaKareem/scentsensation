@@ -530,11 +530,12 @@ def payment_success(request):
             messages.error(request, "Payment was not completed. Please try again.")
             return redirect('basket')
 
-        # Ensure session has valid metadata and convert StripeObject to dict
+        # Ensure session has valid metadata and convert to plain dict
         if not session.metadata:
             messages.error(request, "Invalid payment session metadata")
             return redirect('basket')
-        metadata = dict(session.metadata)
+        # StripeObject has a to_dict() method for safe conversion
+        metadata = session.metadata.to_dict()
 
         customer_id = metadata.get('customer_id')
         if not customer_id:
@@ -544,6 +545,7 @@ def payment_success(request):
             customer = Customer.objects.get(customer_id=customer_id)
             basket_items = list(Basket.objects.filter(customer=customer).select_related('product'))
             if not basket_items:
+                messages.error(request, "Your basket is empty.")
                 return redirect('basket')
 
             # Create order
@@ -580,6 +582,19 @@ def payment_success(request):
             total = float(metadata.get('total', 0))
             discount_rate = int((discount / subtotal * 100) if subtotal else 0)
     except Exception as e:
+        import traceback
+        import sys
+        tb = traceback.format_exc()
+        # Print full error details to console for debugging
+        print("=" * 80, file=sys.stderr)
+        print(f"PAYMENT ERROR - Type: {type(e).__name__}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Message: {str(e)}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Args: {e.args}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Metadata: {metadata if 'metadata' in locals() else 'N/A'}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Customer ID: {customer_id if 'customer_id' in locals() else 'N/A'}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Subtotal: {subtotal if 'subtotal' in locals() else 'N/A'}", file=sys.stderr)
+        print(f"PAYMENT ERROR - Full traceback:\n{tb}", file=sys.stderr)
+        print("=" * 80, file=sys.stderr)
         messages.error(request, f"Payment processing error: {e}")
         return redirect('basket')
 
