@@ -518,14 +518,25 @@ def checkout(request):
 
 @csrf_exempt
 def payment_success(request):
-    stripe.api_key = settings.STRIPE_SECRET_KEY
     session_id = request.GET.get('session_id')
     if not session_id:
         return redirect('homepage')
 
     try:
         session = stripe.checkout.Session.retrieve(session_id)
-        customer_id = session.metadata.get('customer_id')
+
+        # Verify payment was completed
+        if session.payment_status != 'paid':
+            messages.error(request, "Payment was not completed. Please try again.")
+            return redirect('basket')
+
+        # Ensure session has valid metadata and convert StripeObject to dict
+        if not session.metadata:
+            messages.error(request, "Invalid payment session metadata")
+            return redirect('basket')
+        metadata = dict(session.metadata)
+
+        customer_id = metadata.get('customer_id')
         if not customer_id:
             return redirect('homepage')
 
@@ -540,10 +551,10 @@ def payment_success(request):
                 gift_card=None,
                 order_date=timezone.now(),
                 order_status='Paid',
-                order_type=session.metadata.get('fulfilment', 'Pickup'),
-                payment_method=session.metadata.get('payment_method', 'Card'),
+                order_type=metadata.get('fulfilment', 'Pickup'),
+                payment_method=metadata.get('payment_method', 'Card'),
                 installment=False,
-                total_payment=float(session.metadata.get('total', 0))
+                total_payment=float(metadata.get('total', 0))
             )
 
             # Create order items and places
@@ -564,9 +575,9 @@ def payment_success(request):
             Basket.objects.filter(customer=customer).delete()
 
             # Extract totals for email/receipt
-            subtotal = float(session.metadata.get('subtotal', 0))
-            discount = float(session.metadata.get('discount', 0))
-            total = float(session.metadata.get('total', 0))
+            subtotal = float(metadata.get('subtotal', 0))
+            discount = float(metadata.get('discount', 0))
+            total = float(metadata.get('total', 0))
             discount_rate = int((discount / subtotal * 100) if subtotal else 0)
     except Exception as e:
         messages.error(request, f"Payment processing error: {e}")
