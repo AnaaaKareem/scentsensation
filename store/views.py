@@ -32,7 +32,7 @@ def home(request):
 def signup(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
-        if form.is_valid() and form.cleaned_data.get('password1') == form.cleaned_data.get('password2'):
+        if form.is_valid():
             data = form.cleaned_data
             try:
                 with transaction.atomic():
