@@ -18,11 +18,15 @@ from django.db.models import Q, Count, Sum, F
 from django.db import transaction
 from .models import *
 from .forms import *
-import stripe
 import random
+try:
+    from polar_sdk import Polar
+    POLAR_AVAILABLE = True
+except ImportError:
+    POLAR_AVAILABLE = False
+    Polar = None
 
-# Initialize Stripe
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from store.models import get_country_choices, get_us_state_choices
 
 
 def home(request):
@@ -57,9 +61,10 @@ def signup(request):
                             house=data['house'],
                             street_name=data['street_name'],
                             town_city=data['town_city'],
-                            county=data['county'],
-                            postcode=data['postcode'],
-                            country=data['country']
+                            county=data.get('county'),
+                            postcode=data.get('postcode'),
+                            country=data['country'],
+                            state=data.get('state')
                         )
                     # Membership
                     member_type = data.get('membership')
@@ -77,7 +82,13 @@ def signup(request):
                 return redirect('signupAccount')
     else:
         form = UserRegistrationForm()
-    return render(request, 'store/signup.html', {'form': form})
+    
+    context = {
+        'form': form,
+        'countries': get_country_choices(),  # List of (code, name) tuples
+        'us_states': get_us_state_choices(),  # List of (code, name) tuples for US states
+    }
+    return render(request, 'store/signup.html', context)
 
 
 def signin(request):
@@ -196,6 +207,7 @@ def account(request):
                 request.session['county'] = address.county
                 request.session['postcode'] = address.postcode
                 request.session['country'] = address.country
+                request.session['state'] = address.state
 
             membership = getattr(customer, 'membership', None)
             if membership:
@@ -285,7 +297,10 @@ def account(request):
         'county': request.session.get('county'),
         'postcode': request.session.get('postcode'),
         'country': request.session.get('country'),
-        'membership': request.session.get('membership')
+        'state': request.session.get('state'),
+        'membership': request.session.get('membership'),
+        'countries': COUNTRY_CHOICES,  # List of (code, name) tuples
+        'us_states': US_STATE_CHOICES,  # List of (code, name) tuples for US states
     }
     return render(request, 'store/accountInfo.html', context)
 
@@ -462,35 +477,33 @@ def checkout(request):
         discount = round(subtotal * (discount_rate / 100), 2)
         total = round(subtotal - discount, 2)
 
-        # Build Stripe line items
+        # Create line items for Polar
         line_items = []
+        polar_product_id = getattr(settings, 'POLAR_PRODUCT_ID', None)
+        if not polar_product_id:
+            messages.error(request, "Polar product ID not configured. Please contact administrator.")
+            return redirect('basket')
+        
         for item in basket_items:
             line_items.append({
-                'price_data': {
-                    'currency': 'usd',
-                    'unit_amount': int(item.product.price * 100),
-                    'product_data': {
-                        'name': f"{item.product.brand} - {item.product.product_name}",
-                    },
-                },
+                'product_id': polar_product_id,
                 'quantity': item.quantity,
+                'price_amount': int(item.product.price * 100),  # Convert to cents
+                'price_currency': 'usd',
             })
 
-        # Discount handling
-        if discount_rate > 0:
-            coupon = stripe.Coupon.create(percent_off=int(discount_rate), duration="once")
-            discounts = [{"coupon": coupon}]
-        else:
-            discounts = []
+        # Initialize Polar client
+        polar = Polar(
+            access_token=settings.POLAR_ACCESS_TOKEN,
+            server="sandbox" if settings.DEBUG else "production"
+        )
 
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            mode='payment',
-            discounts=discounts,
-            success_url=request.build_absolute_uri('/payment_success/') + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri('/basket/'),
-            metadata={
+        # Create checkout session
+        checkout_data = {
+            'line_items': line_items,
+            'success_url': request.build_absolute_uri('/payment_success/') + '?checkout_id={CHECKOUT_ID}',
+            'return_url': request.build_absolute_uri('/basket/'),
+            'customer_metadata': {
                 'customer_id': customer_id,
                 'subtotal': str(subtotal),
                 'discount': str(discount),
@@ -498,6 +511,16 @@ def checkout(request):
                 'fulfilment': fulfilment,
                 'payment_method': payment_method,
             }
+        }
+        
+        # Add discount if applicable
+        if discount_rate > 0:
+            # Polar handles discounts through their platform
+            # We'll track it in metadata for our records
+            checkout_data['customer_metadata']['discount_rate'] = str(discount_rate)
+
+        session = polar.checkouts.create(
+            request=checkout_data
         )
 
         request.session['pending_checkout'] = {
@@ -518,24 +541,32 @@ def checkout(request):
 
 @csrf_exempt
 def payment_success(request):
-    session_id = request.GET.get('session_id')
-    if not session_id:
+    checkout_id = request.GET.get('checkout_id')
+    if not checkout_id:
         return redirect('homepage')
 
     try:
-        session = stripe.checkout.Session.retrieve(session_id)
+        # Initialize Polar client
+        polar = Polar(
+            access_token=settings.POLAR_ACCESS_TOKEN,
+            server="sandbox" if settings.DEBUG else "production"
+        )
+        
+        # Retrieve checkout session from Polar
+        session = polar.checkouts.get(checkout_id)
 
-        # Verify payment was completed
-        if session.payment_status != 'paid':
+        # Verify checkout is confirmed (completed)
+        if session.status != 'confirmed':
             messages.error(request, "Payment was not completed. Please try again.")
             return redirect('basket')
 
-        # Ensure session has valid metadata and convert to plain dict
-        if not session.metadata:
-            messages.error(request, "Invalid payment session metadata")
+        # Get metadata from the checkout
+        if not session.customer_metadata:
+            messages.error(request, "Invalid checkout session metadata")
             return redirect('basket')
-        # StripeObject has a to_dict() method for safe conversion
-        metadata = session.metadata.to_dict()
+        
+        # Polar returns metadata as a dict, no conversion needed
+        metadata = session.customer_metadata
 
         customer_id = metadata.get('customer_id')
         if not customer_id:

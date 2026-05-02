@@ -105,10 +105,11 @@ STATICFILES_DIRS = [BASE_DIR / 'store' / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Stripe Configuration
-STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
-STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
-
+# Polar Configuration
+POLAR_ACCESS_TOKEN = os.getenv('POLAR_ACCESS_TOKEN', '')
+POLAR_WEBHOOK_SECRET = os.getenv('POLAR_WEBHOOK_SECRET', '')
+# Note: Configure your Polar product ID in the Polar dashboard
+# POLAR_PRODUCT_ID = 'prod_xxxxxxxxxxxxx'
 
 # Email Configuration (for 2FA and receipts)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

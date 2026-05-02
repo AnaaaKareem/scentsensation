@@ -69,36 +69,51 @@
 
 
             <!-- Address Section -->
+
             <div class="mb-3">
-                <label for="house" class="form-label">House</label>
-                <input type="text" class="form-control" name="house" value="{{ house }}">
-            </div>
-            <div class="mb-3">
-                <label for="street_name" class="form-label">Street Name</label>
-                <input type="text" class="form-control" name="street_name" value="{{ street_name }}">
-            </div>
-            <div class="mb-3">
-                <label for="town_city" class="form-label">Town/City</label>
-                <input type="text" class="form-control" name="town_city" value="{{ town_city }}">
-            </div>
-            <div class="mb-3">
-                <label for="county" class="form-label">County</label>
-                <input type="text" class="form-control" name="county" value="{{ county }}">
-            </div>
-            <div class="mb-3">
-                <label for="postcode" class="form-label">Postcode</label>
-                <input type="text" class="form-control" name="postcode" value="{{ postcode }}">
+                <label for="id_house" class="form-label">House Number</label>
+                <input type="text" class="form-control" name="house" id="id_house" value="{{ house }}" placeholder="e.g., 42">
             </div>
 
-            <!-- Country Section -->
             <div class="mb-3">
-                <label for="country" class="form-label">Country</label>
-                <select class="form-select" name="country" value="{{ country }}">
-                    <option value="England" {% if country == 'England' %}selected{% endif %}>England</option>
-                    <option value="Scotland" {% if country == 'Scotland' %}selected{% endif %}>Scotland</option>
-                    <option value="Wales" {% if country == 'Wales' %}selected{% endif %}>Wales</option>
-                    <option value="Northern Ireland" {% if country == 'Northern Ireland' %}selected{% endif %}>Northern Ireland</option>
+                <label for="id_street_name" class="form-label">Street Name</label>
+                <input type="text" class="form-control" name="street_name" id="id_street_name" value="{{ street_name }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="id_town_city" class="form-label">Town/City</label>
+                <input type="text" class="form-control" name="town_city" id="id_town_city" value="{{ town_city }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="id_county" class="form-label">County</label>
+                <input type="text" class="form-control" name="county" id="id_county" value="{{ county }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="id_postcode" class="form-label">Postcode</label>
+                <input type="text" class="form-control" name="postcode" id="id_postcode" value="{{ postcode }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="id_country" class="form-label">Country</label>
+                <select class="form-select" name="country" id="id_country">
+                    <option value="" {% if not country %}selected{% endif %}>Select country</option>
+                    {% for code, name in countries %}
+                    <option value="{{ code }}" {% if country == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
                 </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_state" class="form-label">State (for US addresses)</label>
+                <select class="form-select" name="state" id="id_state">
+                    <option value="" {% if not state %}selected{% endif %}>Select state</option>
+                    {% for code, name in us_states %}
+                    <option value="{{ code }}" {% if state == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Only applicable for United States addresses</small>
             </div>
 
             <div class="mb-3">

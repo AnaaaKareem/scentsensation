@@ -1,5 +1,50 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+import pycountry
+
+
+def get_country_choices():
+    """Generate country choices from pycountry."""
+    return [(c.alpha_2, c.name) for c in pycountry.countries]
+
+
+def get_us_state_choices():
+    return [
+        ('', 'Select state'),
+        ('AL', 'Alabama'), ('AK', 'Alaska'),
+        ('AZ', 'Arizona'), ('AR', 'Arkansas'),
+        ('CA', 'California'), ('CO', 'Colorado'),
+        ('CT', 'Connecticut'), ('DE', 'Delaware'),
+        ('FL', 'Florida'), ('GA', 'Georgia'),
+        ('HI', 'Hawaii'), ('ID', 'Idaho'),
+        ('IL', 'Illinois'), ('IN', 'Indiana'),
+        ('IA', 'Iowa'), ('KS', 'Kansas'),
+        ('KY', 'Kentucky'), ('LA', 'Louisiana'),
+        ('ME', 'Maine'), ('MD', 'Maryland'),
+        ('MA', 'Massachusetts'), ('MI', 'Michigan'),
+        ('MN', 'Minnesota'), ('MS', 'Mississippi'),
+        ('MO', 'Missouri'), ('MT', 'Montana'),
+        ('NE', 'Nebraska'), ('NV', 'Nevada'),
+        ('NH', 'New Hampshire'), ('NJ', 'New Jersey'),
+        ('NM', 'New Mexico'), ('NY', 'New York'),
+        ('NC', 'North Carolina'), ('ND', 'North Dakota'),
+        ('OH', 'Ohio'), ('OK', 'Oklahoma'),
+        ('OR', 'Oregon'), ('PA', 'Pennsylvania'),
+        ('RI', 'Rhode Island'),
+        ('SC', 'South Carolina'), ('SD', 'South Dakota'),
+        ('TN', 'Tennessee'), ('TX', 'Texas'),
+        ('UT', 'Utah'), ('VT', 'Vermont'),
+        ('VA', 'Virginia'), ('WA', 'Washington'),
+        ('WV', 'West Virginia'), ('WI', 'Wisconsin'),
+        ('WY', 'Wyoming'), ('DC', 'District of Columbia'),
+    ]
+
+
+def get_uk_country_choices():
+    return [
+        ('ENG', 'England'), ('SCT', 'Scotland'),
+        ('WLS', 'Wales'), ('NIR', 'Northern Ireland'),
+    ]
 
 
 class UserRegistrationForm(forms.Form):
@@ -13,12 +58,10 @@ class UserRegistrationForm(forms.Form):
     house = forms.CharField(max_length=25, required=True)
     street_name = forms.CharField(max_length=100, required=True)
     town_city = forms.CharField(max_length=50, required=True)
-    county = forms.CharField(max_length=50, required=True)
-    postcode = forms.CharField(max_length=10, required=True)
-    country = forms.ChoiceField(choices=[
-        ('England', 'England'), ('Scotland', 'Scotland'),
-        ('Wales', 'Wales'), ('Northern Ireland', 'Northern Ireland')
-    ], required=True)
+    county = forms.CharField(max_length=50, required=False)
+    postcode = forms.CharField(max_length=10, required=False)
+    country = forms.ChoiceField(choices=get_country_choices(), required=True)
+    state = forms.ChoiceField(choices=get_us_state_choices(), required=False)
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
     membership = forms.ChoiceField(choices=[
@@ -58,15 +101,8 @@ class UserUpdateForm(forms.Form):
     town_city = forms.CharField(max_length=50, required=False)
     county = forms.CharField(max_length=50, required=False)
     postcode = forms.CharField(max_length=10, required=False)
-    country = forms.ChoiceField(
-        choices=[
-            ('England', 'England'),
-            ('Scotland', 'Scotland'),
-            ('Wales', 'Wales'),
-            ('Northern Ireland', 'Northern Ireland')
-        ],
-        required=False
-    )
+    country = forms.ChoiceField(choices=get_country_choices(), required=False)
+    state = forms.ChoiceField(choices=get_us_state_choices(), required=False)
     password = forms.CharField(widget=forms.PasswordInput, required=False)
     membership = forms.ChoiceField(
         choices=[

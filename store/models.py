@@ -4,6 +4,51 @@ These models map to the existing PostgreSQL database schema.
 """
 
 from django.db import models
+import pycountry
+
+
+def get_country_choices():
+    """Generate country choices from pycountry."""
+    return [(c.alpha_2, c.name) for c in pycountry.countries]
+
+
+def get_us_state_choices():
+    return [
+        ('', 'Select state'),
+        ('AL', 'Alabama'), ('AK', 'Alaska'),
+        ('AZ', 'Arizona'), ('AR', 'Arkansas'),
+        ('CA', 'California'), ('CO', 'Colorado'),
+        ('CT', 'Connecticut'), ('DE', 'Delaware'),
+        ('FL', 'Florida'), ('GA', 'Georgia'),
+        ('HI', 'Hawaii'), ('ID', 'Idaho'),
+        ('IL', 'Illinois'), ('IN', 'Indiana'),
+        ('IA', 'Iowa'), ('KS', 'Kansas'),
+        ('KY', 'Kentucky'), ('LA', 'Louisiana'),
+        ('ME', 'Maine'), ('MD', 'Maryland'),
+        ('MA', 'Massachusetts'), ('MI', 'Michigan'),
+        ('MN', 'Minnesota'), ('MS', 'Mississippi'),
+        ('MO', 'Missouri'), ('MT', 'Montana'),
+        ('NE', 'Nebraska'), ('NV', 'Nevada'),
+        ('NH', 'New Hampshire'), ('NJ', 'New Jersey'),
+        ('NM', 'New Mexico'), ('NY', 'New York'),
+        ('NC', 'North Carolina'), ('ND', 'North Dakota'),
+        ('OH', 'Ohio'), ('OK', 'Oklahoma'),
+        ('OR', 'Oregon'), ('PA', 'Pennsylvania'),
+        ('RI', 'Rhode Island'),
+        ('SC', 'South Carolina'), ('SD', 'South Dakota'),
+        ('TN', 'Tennessee'), ('TX', 'Texas'),
+        ('UT', 'Utah'), ('VT', 'Vermont'),
+        ('VA', 'Virginia'), ('WA', 'Washington'),
+        ('WV', 'West Virginia'), ('WI', 'Wisconsin'),
+        ('WY', 'Wyoming'), ('DC', 'District of Columbia'),
+    ]
+
+
+def get_uk_country_choices():
+    return [
+        ('ENG', 'England'), ('SCT', 'Scotland'),
+        ('WLS', 'Wales'), ('NIR', 'Northern Ireland'),
+    ]
 
 
 class Customer(models.Model):
@@ -45,17 +90,10 @@ class Addresses(models.Model):
     house = models.CharField(max_length=100)
     street_name = models.CharField(max_length=100)
     town_city = models.CharField(max_length=50)
-    county = models.CharField(max_length=50)
-    postcode = models.CharField(max_length=20)
-    country = models.CharField(
-        max_length=50,
-        choices=[
-            ('England', 'England'),
-            ('Scotland', 'Scotland'),
-            ('Wales', 'Wales'),
-            ('Northern Ireland', 'Northern Ireland')
-        ]
-    )
+    county = models.CharField(max_length=50, blank=True, null=True)
+    postcode = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=2, choices=get_country_choices())
+    state = models.CharField(max_length=2, choices=get_us_state_choices(), blank=True, null=True)
 
     class Meta:
         managed = True
