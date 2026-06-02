@@ -1,35 +1,235 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Your Order Confirmation — Scent Sensation</title>
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <!--<![endif]-->
   <style>
-    body { font-family: Arial, sans-serif; background-color: #fff; color: #000; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; }
-    .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-    .footer { margin-top: 20px; text-align: center; font-size: 12px; color: #888; }
+    /* Reset */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #fdf9f0; }
+
+    /* iOS blue links */
+    a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+
+    /* Mobile */
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; }
+      .fluid { max-width: 100% !important; height: auto !important; }
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; }
+      .center-on-narrow { text-align: center !important; display: block !important; margin-left: auto !important; margin-right: auto !important; float: none !important; }
+      .pad-mobile { padding-left: 20px !important; padding-right: 20px !important; }
+      .no-pad-mobile { padding-left: 0 !important; padding-right: 0 !important; }
+    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h2>Thanks for your purchase from Scent Sensation!</h2>
-    <p><strong>Order ID:</strong> #{{ order_id }}</p>
+<body style="margin: 0; padding: 0; background-color: #fdf9f0; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1a1a1a;">
 
-    {% for item in items %}
-      <div class="item">
-        <p><strong>{{ item.brand }} - {{ item.product_name }}</strong></p>
-        <p>Qty: {{ item.quantity }} | £{{ item.price }}</p>
-      </div>
-    {% endfor %}
-
-    <hr>
-    <p>Subtotal: £{{ subtotal }}</p>
-    <p>Discount ({{ discount_rate }}%): -£{{ discount }}</p>
-    <p><strong>Total: £{{ total }}</strong></p>
-
-    <div class="footer">
-      <p>Need help? Just reply to this email.</p>
-      <p>Scent Sensation • contact@scent.com</p>
-    </div>
+  <!-- Preview text -->
+  <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
+    Thank you for your order #{{ order_id }} from Scent Sensation. Your payment of £{{ total }} has been confirmed.
+    &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
+
+  <!-- Email wrapper -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fdf9f0;">
+    <tr>
+      <td align="center" style="padding: 30px 10px;">
+
+        <!-- Email container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="max-width: 600px; margin: 0 auto;">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background-color: #0d0d0d; padding: 30px 40px; border-radius: 2px 2px 0 0;">
+              <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 600; color: #fdf9f0; letter-spacing: -0.02em;">
+                SCENT SENSATION
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Success banner -->
+          <tr>
+            <td align="center" style="background-color: #d4a824; padding: 16px 40px;">
+              <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #0d0d0d; text-transform: uppercase; letter-spacing: 0.12em;">
+                Order Confirmed &mdash; Payment Successful
+              </p>
+            </td>
+          </tr>
+
+          <!-- Main content -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 40px;" class="pad-mobile">
+
+              <p style="margin: 0 0 8px; font-family: 'Inter', sans-serif; font-size: 14px; color: #6d6d6d;">
+                Dear Valued Customer,
+              </p>
+              <p style="margin: 0 0 24px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; color: #4f4f4f;">
+                Thank you for your purchase. Your order has been confirmed and payment has been processed successfully. A summary of your order is below.
+              </p>
+
+              <!-- Order ID box -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fdf9f0; border: 1px solid #faf3e2; border-radius: 2px; margin-bottom: 28px;">
+                <tr>
+                  <td align="center" style="padding: 20px;">
+                    <p style="margin: 0 0 4px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #6d6d6d; text-transform: uppercase; letter-spacing: 0.12em;">
+                      Order Number
+                    </p>
+                    <p style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; color: #d4a824;">
+                      #{{ order_id }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Items heading -->
+              <p style="margin: 0 0 12px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #6d6d6d; text-transform: uppercase; letter-spacing: 0.12em;">
+                Your Selection
+              </p>
+
+              <!-- Items list -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-top: 1px solid #e7e7e7;">
+                {% for item in items %}
+                <tr>
+                  <td style="padding: 16px 0; border-bottom: 1px solid #e7e7e7;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #1a1a1a;">
+                          {{ item.brand }} &mdash; {{ item.product_name }}
+                        </td>
+                        <td align="right" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #6d6d6d; white-space: nowrap;">
+                          &times;{{ item.quantity }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family: 'Inter', sans-serif; font-size: 13px; color: #6d6d6d; padding-top: 2px;">
+                          &pound;{{ item.price }}
+                        </td>
+                        <td align="right" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #1a1a1a; padding-top: 2px;">
+                          &pound;{{ item.total|default:item.price }}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                {% endfor %}
+              </table>
+
+              <!-- Totals -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 16px;">
+                <tr>
+                  <td align="right" style="padding: 4px 0; font-family: 'Inter', sans-serif; font-size: 13px; color: #6d6d6d;">
+                    Subtotal
+                  </td>
+                  <td align="right" width="100" style="padding: 4px 0 4px 16px; font-family: 'Inter', sans-serif; font-size: 13px; color: #1a1a1a;">
+                    &pound;{{ subtotal }}
+                  </td>
+                </tr>
+                {% if discount > 0 %}
+                <tr>
+                  <td align="right" style="padding: 4px 0; font-family: 'Inter', sans-serif; font-size: 13px; color: #6d6d6d;">
+                    Discount ({{ discount_rate }}%)
+                  </td>
+                  <td align="right" style="padding: 4px 0 4px 16px; font-family: 'Inter', sans-serif; font-size: 13px; color: #8c2c2c;">
+                    -&pound;{{ discount }}
+                  </td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td align="right" style="padding: 4px 0; font-family: 'Inter', sans-serif; font-size: 13px; color: #6d6d6d;">
+                    Shipping
+                  </td>
+                  <td align="right" style="padding: 4px 0 4px 16px; font-family: 'Inter', sans-serif; font-size: 13px; color: #1a1a1a;">
+                    Free
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="border-top: 1px solid #d4a824; padding-top: 12px; padding-bottom: 4px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td align="right" style="font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                          Total Paid
+                        </td>
+                        <td align="right" width="100" style="padding-left: 16px; font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 600; color: #d4a824;">
+                          &pound;{{ total }}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Delivery estimate -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 28px; background-color: #fdf9f0; border-radius: 2px;">
+                <tr>
+                  <td align="center" style="padding: 16px 20px;">
+                    <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 13px; color: #4f4f4f;">
+                      <span style="color: #d4a824;">&#128666;</span> Estimated delivery: <strong style="color: #1a1a1a;">3&ndash;5 business days</strong>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 28px;">
+                <tr>
+                  <td align="center">
+                    <a href="http://localhost:8000/" target="_blank" style="display: inline-block; padding: 14px 36px; background-color: #d4a824; color: #0d0d0d; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; text-transform: uppercase; letter-spacing: 0.12em; border-radius: 2px;">
+                      Continue Shopping
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0d0d0d; padding: 30px 40px; border-radius: 0 0 2px 2px;" class="pad-mobile">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding-bottom: 16px;">
+                    <p style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 16px; font-weight: 600; color: #fdf9f0;">
+                      SCENT SENSATION
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-bottom: 12px;">
+                    <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 12px; color: #6d6d6d; line-height: 1.6;">
+                      Your destination for luxury fragrances.<br>
+                      Curated collections from the world's most prestigious houses.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="border-top: 1px solid #454545; padding-top: 16px;">
+                    <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 11px; color: #6d6d6d;">
+                      Need help? Reply to this email or contact us at <a href="mailto:contact@scentsensation.com" style="color: #d4a824; text-decoration: none;">contact@scentsensation.com</a>
+                    </p>
+                    <p style="margin: 8px 0 0; font-family: 'Inter', sans-serif; font-size: 11px; color: #4f4f4f;">
+                      &copy; 2026 Scent Sensation. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Email container -->
+
+      </td>
+    </tr>
+  </table>
+  <!-- /Email wrapper -->
+
 </body>
 </html>

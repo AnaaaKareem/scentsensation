@@ -1,218 +1,111 @@
-{% extends "store/base_2.html" %}
+{% extends "store/base.html" %}
+{% load static %}
+
 {% block content %}
+<div class="min-h-[calc(100vh-4rem)] py-24 px-6">
+  <div class="max-w-2xl mx-auto">
 
-<style>
-  /* Base styles for payment success */
-  .success-bg-gradient {
-    background: radial-gradient(circle at center, #1b1b1f 0%, #0d0d0f 100%);
-    min-height: 90vh;
-    display: flex;
-    align-items: center;
-  }
-  .success-icon-container {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    background: rgba(40, 167, 69, 0.12);
-    border: 2px solid rgba(40, 167, 69, 0.4);
-    box-shadow: 0 0 25px rgba(40, 167, 69, 0.25);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    animation: successPulse 2s infinite alternate;
-  }
-  @keyframes successPulse {
-    0% {
-      transform: scale(1);
-      box-shadow: 0 0 20px rgba(40, 167, 69, 0.2);
-      border-color: rgba(40, 167, 69, 0.4);
-    }
-    100% {
-      transform: scale(1.06);
-      box-shadow: 0 0 35px rgba(40, 167, 69, 0.45);
-      border-color: rgba(40, 167, 69, 0.7);
-    }
-  }
-  .success-checkmark {
-    animation: drawCheck 0.6s ease-out forwards;
-  }
-  @keyframes drawCheck {
-    0% {
-      stroke-dashoffset: 20;
-    }
-    100% {
-      stroke-dashoffset: 0;
-    }
-  }
-  .glass-card {
-    background: rgba(18, 18, 18, 0.75) !important;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
-    overflow: hidden;
-  }
-  .glass-card-header {
-    background: rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  .text-light-muted {
-    color: rgba(255, 255, 255, 0.6) !important;
-  }
-  .text-gold {
-    color: #e5c158 !important;
-  }
-  .border-glass-light {
-    border-color: rgba(255, 255, 255, 0.08) !important;
-  }
-  .product-item-hover {
-    transition: all 0.2s ease-in-out;
-  }
-  .product-item-hover:hover {
-    background: rgba(255, 255, 255, 0.02);
-    padding-left: 6px;
-  }
-  .glass-badge {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
-    padding: 0.25rem 0.65rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-  .btn-primary-custom {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    font-weight: 600;
-    border-radius: 30px;
-    padding: 10px 28px;
-    border: none;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .btn-primary-custom:hover {
-    background-color: #e2e2e2 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
-  }
-  .btn-secondary-custom {
-    background-color: transparent !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    font-weight: 600;
-    border-radius: 30px;
-    padding: 9px 28px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .btn-secondary-custom:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    border-color: #ffffff !important;
-    transform: translateY(-2px);
-  }
-  .pulse-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: #28a745;
-    border-radius: 50%;
-    margin-right: 6px;
-    animation: dotPulse 1.5s infinite alternate;
-  }
-  @keyframes dotPulse {
-    0% { transform: scale(0.8); opacity: 0.5; }
-    100% { transform: scale(1.2); opacity: 1; }
-  }
-</style>
+    <!-- Success Header -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gold-100 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-10 h-10 text-gold-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Order Confirmed</p>
+      <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display">Payment Successful</h1>
+      <p class="text-charcoal-500 text-sm mt-3 leading-relaxed">
+        Thank you for your purchase. A confirmation email has been sent to
+        <span class="font-medium text-charcoal-700">{{ request.session.email_address|default:"your email" }}</span>.
+      </p>
+    </div>
 
-<div class="success-bg-gradient py-5">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-7 col-md-9">
+    <!-- Order Card -->
+    <div class="bg-white border border-cream-300 rounded-brand overflow-hidden">
 
-        <!-- Success Header -->
-        <div class="text-center mb-5">
-          <div class="success-icon-container mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="none" stroke="#28a745" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="bi bi-check-lg" viewBox="0 0 16 16">
-              <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022z" class="success-checkmark" stroke-dasharray="20" stroke-dashoffset="0"/>
-            </svg>
-          </div>
-          <h2 class="text-white fw-bold mb-2" style="letter-spacing: -0.5px;">Payment Successful</h2>
-          <p class="text-light-muted mb-0 fs-6">Thank you for your order. A confirmation email has been sent.</p>
+      <!-- Order Header -->
+      <div class="bg-charcoal-950 px-6 py-5 text-center">
+        <p class="text-cream-200 text-xs tracking-wide-plus uppercase font-medium mb-1">Order Number</p>
+        <p class="font-display text-2xl text-gold-400 tracking-display font-semibold">
+          #{{ order_id }}
+        </p>
+        <div class="mt-3 inline-flex items-center gap-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+          <span class="text-cream-300 text-sm">Paid &amp; Processing</span>
         </div>
+      </div>
 
-        <!-- Order details card -->
-        <div class="card glass-card text-white">
-          <!-- Glass Card Header -->
-          <div class="glass-card-header text-center py-4">
-            <h5 class="mb-1 text-gold fw-bold tracking-wide">Order #{{ order_id }}</h5>
-            <div class="d-flex align-items-center justify-content-center gap-1 mt-2">
-              <span class="pulse-dot"></span>
-              <span class="text-light-muted small">Status: Paid & Processing</span>
+      <!-- Order Body -->
+      <div class="p-6">
+        <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-4">Your Selection</p>
+
+        {% for item in items %}
+        <div class="flex items-center justify-between py-4 border-b border-cream-200">
+          <div class="flex items-center gap-4">
+            {% if item.image and item.image.image %}
+              <img src="data:image/png;base64,{{ item.image.image }}"
+                   alt="{{ item.product_name }}"
+                   class="w-14 h-14 rounded bg-cream-100 border border-cream-200 object-cover flex-shrink-0">
+            {% else %}
+              <div class="w-14 h-14 rounded bg-cream-100 border border-cream-200 flex-shrink-0"></div>
+            {% endif %}
+            <div>
+              <p class="font-medium text-charcoal-900 text-sm">{{ item.brand }} — {{ item.product_name }}</p>
+              <p class="text-charcoal-500 text-xs mt-0.5">£{{ item.price }}</p>
             </div>
           </div>
-
-          <div class="card-body p-4">
-            <!-- Product List -->
-            <div class="mb-4">
-              <h6 class="text-light-muted mb-3 text-uppercase tracking-wider small">Your Selection</h6>
-              {% for item in items %}
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-glass-light product-item-hover">
-                  <div class="d-flex align-items-center">
-                    {% if item.image and item.image.image %}
-                      <img src="data:image/png;base64,{{ item.image.image }}" class="rounded object-fit-cover border border-glass-light" alt="{{ item.product_name }}" style="width: 54px; height: 54px;">
-                    {% else %}
-                      <div class="rounded d-flex align-items-center justify-content-center bg-secondary bg-opacity-25 border border-glass-light" style="width: 54px; height: 54px;">
-                        <span class="text-light-muted small" style="font-size: 0.65rem;">No image</span>
-                      </div>
-                    {% endif %}
-                    <div class="ms-3">
-                      <h6 class="mb-0 text-white fw-semibold" style="font-size: 0.95rem;">{{ item.brand }} - {{ item.product_name }}</h6>
-                      <small class="text-light-muted">£{{ item.price }}</small>
-                    </div>
-                  </div>
-                  <span class="glass-badge">Qty: {{ item.quantity }}</span>
-                </div>
-              {% endfor %}
-            </div>
-
-            <!-- Price Summary -->
-            <div class="mt-4 pt-2">
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-light-muted">Subtotal</span>
-                <span class="text-white">£{{ subtotal }}</span>
-              </div>
-              
-              {% if discount > 0 %}
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-light-muted">Discount ({{ discount_rate }}%)</span>
-                <span class="text-success fw-medium">-£{{ discount }}</span>
-              </div>
-              {% endif %}
-              
-              <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-3 border-top border-glass-light">
-                <span class="text-white">Total Paid</span>
-                <span class="text-gold">£{{ total }}</span>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Glass Card Footer / Actions -->
-          <div class="card-footer bg-transparent border-top border-glass-light text-center py-4">
-            <a href="{% url 'homepage' %}" class="btn-primary-custom me-3">Back to Shop</a>
-            <a href="{% url 'account' %}" class="btn-secondary-custom">My Account</a>
+          <div class="text-right">
+            <span class="text-charcoal-400 text-xs">Qty: {{ item.quantity }}</span>
           </div>
         </div>
+        {% endfor %}
+      </div>
 
+      <!-- Price Summary -->
+      <div class="px-6 py-5 bg-cream-50 border-t border-cream-200">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-charcoal-500">Subtotal</span>
+          <span class="text-charcoal-700">£{{ subtotal }}</span>
+        </div>
+        {% if discount > 0 %}
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-charcoal-500">Discount ({{ discount_rate }}%)</span>
+          <span class="text-green-600 font-medium">-£{{ discount }}</span>
+        </div>
+        {% endif %}
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-charcoal-500">Shipping</span>
+          <span class="text-charcoal-700">Free</span>
+        </div>
+        <div class="flex justify-between text-lg font-semibold mt-3 pt-3 border-t border-cream-300">
+          <span class="text-charcoal-900">Total Paid</span>
+          <span class="text-gold-600">£{{ total }}</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-6 py-5 border-t border-cream-200 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="{% url 'store' %}" class="w-full sm:w-auto text-center px-8 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+          Continue Shopping
+        </a>
+        <a href="{% url 'account' %}" class="w-full sm:w-auto text-center px-8 py-3 border border-charcoal-300 hover:border-charcoal-400 text-charcoal-700 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+          View Orders
+        </a>
       </div>
     </div>
+
+    <!-- Delivery Estimate -->
+    <div class="mt-8 text-center">
+      <p class="text-charcoal-500 text-sm">
+        <span class="inline-block w-4 h-4 align-middle mr-1">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+          </svg>
+        </span>
+        Estimated delivery: <span class="font-medium text-charcoal-700">3–5 business days</span>
+      </p>
+    </div>
+
   </div>
 </div>
-
 {% endblock content %}

@@ -1,142 +1,156 @@
-{% extends "store/base_2.html" %}
+{% extends "store/base.html" %}
+{% load static %}
+
 {% block content %}
+<div class="max-w-4xl mx-auto px-6 lg:px-8 py-12">
 
-<br>
-<br>
-
-<div class="card text-white border-white w-75 mx-auto" style="background-color: #000;">
-    <div class="card-body border-white">
-        <!-- Display error messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        <h5 class="card-title text-center">Account Information</h5>
-        <form method="POST">
-            {% csrf_token %}
-
-            <!-- Full Name Section -->
-            <div class="mb-3">
-                <label for="first_name" class="form-label">First Name</label>
-                <input type="text" class="form-control" name="first_name" value="{{ first_name }}">
-            </div>
-            <div class="mb-3">
-                <label for="middle_name" class="form-label">Middle Name</label>
-                <input type="text" class="form-control" name="middle_name" value="{{ middle_name }}">
-            </div>
-            <div class="mb-3">
-                <label for="last_name" class="form-label">Last Name</label>
-                <input type="text" class="form-control" name="last_name" value="{{ last_name }}">
-            </div>
-
-            <!-- Email Section -->
-            <div class="mb-3">
-                <label for="email_address" class="form-label">Email address</label>
-                <input type="email" class="form-control" name="email" value="{{ email_address }}">
-            </div>
-
-            <!-- Date of Birth Section -->
-            <div class="mb-3">
-                <label for="DOB" class="form-label">Date of Birth</label>
-                <input type="date" class="form-control" name="DOB" value="{{ DOB }}">
-            </div>
-
-            <!-- Phone Numbers Section -->
-            <div class="mb-3">
-                <label for="phone_numbers" class="form-label">Phone Numbers</label>
-                <!-- Loop through each phone number -->
-                {% if phone_numbers %}
-                    {% for phone_number in phone_numbers %}
-                        <form method="POST" class="mb-2 phone-number-form">
-                            {% csrf_token %}
-                            <div class="input-group">
-                                <!-- Input field for phone number -->
-                                <input type="text" class="form-control" name="phone_number" value="{{ phone_number }}">
-                                <div class="input-group-append">
-                                    <!-- Button to delete this phone number -->
-                                    <button type="submit" class="btn btn-danger btn-sm" name="delete_phone_number" value="{{ phone_number }}">Delete</button>
-                                    <!-- Button to update this phone number -->
-                                    <button type="submit" class="btn btn-primary btn-sm" name="edit_phone_number" value="{{ phone_number }}">Update</button>
-                                </div>
-                            </div>
-                        </form>
-                    {% endfor %}
-                {% else %}
-                    <p>No phone numbers available.</p>
-                {% endif %}
-            </div>
-
-
-            <!-- Address Section -->
-
-            <div class="mb-3">
-                <label for="id_house" class="form-label">House Number</label>
-                <input type="text" class="form-control" name="house" id="id_house" value="{{ house }}" placeholder="e.g., 42">
-            </div>
-
-            <div class="mb-3">
-                <label for="id_street_name" class="form-label">Street Name</label>
-                <input type="text" class="form-control" name="street_name" id="id_street_name" value="{{ street_name }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="id_town_city" class="form-label">Town/City</label>
-                <input type="text" class="form-control" name="town_city" id="id_town_city" value="{{ town_city }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="id_county" class="form-label">County</label>
-                <input type="text" class="form-control" name="county" id="id_county" value="{{ county }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="id_postcode" class="form-label">Postcode</label>
-                <input type="text" class="form-control" name="postcode" id="id_postcode" value="{{ postcode }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="id_country" class="form-label">Country</label>
-                <select class="form-select" name="country" id="id_country">
-                    <option value="" {% if not country %}selected{% endif %}>Select country</option>
-                    {% for code, name in countries %}
-                    <option value="{{ code }}" {% if country == code %}selected{% endif %}>{{ name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="id_state" class="form-label">State (for US addresses)</label>
-                <select class="form-select" name="state" id="id_state">
-                    <option value="" {% if not state %}selected{% endif %}>Select state</option>
-                    {% for code, name in us_states %}
-                    <option value="{{ code }}" {% if state == code %}selected{% endif %}>{{ name }}</option>
-                    {% endfor %}
-                </select>
-                <small class="text-muted">Only applicable for United States addresses</small>
-            </div>
-
-            <div class="mb-3">
-                <label for="membership" class="form-label">Membership</label>
-                <select class="form-select" name="membership" value="{{ membership }}">
-                    <option value="None" {% if membership == 'None' %}selected{% endif %}>None</option>
-                    <option value="Standard" {% if membership == 'Standard' %}selected{% endif %}>Standard</option>
-                    <option value="Premium" {% if membership == 'Premium' %}selected{% endif %}>Premium</option>
-                    <option value="Student" {% if membership == 'Student' %}selected{% endif %}>Student</option>
-                </select>
-            </div>
-
-            <!-- Save Changes Button -->
-            <div class="d-flex justify-content-center mt-3">
-                <button type="submit" name="update" class="btn btn-outline-light w-50">Save Changes</button>
-            </div>
-
-            <hr>
-
-            <div class="d-flex justify-content-center mt-3">
-                <button type="submit" name="delete" class="btn btn-outline-danger w-50">Delete Account</button>
-            </div>
-        </form>
+  <div class="bg-white border border-cream-300 rounded-brand p-8">
+    <!-- Display messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-4 px-4 py-3 rounded-brand text-sm font-medium
+      {% if message.tags == 'error' %}bg-burgundy-100 text-burgundy-800
+      {% elif message.tags == 'success' %}bg-green-100 text-green-800
+      {% else %}bg-cream-200 text-charcoal-800{% endif %}">
+      {{ message }}
     </div>
+    {% endfor %}
+    {% endif %}
+
+    <h1 class="font-display text-2xl text-charcoal-900 mb-8">Account Information</h1>
+
+    <form method="POST" action="{% url 'account' %}">
+      {% csrf_token %}
+
+      <!-- Full Name Section -->
+      <div class="grid sm:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label for="id_first_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
+          <input type="text" id="id_first_name" name="first_name" value="{{ first_name|default:'' }}"
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        </div>
+        <div>
+          <label for="id_middle_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Middle Name</label>
+          <input type="text" id="id_middle_name" name="middle_name" value="{{ middle_name|default:'' }}"
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        </div>
+        <div>
+          <label for="id_last_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
+          <input type="text" id="id_last_name" name="last_name" value="{{ last_name|default:'' }}"
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        </div>
+      </div>
+
+      <!-- Email Section -->
+      <div class="mb-6">
+        <label for="id_email_address" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
+        <input type="email" id="id_email_address" name="email_address" value="{{ email_address|default:'' }}"
+          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+      </div>
+
+      <!-- DOB + Gender Row -->
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label for="id_DOB" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Date of Birth</label>
+          <input type="date" id="id_DOB" name="DOB" value="{{ DOB|default:'' }}"
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        </div>
+        <div>
+          <label class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gender</label>
+          <div class="flex items-center gap-6 pt-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="gender" value="Male" {% if gender == 'Male' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">Male</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="gender" value="Female" {% if gender == 'Female' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">Female</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Numbers Section -->
+      <div class="mb-6">
+        <label for="id_phone_numbers" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone Number</label>
+        <input type="text" id="id_phone_numbers" name="phone_numbers" value="{{ phone_numbers.0|default:'' }}"
+          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        <p class="text-charcoal-400 text-xs mt-1">Single phone number (updates existing)</p>
+      </div>
+
+      <!-- Address Section -->
+      <div class="border-t border-cream-200 pt-6 mb-6">
+        <p class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Address</p>
+        <div class="space-y-4">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="id_house" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">House Number</label>
+              <input type="text" id="id_house" name="house" value="{{ house|default:'' }}" placeholder="e.g. 42"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+            <div>
+              <label for="id_street_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Street Name</label>
+              <input type="text" id="id_street_name" name="street_name" value="{{ street_name|default:'' }}" placeholder="e.g. Mayfair Gardens"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="id_town_city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Town / City</label>
+              <input type="text" id="id_town_city" name="town_city" value="{{ town_city|default:'' }}" placeholder="London"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+            <div>
+              <label for="id_county" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">County</label>
+              <input type="text" id="id_county" name="county" value="{{ county|default:'' }}" placeholder="Greater London"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="id_postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
+              <input type="text" id="id_postcode" name="postcode" value="{{ postcode|default:'' }}" placeholder="W1K 1AA"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+            <div>
+              <label for="id_country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
+              <input type="text" id="id_country" name="country" value="{{ country|default:'' }}" placeholder="GB"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Membership -->
+      <div class="mb-8">
+        <label for="id_membership" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Membership</label>
+        <select id="id_membership" name="membership"
+          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white transition-colors">
+          <option value="None" {% if membership == 'None' or not membership %}selected{% endif %}>None</option>
+          <option value="Standard" {% if membership == 'Standard' %}selected{% endif %}>Standard</option>
+          <option value="Premium" {% if membership == 'Premium' %}selected{% endif %}>Premium</option>
+          <option value="Student" {% if membership == 'Student' %}selected{% endif %}>Student</option>
+        </select>
+      </div>
+
+      <!-- Save Changes Button -->
+      <div class="flex justify-center">
+        <button type="submit" name="update" class="px-12 py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+          Save Changes
+        </button>
+      </div>
+
+      <hr class="border-cream-200 my-8">
+
+      <!-- Delete Account Button -->
+      <div class="flex justify-center">
+        <button type="submit" name="delete" class="px-12 py-3 border border-burgundy-600 text-burgundy-700 hover:bg-burgundy-50 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors"
+          onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
+          Delete Account
+        </button>
+      </div>
+    </form>
+  </div>
+
 </div>
 {% endblock content %}

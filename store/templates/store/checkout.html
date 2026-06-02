@@ -1,55 +1,245 @@
-{% extends "store/base_2.html" %}
+{% extends "store/base.html" %}
+{% load static %}
+
 {% block content %}
+<div class="max-w-6xl mx-auto px-6 lg:px-8 py-12">
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card text-white border-light" style="background-color: #000;">
-        <div class="card-body">
+  <!-- Checkout Steps -->
+  <div class="flex items-center justify-center gap-4 mb-12">
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-gold-500 text-charcoal-950 text-sm font-semibold flex items-center justify-center">1</span>
+      <span class="text-charcoal-900 text-sm font-medium hidden sm:inline">Delivery</span>
+    </div>
+    <div class="w-12 h-px bg-charcoal-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">2</span>
+      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Payment</span>
+    </div>
+    <div class="w-12 h-px bg-charcoal-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">3</span>
+      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Confirm</span>
+    </div>
+  </div>
 
-          <!-- Order ID -->
-          <h5 class="card-title text-center mb-4">Order ID: #{{ order_id }}</h5>
+  <div class="grid lg:grid-cols-3 gap-10">
 
-          <!-- Product List -->
-          <div class="mb-4">
-            {% for item in items %}
-              <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
-                <div class="d-flex">
-                  <img src="{{ item.image|default:'https://via.placeholder.com/60' }}" class="rounded me-3" alt="Product Image" style="width: 60px; height: 60px;">
-                  <div>
-                    <h6 class="mb-1">{{ item.brand }} - {{ item.product_name }}</h6>
-                    <small>£{{ item.price }}</small>
-                  </div>
-                </div>
-                <span class="badge bg-dark">Qty: {{ item.quantity }}</span>
+    <!-- Left: Forms -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- Delivery Address -->
+      <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Delivery Address</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
+            <input type="text" id="firstName" value="{{ request.session.first_name|default:'' }}" placeholder="John"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="lastName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
+            <input type="text" id="lastName" value="{{ request.session.last_name|default:'' }}" placeholder="Smith"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="address1" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 1</label>
+            <input type="text" id="address1" value="{{ request.session.street_name|default:'' }}" placeholder="24 Mayfair Gardens"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="address2" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 2 <span class="text-charcoal-400 normal-case">(optional)</span></label>
+            <input type="text" id="address2" placeholder="Apartment, suite, etc."
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">City</label>
+            <input type="text" id="city" value="{{ request.session.town_city|default:'' }}" placeholder="London"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
+            <input type="text" id="postcode" value="{{ request.session.postcode|default:'' }}" placeholder="W1K 1AA"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
+            <select id="country" class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white">
+              <option>United Kingdom</option>
+              <option>United States</option>
+              <option>France</option>
+              <option>Germany</option>
+              <option>Italy</option>
+              <option>Spain</option>
+            </select>
+          </div>
+          <div>
+            <label for="phone" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone</label>
+            <input type="tel" id="phone" placeholder="+44 7700 900123"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+        </div>
+      </section>
+
+      <!-- Shipping Method -->
+      <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Shipping Method</h2>
+        <div class="space-y-3">
+          <label class="flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-brand cursor-pointer">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Standard Delivery</p>
+                <p class="text-charcoal-500 text-xs">5–7 business days</p>
               </div>
-            {% endfor %}
-          </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">Free</span>
+          </label>
+          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Express Delivery</p>
+                <p class="text-charcoal-500 text-xs">2–3 business days</p>
+              </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">£5.99</span>
+          </label>
+          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Next Day Delivery</p>
+                <p class="text-charcoal-500 text-xs">Order before 2pm</p>
+              </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">£9.99</span>
+          </label>
+        </div>
+      </section>
 
-          <!-- Price Summary -->
-          <div class="border-top pt-3">
-            <div class="d-flex justify-content-between mt-2">
-              <span>Subtotal</span>
-              <span>£{{ subtotal }}</span>
+      <!-- Gift Options -->
+      <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-4">Gift Options</h2>
+        <label class="flex items-center gap-3 cursor-pointer mb-4">
+          <input type="checkbox" name="gift_wrap" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+          <span class="text-charcoal-600 text-sm">This order is a gift — add premium gift wrapping (+£5.00)</span>
+        </label>
+        <div>
+          <label for="giftMessage" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gift Message <span class="text-charcoal-400 normal-case">(optional)</span></label>
+          <textarea id="giftMessage" name="gift_message" rows="3" placeholder="Write a personal message..."
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors resize-none"></textarea>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div>
+      <div class="bg-cream-200 border border-cream-300 rounded-brand p-6 sticky top-24">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Order Summary</h2>
+
+        <!-- Cart Items -->
+        {% if items %}
+        <div class="space-y-4 mb-6">
+          {% for item in items %}
+          <div class="flex gap-3">
+            <div class="w-14 h-18 bg-charcoal-100 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
+              {% if item.image %}
+                <img src="data:image/png;base64,{{ item.image.image }}" alt="{{ item.product.product_name }}" class="w-full h-full object-cover">
+              {% else %}
+                <span class="text-charcoal-400 text-[8px] uppercase tracking-wide text-center px-1">{{ item.product.product_name|truncatewords:2 }}</span>
+              {% endif %}
             </div>
-            <div class="d-flex justify-content-between">
-              <span>Discount ({{ discount_rate }}%)</span>
-              <span>-£{{ discount }}</span>
-            </div>
-            <div class="d-flex justify-content-between fw-bold">
-              <span>Total</span>
-              <span>£{{ total }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-charcoal-900 text-sm font-medium truncate">{{ item.product.brand }} — {{ item.product.product_name }}</p>
+              <div class="flex justify-between mt-1">
+                <span class="text-charcoal-400 text-xs">×{{ item.quantity }}</span>
+                <span class="text-charcoal-900 text-sm">£{{ item.product.price }}</span>
+              </div>
             </div>
           </div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
+        <!-- Promo Code -->
+        <div class="mb-6">
+          <label for="promo" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Promo Code</label>
+          <div class="flex gap-2">
+            <input type="text" id="promo" name="promo_code" placeholder="Enter code"
+              class="flex-1 px-4 py-2.5 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500">
+            <button type="button" class="px-4 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand hover:bg-charcoal-800 transition-colors">Apply</button>
+          </div>
         </div>
 
-        <div class="card-footer bg-transparent border-top-0 text-center">
-          <a href="{% url 'homepage' %}" class="btn btn-outline-light">Homepage</a>
+        <!-- Totals -->
+        <div class="border-t border-cream-300 pt-4 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Subtotal</span>
+            <span class="text-charcoal-900">£{{ subtotal }}</span>
+          </div>
+          {% if discount > 0 %}
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Discount ({{ discount_rate }}%)</span>
+            <span class="text-burgundy-700">−£{{ discount }}</span>
+          </div>
+          {% endif %}
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Shipping</span>
+            <span class="text-charcoal-900">Free</span>
+          </div>
+          <div class="border-t border-cream-300 pt-3 mt-3">
+            <div class="flex justify-between">
+              <span class="text-charcoal-900 font-semibold">Total</span>
+              <span class="font-display text-2xl text-charcoal-900">£{{ total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="mt-6">
+          <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
+          <div class="space-y-2 mb-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="payment_method" value="Card" {% if payment_method == 'Card' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">Card</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="payment_method" value="PayPal" {% if payment_method == 'PayPal' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">PayPal</span>
+            </label>
+          </div>
+
+          <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Fulfilment</h5>
+          <div class="space-y-2 mb-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="fulfilment" value="Pickup" {% if fulfilment == 'Pickup' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">Pickup</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="fulfilment" value="Delivery" {% if fulfilment == 'Delivery' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <span class="text-charcoal-700 text-sm">Delivery</span>
+            </label>
+          </div>
+        </div>
+
+        <form method="POST" action="{% url 'checkout' %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full mt-4 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+            Proceed to Payment
+          </button>
+        </form>
+
+        <!-- Trust Badges -->
+        <div class="mt-6 pt-4 border-t border-cream-300 flex items-center justify-center gap-4">
+          <div class="text-charcoal-400" title="Secure payment">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+            </svg>
+          </div>
+          <p class="text-charcoal-400 text-xs">Secure checkout with Stripe</p>
         </div>
       </div>
     </div>
   </div>
 </div>
-
 {% endblock content %}

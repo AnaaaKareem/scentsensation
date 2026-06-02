@@ -77,7 +77,11 @@ def signup(request):
                 return redirect('signupAccount')
     else:
         form = UserRegistrationForm()
-    return render(request, 'store/signup.html', {'form': form})
+    return render(request, 'store/signup.html', {
+        'form': form,
+        'countries': get_country_choices(),
+        'us_states': get_us_state_choices(),
+    })
 
 
 def signin(request):
@@ -92,11 +96,18 @@ def signin(request):
                 request.session['2fa_code'] = str(verification_code)
                 request.session['2fa_expires'] = (datetime.now() + timedelta(minutes=5)).isoformat()
                 request.session['2fa_email'] = email
+                # Render HTML email template
+                html_message = render_to_string('store/2fa_email.html', {
+                    'verification_code': verification_code,
+                    'email': email,
+                })
+                plain_message = strip_tags(html_message)
                 send_mail(
                     'Your 2FA Code',
-                    f'Your verification code is: {verification_code}',
+                    plain_message,
                     settings.EMAIL_HOST_USER,
                     [email],
+                    html_message=html_message,
                     fail_silently=False,
                 )
                 return redirect('verify_2fa')
@@ -476,54 +487,82 @@ def checkout(request):
         discount = round(subtotal * (discount_rate / 100), 2)
         total = round(subtotal - discount, 2)
 
-        # Build Stripe line items
-        line_items = []
+        # Build items for template display
+        items_data = []
         for item in basket_items:
-            line_items.append({
-                'price_data': {
-                    'currency': 'usd',
-                    'unit_amount': int(item.product.price * 100),
-                    'product_data': {
-                        'name': f"{item.product.brand} - {item.product.product_name}",
-                    },
+            image = ProductImages.objects.filter(product=item.product).first()
+            items_data.append({
+                'product': {
+                    'product_id': item.product.product_id,
+                    'brand': item.product.brand,
+                    'product_name': item.product.product_name,
+                    'price': item.product.price,
                 },
                 'quantity': item.quantity,
+                'image': image,
             })
 
-        # Discount handling
-        if discount_rate > 0:
-            coupon = stripe.Coupon.create(percent_off=int(discount_rate), duration="once")
-            discounts = [{"coupon": coupon}]
-        else:
-            discounts = []
+        if request.method == 'POST':
+            # Build Stripe line items
+            line_items = []
+            for item in basket_items:
+                line_items.append({
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': int(item.product.price * 100),
+                        'product_data': {
+                            'name': f"{item.product.brand} - {item.product.product_name}",
+                        },
+                    },
+                    'quantity': item.quantity,
+                })
 
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            mode='payment',
-            discounts=discounts,
-            success_url=request.build_absolute_uri('/payment_success/') + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri('/basket/'),
-            metadata={
+            # Discount handling
+            if discount_rate > 0:
+                coupon = stripe.Coupon.create(percent_off=int(discount_rate), duration="once")
+                discounts = [{"coupon": coupon}]
+            else:
+                discounts = []
+
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=line_items,
+                mode='payment',
+                discounts=discounts,
+                success_url=request.build_absolute_uri('/payment_success/') + '?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url=request.build_absolute_uri('/basket/'),
+                metadata={
+                    'customer_id': customer_id,
+                    'subtotal': str(subtotal),
+                    'discount': str(discount),
+                    'total': str(total),
+                    'fulfilment': fulfilment,
+                    'payment_method': payment_method,
+                }
+            )
+
+            request.session['pending_checkout'] = {
                 'customer_id': customer_id,
-                'subtotal': str(subtotal),
-                'discount': str(discount),
-                'total': str(total),
+                'subtotal': subtotal,
+                'discount': discount,
+                'total': total,
                 'fulfilment': fulfilment,
                 'payment_method': payment_method,
             }
-        )
 
-        request.session['pending_checkout'] = {
-            'customer_id': customer_id,
-            'subtotal': subtotal,
-            'discount': discount,
-            'total': total,
+            return redirect(session.url, code=303)
+
+        # GET: render checkout page
+        context = {
+            'items': items_data,
+            'subtotal': round(subtotal, 2),
+            'discount': round(discount, 2),
+            'total': round(total, 2),
+            'discount_rate': discount_rate,
             'fulfilment': fulfilment,
             'payment_method': payment_method,
         }
-
-        return redirect(session.url, code=303)
+        return render(request, 'store/checkout.html', context)
 
     except Exception as e:
         messages.error(request, f"Checkout error: {e}")
@@ -658,12 +697,24 @@ def admin_dashboard(request):
     top_product = OrderItems.objects.values('product__product_name').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
     membership_data = Membership.objects.values('member_type__member_type').annotate(count=Count('member_id'))
 
+    # Recent orders with customer info
+    recent_orders = Orders.objects.select_related().prefetch_related('items').order_by('-order_date')[:10]
+
+    # Top products by sales
+    top_products = OrderItems.objects.values(
+        'product__product_name', 'product__brand'
+    ).annotate(
+        total_sold=Sum('quantity')
+    ).order_by('-total_sold')[:5]
+
     context = {
         'total_orders': total_orders,
         'total_products': total_products,
         'total_customers': total_customers,
         'total_revenue': round(total_revenue, 2),
         'top_product': top_product,
-        'membership_data': membership_data
+        'membership_data': membership_data,
+        'recent_orders': recent_orders,
+        'top_products': top_products,
     }
     return render(request, 'store/admin_dashboard.html', context)

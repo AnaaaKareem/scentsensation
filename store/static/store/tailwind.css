@@ -1,0 +1,81 @@
+/* Scent Sensation — Shared Tailwind Custom Styles */
+
+/* Code input boxes (2FA) */
+.code-input {
+  width: 3rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background-color: #fff;
+  border: 1px solid #d1d1d1;
+  color: #1a1a1a;
+  border-radius: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.code-input:focus {
+  outline: none;
+  border-color: #d4a824;
+  box-shadow: 0 0 0 2px rgba(212, 168, 36, 0.2);
+}
+
+/* Glass card effect (payment_success page) */
+.glass-card {
+  background: rgba(18, 18, 18, 0.75) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden;
+}
+.glass-card-header {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.glass-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Timetable /tabular helpers */
+.table-row-hover:hover {
+  background-color: #fdf9f0;
+}
+
+/* Scrollbar styling for dark sections */
+.dark-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.dark-scroll::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+.dark-scroll::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  border-radius: 3px;
+}
+
+/* Smooth fade-in for messages */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.message-flash {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+/* Form input focus ring */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+/* Pagination active page */
+.page-active {
+  background-color: #1a1a1a;
+  color: #fdf9f0;
+}

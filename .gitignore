@@ -62,3 +62,6 @@ screenshots_root/
 
 # Test/setup scripts
 setup_test_env.sh
+
+# Design prototypes (generated HTML from opendesign)
+designs/

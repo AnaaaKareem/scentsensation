@@ -1,142 +1,188 @@
-{% extends "store/base_1.html" %}
+{% extends "store/base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <!-- Left Panel: Filters (Optional) -->
-        <div class="col-md-3">
-            <div class="card text-white border-light p-3" style="background-color: #000;">
-                <h4>Filter</h4>
-                <hr>
-                <form method="get">
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+  <div class="flex flex-col lg:flex-row gap-12">
 
-                    <!-- Fragrance Category -->
-                    <div class="mb-3">
-                        <label class="form-label">Category</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="category" value="Personal Fragrances" id="category1"
-                            <label class="form-check-label" for="category1">Personal Fragrances</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="category" value="Home Fragrances" id="category2"
-                            <label class="form-check-label" for="category2">Home Fragrances</label>
-                        </div>
-                    </div>
-
-
-                    <!-- Gender Filter -->
-                    <div class="mb-3">
-                        <label class="form-label">Gender</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="gender" value="Male" id="gender1">
-                            <label class="form-check-label" for="gender1">Male</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="gender" value="Female" id="gender2">
-                            <label class="form-check-label" for="gender2">Female</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="gender" value="Unisex" id="gender3">
-                            <label class="form-check-label" for="gender3">Unisex</label>
-                        </div>
-                    </div>
-
-                    <!-- Price Filter -->
-                    <div class="mb-3">
-                        <label class="form-label">Price Range (£)</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" name="min_price" placeholder="Min">
-                            <input type="number" class="form-control" name="max_price" placeholder="Max">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-outline-dark w-100">Apply Filters</button>
-                </form>
-
-            </div>
+    <!-- Filters Sidebar -->
+    <aside class="lg:w-64 shrink-0">
+      <div class="sticky top-24">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-display text-xl text-charcoal-900">Filters</h2>
+          <a href="{% url 'store' %}" class="text-xs text-charcoal-500 hover:text-charcoal-900 underline">Clear all</a>
         </div>
 
-        <!-- Right Panel: Products -->
-        <div class="col-md-9">
-            <div class="row">
-                {% for product in products %}
-                <div class="col-md-4 mb-4">
-                    <div class="card text-white border-light " style="background-color: #000;">
-                    {% with product_images=product.product_images.all %}
-                        {% if product_images %}
-                        <div id="carousel{{ product.product_id }}" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                {% for image in product_images %}
-                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                    <img src="{{ image.image }}"
-                                         class="d-block w-100"
-                                         alt="{{ product.product_name }}"
-                                         style="height: 300px; object-fit: cover;">
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% if product_images.count > 1 %}
-                            <button class="carousel-control-prev"
-                                    type="button"
-                                    data-bs-target="#carousel{{ product.product_id }}"
-                                    data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next"
-                                    type="button"
-                                    data-bs-target="#carousel{{ product.product_id }}"
-                                    data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </button>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                        {% endwith %}
+        <form method="GET" action="{% url 'store' %}">
+          <!-- Preserve existing query params (like page) -->
+          {% if request.GET.page %}<input type="hidden" name="page" value="1">{% endif %}
 
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.product_name }}</h5>
-                            <h6 class="card-subtitle mb-2">{{ product.brand }}</h6>
-                            <p class="card-text">{{ product.description }}</p>
-                            <p class="h5">£{{ product.price }}</p>
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
-                                <div class="d-flex align-items-center">
-                                    <button type="submit" name="add_basket" class="btn btn-outline-light me-2">Add Basket</button>
-                                    <input type="number" class="form-control" name="quantity" style="width: 60px;" value="1" min="1">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
+          <!-- Category -->
+          <div class="mb-8">
+            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Category</h3>
+            <div class="space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name="category" value="Personal Fragrances"
+                  {% if "Personal Fragrances" in request.GET.getlist %}checked{% endif %}
+                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Personal Fragrances</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name="category" value="Home Fragrances"
+                  {% if "Home Fragrances" in request.GET.getlist %}checked{% endif %}
+                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Home Fragrances</span>
+              </label>
             </div>
+          </div>
+
+          <!-- Gender -->
+          <div class="mb-8">
+            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>
+            <div class="space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name="gender" value="Male"
+                  {% if "Male" in request.GET.gender_list %}checked{% endif %}
+                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Male</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name="gender" value="Female"
+                  {% if "Female" in request.GET.gender_list %}checked{% endif %}
+                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Female</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name="gender" value="Unisex"
+                  {% if "Unisex" in request.GET.gender_list %}checked{% endif %}
+                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Unisex</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-8">
+            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Price Range</h3>
+            <div class="flex items-center gap-3">
+              <div class="relative flex-1">
+                <label for="min_price" class="sr-only">Min price</label>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">£</span>
+                <input type="number" id="min_price" name="min_price" value="{{ request.GET.min_price|default:'' }}" min="0" placeholder="0"
+                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              </div>
+              <span class="text-charcoal-400">—</span>
+              <div class="relative flex-1">
+                <label for="max_price" class="sr-only">Max price</label>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">£</span>
+                <input type="number" id="max_price" name="max_price" value="{{ request.GET.max_price|default:'' }}" min="0" placeholder="500"
+                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+            Apply Filters
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Product Grid -->
+    <div class="flex-1">
+      <div class="flex items-center justify-between mb-8">
+        <p class="text-charcoal-500 text-sm">Showing <span class="text-charcoal-900 font-medium">{{ products.paginator.count }}</span> products</p>
+        <label for="sort" class="sr-only">Sort by</label>
+        <select id="sort" class="border border-charcoal-200 rounded-brand px-4 py-2 text-sm text-charcoal-700 focus:outline-none focus:border-gold-500">
+          <option>Featured</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          <option>Newest</option>
+          <option>Name: A–Z</option>
+        </select>
+      </div>
+
+      {% if products %}
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for product in products %}
+        <div class="group">
+          <!-- Product Image Carousel -->
+          {% with product_images=product.product_images.all %}
+          {% if product_images %}
+          <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4 relative">
+            {% for image in product_images %}
+            <div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center {% if not forloop.first %}hidden{% endif %}">
+              <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover">
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+            <div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center">
+              <span class="text-charcoal-400 text-xs uppercase tracking-wide">{{ product.product_name }}</span>
+            </div>
+          </div>
+          {% endif %}
+          {% endwith %}
+
+          <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">{{ product.brand }}</p>
+          <h3 class="font-display text-lg text-charcoal-900 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
+          <p class="text-charcoal-500 text-sm mb-2">{{ product.description|truncatewords:12 }}</p>
+          <p class="text-charcoal-900 font-medium">£{{ product.price }}</p>
+
+          <!-- Add to Basket Form -->
+          <form method="POST" action="{% url 'store' %}" class="mt-3">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.product_id }}">
+            <div class="flex items-center gap-2">
+              <button type="submit" name="add_basket" class="px-4 py-2 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+                Add to Basket
+              </button>
+              <label for="qty-{{ product.product_id }}" class="sr-only">Quantity</label>
+              <input type="number" id="qty-{{ product.product_id }}" name="quantity" value="1" min="1"
+                class="w-14 px-2 py-2 border border-charcoal-200 rounded-brand text-sm text-center focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+          </form>
         </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-20">
+        <p class="text-charcoal-500 text-lg">No products found matching your criteria.</p>
+        <a href="{% url 'store' %}" class="mt-4 inline-block text-gold-600 hover:text-gold-700 text-sm font-medium underline">Clear filters</a>
+      </div>
+      {% endif %}
 
-        {% if is_paginated %}
-        <div class="d-flex flex-wrap justify-content-center">
-    {% if page_obj.has_previous %}
-        <a class="btn btn-outline-light mx-1 mb-2" href="?page=1">First</a>
-        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-    {% endif %}
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav class="mt-16 flex justify-center">
+        <div class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
+              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-400 text-sm hover:border-charcoal-400 transition-colors">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
+              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-400 text-sm hover:border-charcoal-400 transition-colors">Previous</a>
+          {% endif %}
 
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <a class="btn btn-dark mx-1 mb-2" href="?page={{ num }}">{{ num }}</a>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="w-10 h-10 flex items-center justify-center bg-charcoal-900 text-cream-100 rounded-brand text-sm font-medium">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
+                class="w-10 h-10 flex items-center justify-center border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
 
-    {% if page_obj.has_next %}
-        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.next_page_number }}">Next</a>
-        <a class="btn btn-outline-light mx-1 mb-2" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-    {% endif %}
-</div>
-{% endif %}
-
-</div>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
+              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
+              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">Last</a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock content %}

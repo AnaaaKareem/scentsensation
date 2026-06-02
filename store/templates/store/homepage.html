@@ -1,188 +1,182 @@
-{% extends "store/base_1.html" %}
+{% extends "store/base.html" %}
 {% load static %}
+
 {% block content %}
 
-    <!--Opening-->
-    <div class="position-relative" id="top" style="padding-top: 10vh;">
-        <!--Video background-->
-        <div class="opacity-50">
-            <video autoplay muted loop id="myVideo" class="img-fluid" alt="Make Perfume Video">
-                <source src="{% static 'store/Pictures/Video.mp4' %}" type="video/mp4">
-            </video>
+<!-- Hero Section -->
+<section class="relative h-screen flex items-center justify-center overflow-hidden bg-charcoal-950">
+  <!-- Background Image -->
+  <div class="absolute inset-0">
+    <img src="{% static 'store/Pictures/More/Man-Applying-Perfume.jpg' %}" alt="Perfume" class="w-full h-full object-cover opacity-40">
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal-950/60 via-charcoal-950/40 to-charcoal-950"></div>
+  </div>
+  <!-- Hero Content -->
+  <div class="relative z-10 text-center px-6 max-w-4xl">
+    <p class="text-gold-400 text-sm tracking-wide-plus uppercase font-medium mb-6">Curated Luxury Fragrances</p>
+    <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-cream-50 tracking-display leading-tight mb-8">
+      Awaken Your<br> Senses
+    </h1>
+    <p class="text-cream-300 text-lg sm:text-xl font-light max-w-2xl mx-auto mb-12 leading-relaxed">
+      Discover an exclusive collection of the world's finest fragrances — from timeless classics to modern masterpieces.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{% url 'store' %}" class="inline-flex items-center justify-center px-8 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+        Explore Collection
+      </a>
+      <a href="{% url 'store' %}" class="inline-flex items-center justify-center px-8 py-4 border border-cream-300/30 hover:border-gold-400 text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+        Our Picks
+      </a>
+    </div>
+  </div>
+  <!-- Scroll Indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+    <div class="w-px h-12 bg-gradient-to-b from-transparent to-gold-400/50"></div>
+  </div>
+</section>
+
+<!-- Editorial Divider -->
+<section class="bg-cream-100 py-20 text-center">
+  <div class="max-w-4xl mx-auto px-6">
+    <p class="text-burgundy-700 text-xs tracking-wide-plus uppercase font-medium mb-4">Since 2023</p>
+    <h2 class="font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal-900 tracking-display leading-tight mb-8">
+      The Art of Scent
+    </h2>
+    <div class="w-12 h-px bg-gold-500 mx-auto mb-8"></div>
+    <p class="text-charcoal-600 text-lg leading-relaxed max-w-2xl mx-auto">
+      Having access to top international brands for fragrances is a luxury that many people enjoy. These brands offer a wide range of scents that cater to various tastes and preferences, from fresh and floral to spicy and musky.
+    </p>
+  </div>
+</section>
+
+<!-- Featured Brands Strip -->
+<section class="bg-charcoal-950 py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <p class="text-center text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-10">Our Partner Brands</p>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-8 items-center opacity-60">
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Tom Ford</p></div>
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Paco Rabanne</p></div>
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Hugo Boss</p></div>
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Gucci</p></div>
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Givenchy</p></div>
+      <div class="text-center"><p class="font-display text-cream-200 text-lg">Armani</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- For Him Section -->
+<section class="bg-cream-50 py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
+          <img src="{% static 'store/Pictures/More/Man-Applying-Perfume.jpg' %}" alt="For Him" class="w-full h-full object-cover">
         </div>
-        <!--Title and subtitle-->
-        <div class="position-absolute top-50 start-50 translate-middle" style="top: -50%;">
-            <!--Title-->
-            <svg viewBox="0 0 980 400" width="1000" height="400" class="title">
-                <text id="titleLogo" text-anchor="middle" x="50%" y="70%">SCENT SENSATION</text>
-                <!--Title animation-->
-                <use xlink:href="#titleLogo" class="titleAnim 1"></use>
-                <use xlink:href="#titleLogo" class="titleAnim 2"></use>
-                <use xlink:href="#titleLogo" class="titleAnim 3"></use>
-                <use xlink:href="#titleLogo" class="titleAnim 4"></use>
-                <use xlink:href="#titleLogo" class="titleAnim 5"></use>
-            </svg>
-            <!--Subtitle-->
-            <svg viewBox="0 0 980 400" width="1000" height="320" class="sub">
-                <text id="subLogo" text-anchor="middle" x="50%" y="20%" class="text-uppercase">
-                    awaken your senses by the smell of glory
-                </text>
-                <!--Subtitle animation-->
-                <use xlink:href="#subLogo" class="subAnim u1"></use>
-                <use xlink:href="#subLogo" class="subAnim u2"></use>
-                <use xlink:href="#subLogo" class="subAnim u3"></use>
-                <use xlink:href="#subLogo" class="subAnim u4"></use>
-                <use xlink:href="#subLogo" class="subAnim u5"></use>
-            </svg>
+      </div>
+      <div class="order-1 lg:order-2">
+        <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Him</p>
+        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
+          Command Your Presence
+        </h2>
+        <div class="w-10 h-px bg-gold-500 mb-6"></div>
+        <p class="text-charcoal-600 text-lg leading-relaxed mb-8">
+          Fragrances for men are an essential part of their grooming routine. They help to enhance their personality and leave a lasting impression on others. From woody and earthy to fresh and citrus.
+        </p>
+        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 hover:text-gold-600 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
+          Shop Men's
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- For Her Section -->
+<section class="bg-cream-100 py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Her</p>
+        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
+          Embrace Your Essence
+        </h2>
+        <div class="w-10 h-px bg-gold-500 mb-6"></div>
+        <p class="text-charcoal-600 text-lg leading-relaxed mb-8">
+          Fragrances are a quintessential part of any woman's beauty routine. They have the power to lift your mood, evoke emotions, and leave a lasting impression. From floral and fruity to spicy and musky.
+        </p>
+        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 hover:text-gold-600 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
+          Shop Women's
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+      </div>
+      <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
+        <img src="{% static 'store/Pictures/More/Woman-Applying-Perfume.jpg' %}" alt="For Her" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products / Our Picks -->
+<section class="bg-cream-50 py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">Handpicked</p>
+      <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight">Our Picks</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Product 1 -->
+      <a href="{% url 'store' %}" class="group">
+        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+            <span class="text-charcoal-400 text-xs uppercase tracking-wide">One Million</span>
+          </div>
         </div>
-    </div>
-    <!--Opening-->
-
-    <!--Divider with "SENSE" text-->
-    <div class="divider bg-white" style="height: 200px; margin: 1.5rem 0;">
-        <h1 class="text-center text-black fw-bold" style="font-size: 100px; padding-top: 30px;
-        text-shadow: 2px 2px 0 #FFFFFF, -2px -2px 0 #FFFFFF, 2px -2px 0 #FFFFFF, -2px 2px 0 #FFFFFF;
-        -webkit-text-stroke: 2px #000000; -webkit-text-fill-color: transparent;">SENSE</h1>
-    </div>
-    <!--Divider with "SENSE" text-->
-
-    <!--Photo SlideShow-->
-    <div id="carouselExampleAutoplaying" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-touch="false">
-        <!--Carousel indicators-->
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Paco Rabanne</p>
+        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">One Million</h3>
+        <p class="text-charcoal-500 text-sm">Eau de Toilette · 100ml</p>
+        <p class="text-charcoal-900 font-medium mt-2">£99.99</p>
+      </a>
+      <!-- Product 2 -->
+      <a href="{% url 'store' %}" class="group">
+        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+            <span class="text-charcoal-400 text-xs uppercase tracking-wide">Stronger</span>
+          </div>
         </div>
-        <!--Carousel items-->
-        <div class="carousel-inner">
-            <div class="carousel-item active" data-bs-interval="3000">
-                <img src="{% static 'store/Pictures/Fragrance_paco_rabanne_for_him_BT_C9094-21jlnd8.jpg' %}" width="500px" height="600px" class="d-block w-100" alt="Fragrance Image 1">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Paco Rabanne</h5>
-                    <p>The new champion perfume for him.</p>
-                </div>
-            </div>
-            <div class="carousel-item" data-bs-interval="3000">
-                <img src="{% static 'store/Pictures/desktop-wallpaper-emporio-armani-fragrance-stronger-with-you-homme-teahub-io-perfume.jpg' %}" width="500px" height="600px" class="d-block w-100" alt="Fragrance Image 2">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Giorgio Armani & Emporio Armani</h5>
-                    <p>Sales Breaking $100 million in revenue</p>
-                </div>
-            </div>
+        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Emporio Armani</p>
+        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Stronger With You</h3>
+        <p class="text-charcoal-500 text-sm">Eau de Parfum · 100ml</p>
+        <p class="text-charcoal-900 font-medium mt-2">£89.99</p>
+      </a>
+      <!-- Product 3 -->
+      <a href="{% url 'store' %}" class="group">
+        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+            <span class="text-charcoal-400 text-xs uppercase tracking-wide">Prada</span>
+          </div>
         </div>
-        <!--Carousel controls-->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-    <!--Photo SlideShow-->
-
-    <div class="divider bg-white" style="height: 200px; margin: 1.5rem 0;">
-        <h1 class="text-center text-black fw-bold" style="font-size: 100px; padding-top: 30px;
-        text-shadow: 2px 2px 0 #FFFFFF, -2px -2px 0 #FFFFFF, 2px -2px 0 #FFFFFF, -2px 2px 0 #FFFFFF;
-        -webkit-text-stroke: 2px #000000; -webkit-text-fill-color: transparent;">THE</h1>
-    </div>
-
-    <!--For Him/ For Her Buttons-->
-    <div class="b-example-divider"></div>
-
-    <!--Content for Fragrances for Him-->
-    <div class="container col-xxl-8 px-4 py-5" id="himContent">
-        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
-            <!--Image for Fragrances for Him-->
-            <div class="col-10 col-sm-8 col-lg-6">
-                <a href="{% url 'store' %}">
-                    <img src="{% static 'store/Pictures/More/Man-Applying-Perfume.jpg' %}" class="d-block mx-lg-auto rounded-5 img-fluid img-thumbnail" alt="For Him Image" width="400px" height="400px" loading="lazy">
-                </a>
-            </div>
-            <!--Text for Fragrances for Him-->
-            <div class="col-lg-6">
-                <svg class="him display-5 fw-bold lh-1 mb-0">
-                    <text id="himLine" text-anchor="middle" x="31%" y="22%">For Him.</text>
-                    <!--Animation for "For Him" text-->
-                    <use xlink:href="#himLine" class="himAnim 1"></use>
-                    <use xlink:href="#himLine" class="himAnim 2"></use>
-                    <use xlink:href="#himLine" class="himAnim 3"></use>
-                    <use xlink:href="#himLine" class="himAnim 4"></use>
-                    <use xlink:href="#himLine" class="himAnim 5"></use>
-                </svg>
-                <p class="lead text-white">Fragrances for men are an essential part of their grooming routine. They help to enhance
-                    their personality and leave a lasting impression on others. Men's fragrances come in a wide range of
-                    scents, from woody and earthy to fresh and citrus.</p>
-            </div>
+        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Prada</p>
+        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Luna Rossa</h3>
+        <p class="text-charcoal-500 text-sm">Eau de Toilette · 100ml</p>
+        <p class="text-charcoal-900 font-medium mt-2">£79.99</p>
+      </a>
+      <!-- Product 4 -->
+      <a href="{% url 'store' %}" class="group">
+        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+            <span class="text-charcoal-400 text-xs uppercase tracking-wide">Black Opium</span>
+          </div>
         </div>
+        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Yves Saint Laurent</p>
+        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Black Opium</h3>
+        <p class="text-charcoal-500 text-sm">Eau de Parfum · 90ml</p>
+        <p class="text-charcoal-900 font-medium mt-2">£110.00</p>
+      </a>
     </div>
+  </div>
+</section>
 
-    <!--Divider with "SMELL" text-->
-    <div class="divider bg-white" style="height: 200px; margin: 1.5rem 0;">
-        <h1 class="text-center text-black fw-bold" style="font-size: 100px; padding-top: 30px;
-    text-shadow: 2px 2px 0 #FFFFFF, -2px -2px 0 #FFFFFF, 2px -2px 0 #FFFFFF, -2px 2px 0 #FFFFFF;
-    -webkit-text-stroke: 2px #000000; -webkit-text-fill-color: transparent;">SMELL</h1>
-    </div>
-    <!--Divider with "SMELL" text-->
-
-    <!--Content for Fragrances for Her-->
-    <div class="container col-xxl-8 px-4 py-5">
-        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
-            <!--Text for Fragrances for Her-->
-            <div class="col-lg-6">
-                <svg class="her display-5 fw-bold lh-1 mb-0">
-                    <text id="herLine" text-anchor="middle" x="31%" y="22%">For Her.</text>
-                    <!--Animation for "For Her" text-->
-                    <use xlink:href="#herLine" class="herAnim 1"></use>
-                    <use xlink:href="#herLine" class="herAnim 2"></use>
-                    <use xlink:href="#herLine" class="herAnim 3"></use>
-                    <use xlink:href="#herLine" class="herAnim 4"></use>
-                    <use xlink:href="#herLine" class="herAnim 5"></use>
-                </svg>
-                <p class="lead text-white">Fragrances are a quintessential part of any woman's beauty routine. They have the power to
-                    lift your mood, evoke emotions, and leave a lasting impression. Women's fragrances come in a wide range
-                    of scents, from floral and fruity to spicy and musky.</p>
-            </div>
-            <!--Image for Fragrances for Her-->
-            <div class="col-10 col-sm-8 col-lg-6">
-                <a href="{% url 'store' %}">
-                    <img id="perfumeImg" src="{% static 'store/Pictures/More/Woman-Applying-Perfume.jpg' %}" class="d-block mx-lg-auto rounded-5 img-fluid img-thumbnail" alt="For Her Image" width="400px" height="400px" loading="lazy">
-                </a>
-            </div>
-        </div>
-    </div>
-    <!--For Him/ For Her Buttons-->
-
-    <!--Divider with "OF" text-->
-    <div class="divider bg-white" style="height: 200px; margin: 1.5rem 0;">
-        <h1 class="text-center text-black fw-bold" style="font-size: 100px; padding-top: 30px;
-        text-shadow: 2px 2px 0 #FFFFFF, -2px -2px 0 #FFFFFF, 2px -2px 0 #FFFFFF, -2px 2px 0 #FFFFFF;
-        -webkit-text-stroke: 2px #000000; -webkit-text-fill-color: transparent;">OF</h1>
-    </div>
-    <!--Divider with "OF" text-->
-
-    <!--Brand Description-->
-    <div class="px-3 pt-5 my-5 text-center border-bottom">
-        <div class="row justify-content-center align-items-center">
-            <div class="col-lg-8">
-                <h2 class="display-4 fw-bold mb-4 text-white" style="font-size: 3rem;">Top International Brands</h2>
-                <p class="lead mb-5 text-white">Having access to top international brands for fragrances is a luxury that many people enjoy. These brands offer a wide range of scents that cater to various tastes and preferences, from fresh and floral to spicy and musky. Not only do these fragrances smell great, but they also come in stylish and elegant packaging that adds to their allure. Whether you're looking for a signature scent or a special occasion fragrance, having access to top international brands allows you to explore and discover new scents that enhance your personal style and leave a lasting impression.</p>
-            </div>
-        </div>
-    </div>
-        <!--Divider with "LUXURY" text-->
-        <div class="divider bg-white" style="height: 200px;">
-            <h1 class="text-center text-black fw-bold" style="font-size: 100px; padding-top: 30px;
-    text-shadow: 2px 2px 0 #FFFFFF, -2px -2px 0 #FFFFFF, 2px -2px 0 #FFFFFF, -2px 2px 0 #FFFFFF;
-    -webkit-text-stroke: 2px #000000; -webkit-text-fill-color: transparent;">LUXURY.</h1>
-        </div>
-    <!--Brand Description-->
-
-    <!--Back to top button-->
-    <a href="#" id="back-to-top-btn" class="back-to-top-btn">
-        <!--Arrow up icon-->
-        <i class="fa fa-angle-up"></i>
-    </a>
-    <!--Back to top button-->
 {% endblock content %}
