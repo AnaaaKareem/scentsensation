@@ -49,3 +49,16 @@ PROJECT_TRACKING.md
 
 # Other
 package-lock.json
+
+# Hidden dotfiles/dirs at root
+.kilo/
+.kilo
+.env.example
+sonar-project.properties
+
+# Screenshots (generated artifacts)
+screenshots/
+screenshots_root/
+
+# Test/setup scripts
+setup_test_env.sh

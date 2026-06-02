@@ -1,0 +1,23 @@
+[
+  {
+    "model": "store.discountrate",
+    "pk": "Standard",
+    "fields": {
+      "discount_rate": 10.0
+    }
+  },
+  {
+    "model": "store.discountrate",
+    "pk": "Premium",
+    "fields": {
+      "discount_rate": 20.0
+    }
+  },
+  {
+    "model": "store.discountrate",
+    "pk": "Student",
+    "fields": {
+      "discount_rate": 15.0
+    }
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "model": "store.personalfragrances",
+    "pk": 1,
+    "fields": {
+      "product": 1,
+      "size": "100ml",
+      "fragrance_family": "Floral",
+      "gender": "Female",
+      "strength": "Eau de Parfum",
+      "engraving": null
+    }
+  },
+  {
+    "model": "store.homefragrances",
+    "pk": 3,
+    "fields": {
+      "product": 3,
+      "product_type": "Scented Candles",
+      "bundle": true
+    }
+  }
+]

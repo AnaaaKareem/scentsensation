@@ -11,6 +11,11 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
+# Fix SSL certificate verification on macOS (must be set BEFORE any SSL connections)
+import certifi
+os.environ.setdefault('SSL_CERT_FILE', certifi.where())
+os.environ.setdefault('REQUESTS_CA_BUNDLE', certifi.where())
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 

@@ -1,0 +1,91 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-and-quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fragrance_shop
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarCloud
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt flake8 black
+
+      - name: Run Linters
+        run: |
+          black --check .
+          flake8 .
+
+      - name: Run Tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fragrance_shop
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py test
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker-build:
+    needs: test-and-quality
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - name: Placeholder for Docker Build
+        run: |
+          echo "TODO: Add Docker build and push steps here in the future."
+          echo "e.g., docker build -t myapp ."
+          echo "e.g., docker push myregistry/myapp:latest"
+
+  deploy-uat:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    steps:
+      - name: Deploy UAT to Render
+        run: |
+          # Trigger Render UAT deployment hook
+          curl -X POST ${{ secrets.RENDER_UAT_DEPLOY_HOOK }}
+
+  deploy-prod:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Deploy Prod to Render
+        run: |
+          # Trigger Render Prod deployment hook
+          curl -X POST ${{ secrets.RENDER_PROD_DEPLOY_HOOK }}

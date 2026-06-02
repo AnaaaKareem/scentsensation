@@ -235,8 +235,8 @@ def account(request):
                         if phone is not None:
                             PhoneNumbers.objects.update_or_create(customer=customer, defaults={'phone_number': phone})
 
-                        # Address (first record)
-                        if any(k in data for k in ['house', 'street_name', 'town_city', 'county', 'postcode', 'country']):
+                        # Address (first record) – only if required fields provided and non-empty
+                        if all(k in data and data[k] for k in ['house', 'street_name', 'town_city', 'country']):
                             address, created = Addresses.objects.get_or_create(customer=customer)
                             for field in ['house', 'street_name', 'town_city', 'county', 'postcode', 'country']:
                                 if data.get(field):
@@ -321,7 +321,9 @@ def store(request):
     if request.method == "POST" and "add_basket" in request.POST:
         product_id = request.POST.get("product_id")
         quantity = int(request.POST.get("quantity", 1))
-        customer_id = request.session['customer_id']
+        customer_id = request.session.get('customer_id')
+        if not customer_id:
+            return redirect('signinAccount')
         basket_item, created = Basket.objects.get_or_create(
             customer_id=customer_id,
             product_id=product_id,
@@ -341,6 +343,18 @@ def store(request):
 
 
 def basket(request):
+    import sys
+    from django.contrib.sessions.models import Session
+    print("BASKET VIEW - COOKIES:", request.COOKIES, file=sys.stderr)
+    print("BASKET VIEW - SESSION KEY:", request.session.session_key, file=sys.stderr)
+    print("BASKET VIEW - SESSION DATA before access:", dict(request.session), file=sys.stderr)
+    # Check DB
+    if request.session.session_key:
+        try:
+            s = Session.objects.get(session_key=request.session.session_key)
+            print("BASKET VIEW - DB session_data:", s.session_data, file=sys.stderr)
+        except Session.DoesNotExist:
+            print("BASKET VIEW - DB: No session found for key", request.session.session_key, file=sys.stderr)
     customer_id = request.session.get('customer_id')
     if not customer_id:
         return redirect('signinAccount')
@@ -626,7 +640,7 @@ def payment_success(request):
     recipient_list = [request.session.get('email_address')]
     send_mail(subject, plain_message, from_email, recipient_list, html_message=html_message)
 
-    return render(request, 'store/checkout.html', {
+    return render(request, 'store/payment_success.html', {
         'order_id': order.order_id,
         'items': items_data,
         'subtotal': round(subtotal, 2),
@@ -642,7 +656,7 @@ def admin_dashboard(request):
     total_customers = Customer.objects.count()
     total_revenue = OrderItems.objects.aggregate(total=Sum(F('quantity') * F('price')))['total'] or 0
     top_product = OrderItems.objects.values('product__product_name').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
-    membership_data = Membership.objects.values('member_type__member_type').annotate(count=Count('id'))
+    membership_data = Membership.objects.values('member_type__member_type').annotate(count=Count('member_id'))
 
     context = {
         'total_orders': total_orders,

@@ -72,7 +72,7 @@ class Customer(models.Model):
 
 class PhoneNumbers(models.Model):
     objects = models.Manager()
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, related_name='phonenumbers', db_column='customer_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='phonenumbers', db_column='customer_id')
     phone_number = models.CharField(primary_key=True, max_length=20)
 
     class Meta:
@@ -86,7 +86,7 @@ class PhoneNumbers(models.Model):
 class Addresses(models.Model):
     objects = models.Manager()
     address_id = models.AutoField(primary_key=True)
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, related_name='addresses', db_column='customer_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='addresses', db_column='customer_id')
     house = models.CharField(max_length=100)
     street_name = models.CharField(max_length=100)
     town_city = models.CharField(max_length=50)
@@ -112,6 +112,12 @@ class DiscountRate(models.Model):
     class Meta:
         managed = True
         db_table = 'DISCOUNT_RATE'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(member_type__in=['Standard', 'Premium', 'Student']),
+                name='valid_member_type'
+            )
+        ]
 
     def __str__(self):
         return self.member_type
@@ -120,8 +126,8 @@ class DiscountRate(models.Model):
 class Membership(models.Model):
     objects = models.Manager()
     member_id = models.AutoField(primary_key=True)
-    customer = models.OneToOneField(Customer, models.DO_NOTHING, related_name='membership', db_column='customer_id')
-    member_type = models.ForeignKey(DiscountRate, models.DO_NOTHING, db_column='member_type')
+    customer = models.OneToOneField(Customer, models.CASCADE, related_name='membership', db_column='customer_id')
+    member_type = models.ForeignKey(DiscountRate, models.CASCADE, db_column='member_type')
     end_ren_date = models.DateField(blank=True, null=True)
 
     class Meta:
@@ -151,7 +157,7 @@ class Products(models.Model):
 
 class PersonalFragrances(models.Model):
     objects = models.Manager()
-    product = models.OneToOneField(Products, models.DO_NOTHING, primary_key=True, related_name='personal_fragrance', db_column='product_id')
+    product = models.OneToOneField(Products, models.CASCADE, primary_key=True, related_name='personal_fragrance', db_column='product_id')
     size = models.CharField(max_length=20)
     fragrance_family = models.CharField(
         max_length=50,
@@ -186,7 +192,7 @@ class PersonalFragrances(models.Model):
 
 class HomeFragrances(models.Model):
     objects = models.Manager()
-    product = models.OneToOneField(Products, models.DO_NOTHING, primary_key=True, related_name='home_fragrance', db_column='product_id')
+    product = models.OneToOneField(Products, models.CASCADE, primary_key=True, related_name='home_fragrance', db_column='product_id')
     product_type = models.CharField(
         max_length=50,
         choices=[
@@ -210,7 +216,7 @@ class HomeFragrances(models.Model):
 class ProductImages(models.Model):
     objects = models.Manager()
     image_id = models.AutoField(primary_key=True)
-    product = models.ForeignKey(Products, models.DO_NOTHING, related_name='product_images', db_column='product_id')
+    product = models.ForeignKey(Products, models.CASCADE, related_name='product_images', db_column='product_id')
     image = models.TextField()  # base64 encoded image data
 
     class Meta:
@@ -223,8 +229,8 @@ class ProductImages(models.Model):
 
 class Basket(models.Model):
     objects = models.Manager()
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, related_name='baskets', db_column='customer_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, related_name='basket_items', db_column='product_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='baskets', db_column='customer_id')
+    product = models.ForeignKey(Products, models.CASCADE, related_name='basket_items', db_column='product_id')
     quantity = models.IntegerField(default=1)
 
     class Meta:
@@ -239,7 +245,7 @@ class Basket(models.Model):
 class Orders(models.Model):
     objects = models.Manager()
     order_id = models.AutoField(primary_key=True)
-    gift_card = models.ForeignKey('GiftCards', models.DO_NOTHING, blank=True, null=True, db_column='gift_card_num', related_name='orders')
+    gift_card = models.ForeignKey('GiftCards', models.SET_NULL, blank=True, null=True, db_column='gift_card_num', related_name='orders')
     order_date = models.DateTimeField()
     order_status = models.CharField(max_length=50)
     order_type = models.CharField(max_length=50, choices=[('Delivery', 'Delivery'), ('Pickup', 'Pickup')])
@@ -257,8 +263,8 @@ class Orders(models.Model):
 
 class OrderItems(models.Model):
     objects = models.Manager()
-    order = models.ForeignKey(Orders, models.DO_NOTHING, related_name='items', db_column='order_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, db_column='product_id')
+    order = models.ForeignKey(Orders, models.CASCADE, related_name='items', db_column='order_id')
+    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -273,9 +279,9 @@ class OrderItems(models.Model):
 
 class Places(models.Model):
     objects = models.Manager()
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, db_column='customer_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, db_column='product_id')
-    order = models.ForeignKey(Orders, models.DO_NOTHING, db_column='order_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, db_column='customer_id')
+    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
+    order = models.ForeignKey(Orders, models.CASCADE, db_column='order_id')
 
     class Meta:
         managed = True
@@ -289,7 +295,7 @@ class Places(models.Model):
 class GiftCards(models.Model):
     objects = models.Manager()
     gift_card_num = models.AutoField(primary_key=True)
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, related_name='gift_cards', db_column='customer_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='gift_cards', db_column='customer_id')
     amount = models.FloatField()
     issue_date = models.DateField()
     exp_date = models.DateField()
@@ -305,8 +311,8 @@ class GiftCards(models.Model):
 
 class Favourite(models.Model):
     objects = models.Manager()
-    customer = models.ForeignKey(Customer, models.DO_NOTHING, db_column='customer_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, db_column='product_id')
+    customer = models.ForeignKey(Customer, models.CASCADE, db_column='customer_id')
+    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
 
     class Meta:
         managed = True
@@ -334,8 +340,8 @@ class Store(models.Model):
 class Inventory(models.Model):
     objects = models.Manager()
     inventory_id = models.AutoField(primary_key=True)
-    store = models.ForeignKey(Store, models.DO_NOTHING, related_name='inventory', db_column='store_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, related_name='inventory_items', db_column='product_id')
+    store = models.ForeignKey(Store, models.CASCADE, related_name='inventory', db_column='store_id')
+    product = models.ForeignKey(Products, models.CASCADE, related_name='inventory_items', db_column='product_id')
     quantity = models.IntegerField(default=0)
     restocking_threshold = models.IntegerField(default=10)
     last_restocking_date = models.DateField(blank=True, null=True)
@@ -350,8 +356,8 @@ class Inventory(models.Model):
 
 class ProductInventory(models.Model):
     objects = models.Manager()
-    inventory = models.ForeignKey(Inventory, models.DO_NOTHING, db_column='inventory_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, db_column='product_id')
+    inventory = models.ForeignKey(Inventory, models.CASCADE, db_column='inventory_id')
+    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
 
     class Meta:
         managed = True
@@ -364,7 +370,7 @@ class ProductInventory(models.Model):
 
 class Instalments(models.Model):
     objects = models.Manager()
-    order = models.ForeignKey(Orders, models.DO_NOTHING, db_column='order_id')
+    order = models.ForeignKey(Orders, models.CASCADE, db_column='order_id')
     instalment_number = models.IntegerField()
     instalment_amount = models.DecimalField(max_digits=10, decimal_places=2)
     pay_due = models.DateField(blank=True, null=True)
@@ -385,8 +391,8 @@ class Instalments(models.Model):
 
 class OrderRef(models.Model):
     objects = models.Manager()
-    order = models.ForeignKey(Orders, models.DO_NOTHING, db_column='order_id')
-    product = models.ForeignKey(Products, models.DO_NOTHING, db_column='product_id')
+    order = models.ForeignKey(Orders, models.CASCADE, db_column='order_id')
+    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
 
     class Meta:
         managed = True

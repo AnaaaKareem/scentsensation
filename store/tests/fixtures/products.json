@@ -1,0 +1,35 @@
+[
+  {
+    "model": "store.products",
+    "pk": 1,
+    "fields": {
+      "brand": "Chanel",
+      "product_name": "Coco Mademoiselle",
+      "description": "A fresh oriental fragrance",
+      "price": 120.00,
+      "gift": false
+    }
+  },
+  {
+    "model": "store.products",
+    "pk": 2,
+    "fields": {
+      "brand": "Dior",
+      "product_name": "Sauvage",
+      "description": "Bold and fresh",
+      "price": 80.00,
+      "gift": false
+    }
+  },
+  {
+    "model": "store.products",
+    "pk": 3,
+    "fields": {
+      "brand": "Yankee Candle",
+      "product_name": "Vanilla Cupcake",
+      "description": "Sweet scent",
+      "price": 25.00,
+      "gift": true
+    }
+  }
+]
