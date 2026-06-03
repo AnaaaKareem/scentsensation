@@ -20,5 +20,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('payment_success/', views.payment_success, name='payment_success'),
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('verify_2fa/', views.verify_2fa, name='verify_2fa')
+    path('verify_2fa/', views.verify_2fa, name='verify_2fa'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
 ]

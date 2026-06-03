@@ -80,6 +80,8 @@
         <div class="hidden md:flex items-center gap-8">
           <a href="{% url 'homepage' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Home</a>
           <a href="{% url 'store' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Shop</a>
+          <a href="{% url 'about' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">About</a>
+          <a href="{% url 'contact' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Contact</a>
           <a href="{% url 'basket' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Basket</a>
           {% if request.session.customer_id %}
             <!-- Logged in: show dropdown -->
@@ -117,6 +119,8 @@
       <div class="px-6 py-4 space-y-3">
         <a href="{% url 'homepage' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Home</a>
         <a href="{% url 'store' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Shop</a>
+        <a href="{% url 'about' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">About</a>
+        <a href="{% url 'contact' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Contact</a>
         <a href="{% url 'basket' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Basket</a>
         {% if request.session.customer_id %}
           <a href="{% url 'account' %}" class="block text-gold-400 text-sm tracking-wide-plus uppercase font-medium">{{ request.session.first_name|default:"Account" }}</a>
@@ -158,8 +162,8 @@
           <h4 class="text-cream-200 text-xs tracking-wide-plus uppercase font-medium mb-6">Company</h4>
           <ul class="space-y-3">
             <li><a href="{% url 'homepage' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">Home</a></li>
-            <li><a href="{% url 'store' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">About Us</a></li>
-            <li><a href="{% url 'store' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">Contact</a></li>
+            <li><a href="{% url 'about' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">About Us</a></li>
+            <li><a href="{% url 'contact' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">Contact</a></li>
           </ul>
         </div>
         <!-- Fragrance Links -->

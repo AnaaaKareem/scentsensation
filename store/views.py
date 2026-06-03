@@ -718,3 +718,37 @@ def admin_dashboard(request):
         'top_products': top_products,
     }
     return render(request, 'store/admin_dashboard.html', context)
+
+
+def about(request):
+    return render(request, 'store/about.html')
+
+
+def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '')
+        email = request.POST.get('email', '')
+        subject = request.POST.get('subject', '')
+        message = request.POST.get('message', '')
+
+        try:
+            from django.core.mail import send_mail as django_send_mail
+            from django.conf import settings
+            full_subject = f"[Scent Sensation Contact] {subject}"
+            full_message = f"From: {name} <{email}>\n\n{message}"
+            django_send_mail(
+                full_subject,
+                full_message,
+                settings.EMAIL_HOST_USER,
+                [settings.EMAIL_HOST_USER],
+                fail_silently=True,
+            )
+            from django.contrib import messages as django_messages
+            django_messages.success(request, "Thank you! Your message has been sent. We'll get back to you soon.")
+        except Exception:
+            from django.contrib import messages as django_messages
+            django_messages.error(request, "Sorry, there was an error sending your message. Please try again later.")
+
+        return redirect('contact')
+
+    return render(request, 'store/contact.html')
