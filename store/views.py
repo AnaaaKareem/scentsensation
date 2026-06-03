@@ -62,14 +62,19 @@ def signup(request):
                             country=data['country']
                         )
                     # Membership
-                    member_type = data.get('membership')
-                    if member_type and member_type != 'None':
-                        discount = DiscountRate.objects.get(member_type=member_type)
-                        Membership.objects.create(
-                            customer=customer,
-                            member_type=discount,
-                            end_ren_date=timezone.now() + timedelta(days=30)
-                        )
+                    member = data.get('membership')
+                    if member and member != 'None':
+                        try:
+                            tier = MembershipTier.objects.get(slug=member, is_active=True)
+                            from django.utils import timezone
+                            Membership.objects.create(
+                                customer=customer,
+                                tier=tier,
+                                is_active=True,
+                                end_date=timezone.now() + timedelta(days=30)
+                            )
+                        except MembershipTier.DoesNotExist:
+                            pass
                 messages.success(request, "User registered successfully!")
                 return redirect('homepage')
             except Exception as e:
@@ -153,11 +158,14 @@ def verify_2fa(request):
 
                     # Membership
                     membership = getattr(customer, 'membership', None)
-                    if membership:
+                    if membership and membership.tier:
                         request.session['membership'] = {
                             'member_id': membership.member_id,
-                            'member_type': membership.member_type.member_type,
-                            'end_ren_date': membership.end_ren_date.isoformat() if membership.end_ren_date else None
+                            'tier_name': membership.tier.name,
+                            'tier_slug': membership.tier.slug,
+                            'discount_rate': membership.tier.discount_rate,
+                            'end_date': membership.end_date.isoformat() if membership.end_date else None,
+                            'is_active': membership.is_active,
                         }
 
                     # Clean up 2FA session data
@@ -209,8 +217,10 @@ def account(request):
                 request.session['country'] = address.country
 
             membership = getattr(customer, 'membership', None)
-            if membership:
-                request.session['membership'] = membership.member_type.member_type
+            if membership and membership.tier:
+                request.session['membership'] = membership.tier.name
+            else:
+                request.session.pop('membership', None)
 
         except Customer.DoesNotExist:
             messages.error(request, "Customer not found")
@@ -254,15 +264,8 @@ def account(request):
                                     setattr(address, field, data[field])
                             address.save()
 
-                        # Membership
-                        member = data.get('membership')
-                        if member and member != 'None':
-                            discount = DiscountRate.objects.get(member_type=member)
-                            Membership.objects.update_or_create(
-                                customer=customer,
-                                defaults={'member_type': discount, 'end_ren_date': timezone.now() + timedelta(days=30)}
-                            )
-                        # Note: if membership set to 'None', we could delete existing? Original didn't delete, just updated if provided. We'll keep but not delete.
+                        # Membership -- remove old dropdown, direct users to /membership/ page
+                        # Membership is now managed via the dedicated membership page with Stripe
 
                     messages.success(request, "Your account information has been updated.")
                     return redirect('account')
@@ -397,7 +400,7 @@ def basket(request):
             })
 
         membership = getattr(customer, 'membership', None)
-        discount_rate = membership.member_type.discount_rate if membership else 0
+        discount_rate = membership.tier.discount_rate if membership and membership.tier else 0
         discount = subtotal * (discount_rate / 100)
         total = subtotal - discount
 
@@ -481,7 +484,7 @@ def checkout(request):
             return redirect('basket')
 
         membership = getattr(customer, 'membership', None)
-        discount_rate = membership.member_type.discount_rate if membership else 0
+        discount_rate = membership.tier.discount_rate if membership and membership.tier else 0
 
         subtotal = sum(item.product.price * item.quantity for item in basket_items)
         discount = round(subtotal * (discount_rate / 100), 2)
@@ -695,7 +698,9 @@ def admin_dashboard(request):
     total_customers = Customer.objects.count()
     total_revenue = OrderItems.objects.aggregate(total=Sum(F('quantity') * F('price')))['total'] or 0
     top_product = OrderItems.objects.values('product__product_name').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
-    membership_data = Membership.objects.values('member_type__member_type').annotate(count=Count('member_id'))
+    membership_data = Membership.objects.filter(is_active=True, tier__isnull=False).values('tier__name').annotate(count=Count('member_id')).order_by('tier__name')
+    membership_tiers = MembershipTier.objects.filter(is_active=True).order_by('monthly_price')
+    total_members = Membership.objects.filter(is_active=True).count()
 
     # Recent orders with customer info
     recent_orders = Orders.objects.select_related().prefetch_related('items').order_by('-order_date')[:10]
@@ -752,3 +757,148 @@ def contact(request):
         return redirect('contact')
 
     return render(request, 'store/contact.html')
+
+
+def membership_page(request):
+    """Display all active membership tiers for subscription."""
+    tiers = MembershipTier.objects.filter(is_active=True).order_by('monthly_price')
+    customer_id = request.session.get('customer_id')
+    current_membership = None
+    if customer_id:
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            current_membership = getattr(customer, 'membership', None)
+        except Customer.DoesNotExist:
+            pass
+    context = {
+        'tiers': tiers,
+        'current_membership': current_membership,
+    }
+    return render(request, 'store/membership.html', context)
+
+
+def membership_checkout(request):
+    """Process membership subscription via Stripe Checkout."""
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        return redirect('signinAccount')
+
+    if request.method != 'POST':
+        return redirect('membership')
+
+    tier_slug = request.POST.get('tier_slug')
+    billing = request.POST.get('billing', 'monthly')
+
+    try:
+        tier = MembershipTier.objects.get(slug=tier_slug, is_active=True)
+    except MembershipTier.DoesNotExist:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, "Selected membership tier is not available.")
+        return redirect('membership')
+
+    customer = Customer.objects.get(customer_id=customer_id)
+
+    # Determine which price ID to use
+    if billing == 'yearly' and tier.stripe_yearly_price_id:
+        price_id = tier.stripe_yearly_price_id
+    elif tier.stripe_monthly_price_id:
+        price_id = tier.stripe_monthly_price_id
+    else:
+        # Fallback: create a price on the fly if no stored price ID exists
+        from django.contrib import messages as django_messages
+        django_messages.error(request, "Stripe price not configured for this tier. Please contact support.")
+        return redirect('membership')
+
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            mode='payment',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            success_url=request.build_absolute_uri('/membership/success/') + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.build_absolute_uri('/membership/'),
+            metadata={
+                'customer_id': customer_id,
+                'tier_id': tier.tier_id,
+                'tier_slug': tier.slug,
+                'billing': billing,
+            }
+        )
+        return redirect(session.url, code=303)
+    except Exception as e:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, f"Error creating checkout session: {e}")
+        return redirect('membership')
+
+
+def membership_success(request):
+    """Handle successful membership payment."""
+    session_id = request.GET.get('session_id')
+    if not session_id:
+        return redirect('homepage')
+
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.payment_status == 'paid':
+            metadata = session.metadata
+            customer_id = metadata.get('customer_id')
+            tier_id = metadata.get('tier_id')
+            billing = metadata.get('billing', 'monthly')
+
+            if customer_id and tier_id:
+                customer = Customer.objects.get(customer_id=customer_id)
+                tier = MembershipTier.objects.get(tier_id=tier_id)
+
+                # Calculate end date based on billing period
+                from django.utils import timezone
+                if billing == 'yearly':
+                    end_date = timezone.now() + timezone.timedelta(days=365)
+                else:
+                    end_date = timezone.now() + timezone.timedelta(days=30)
+
+                # Update or create membership
+                Membership.objects.update_or_create(
+                    customer=customer,
+                    defaults={
+                        'tier': tier,
+                        'is_active': True,
+                        'end_date': end_date.date(),
+                        'start_date': timezone.now().date(),
+                    }
+                )
+
+                # Update session
+                request.session['membership'] = tier.name
+
+                from django.contrib import messages as django_messages
+                django_messages.success(request, f"Welcome to {tier.name}! Your membership is now active.")
+                return redirect('homepage')
+    except Exception as e:
+        pass
+
+    return redirect('membership')
+
+
+def membership_cancel(request):
+    """Cancel current membership."""
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        return redirect('signinAccount')
+
+    if request.method == 'POST':
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            membership = getattr(customer, 'membership', None)
+            if membership:
+                membership.is_active = False
+                membership.auto_renew = False
+                membership.save()
+                request.session.pop('membership', None)
+                from django.contrib import messages as django_messages
+                django_messages.success(request, "Your membership has been cancelled.")
+        except Exception:
+            pass
+
+    return redirect('membership')

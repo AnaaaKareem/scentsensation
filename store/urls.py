@@ -23,4 +23,8 @@ urlpatterns = [
     path('verify_2fa/', views.verify_2fa, name='verify_2fa'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
+    path('membership/', views.membership_page, name='membership'),
+    path('membership/checkout/', views.membership_checkout, name='membership_checkout'),
+    path('membership/success/', views.membership_success, name='membership_success'),
+    path('membership/cancel/', views.membership_cancel, name='membership_cancel'),
 ]

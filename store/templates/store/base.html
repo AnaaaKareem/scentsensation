@@ -96,6 +96,7 @@
               <div class="absolute left-0 right-0 h-3 top-full"></div>
               <div class="absolute right-0 top-full pt-1 w-52 bg-charcoal-900 border border-charcoal-700 rounded-brand shadow-xl py-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
                 <a href="{% url 'account' %}" class="block px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">Account Info</a>
+                <a href="{% url 'membership' %}" class="block px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">Manage Membership</a>
                 {% if request.session.is_staff %}
                 <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">Dashboard</a>
                 {% endif %}

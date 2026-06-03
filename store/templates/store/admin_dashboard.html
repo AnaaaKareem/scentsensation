@@ -36,6 +36,68 @@
       <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Products</p>
       <p class="font-display text-3xl text-charcoal-900">{{ total_products }}</p>
     </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Active Members</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_members }}</p>
+    </div>
+  </div>
+
+  <!-- Membership Tiers Management -->
+  <div class="bg-white border border-cream-300 rounded-brand p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-display text-xl text-charcoal-900">Membership Tiers</h2>
+      <button type="button" id="add-tier-btn" class="px-4 py-2 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide uppercase font-medium rounded-brand transition-colors">+ Add Tier</button>
+    </div>
+
+    {% if membership_tiers %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-cream-200">
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Name</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Monthly</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Yearly</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Discount</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Subscribers</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Status</th>
+            <th class="text-right py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tier in membership_tiers %}
+          <tr class="border-b border-cream-100">
+            <td class="py-3 text-charcoal-900 font-medium">{{ tier.name }}</td>
+            <td class="py-3 text-charcoal-600">£{{ tier.monthly_price }}</td>
+            <td class="py-3 text-charcoal-600">£{{ tier.yearly_price }}</td>
+            <td class="py-3 text-charcoal-600">{{ tier.discount_rate }}%</td>
+            <td class="py-3 text-charcoal-600">
+              {% for m in membership_data %}
+                {% if m.tier__name == tier.name %}{{ m.count }}{% endif %}
+              {% endfor %}
+            </td>
+            <td class="py-3">
+              {% if tier.is_active %}
+                <span class="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-brand">Active</span>
+              {% else %}
+                <span class="bg-charcoal-100 text-charcoal-500 text-xs font-medium px-2 py-1 rounded-brand">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="py-3 text-right">
+              <button type="button" class="text-gold-600 hover:text-gold-700 text-xs font-medium mr-3">Edit</button>
+              {% if tier.is_active %}
+              <button type="button" class="text-burgundy-600 hover:text-burgundy-800 text-xs font-medium">Disable</button>
+              {% else %}
+              <button type="button" class="text-green-600 hover:text-green-700 text-xs font-medium">Enable</button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-charcoal-500 text-sm text-center py-8">No membership tiers yet. Click "Add Tier" to create one.</p>
+    {% endif %}
   </div>
 
   <div class="grid lg:grid-cols-3 gap-8">

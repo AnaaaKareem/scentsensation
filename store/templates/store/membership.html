@@ -1,0 +1,236 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="bg-charcoal-950 py-20 lg:py-28 text-center relative overflow-hidden">
+  <div class="absolute inset-0 opacity-5">
+    <div class="absolute top-0 left-1/3 w-96 h-96 bg-gold-500 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/3 w-64 h-64 bg-burgundy-700 rounded-full blur-3xl"></div>
+  </div>
+  <div class="relative z-10 max-w-4xl mx-auto px-6">
+    <p class="text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-4">Membership</p>
+    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-cream-50 tracking-display leading-tight mb-6">
+      Choose Your Scent Journey
+    </h1>
+    <div class="w-12 h-px bg-gold-500 mx-auto mb-8"></div>
+    <p class="text-cream-300 text-lg leading-relaxed max-w-2xl mx-auto">
+      Unlock exclusive discounts, early access to new fragrances, and personalized recommendations. Pick the plan that suits your scent lifestyle.
+    </p>
+    {% if current_membership and current_membership.is_active and current_membership.tier %}
+    <div class="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-gold-500/10 border border-gold-500/30 rounded-brand">
+      <span class="text-gold-400 text-sm font-medium">Current Plan:</span>
+      <span class="text-cream-100 text-sm font-semibold">{{ current_membership.tier.name }}</span>
+      <span class="text-charcoal-400 text-xs">— {{ current_membership.tier.discount_rate }}% off all products</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Pricing Cards -->
+<section class="py-24 bg-cream-100">
+  <div class="max-w-6xl mx-auto px-6 lg:px-8">
+
+    <!-- Billing toggle -->
+    <div class="flex justify-center mb-16">
+      <div class="inline-flex items-center bg-cream-200 rounded-brand p-1">
+        <button type="button" id="bill-monthly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all bg-charcoal-900 text-cream-100">
+          Monthly
+        </button>
+        <button type="button" id="bill-yearly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all text-charcoal-500 hover:text-charcoal-700">
+          Yearly <span class="text-gold-600 text-xs font-semibold ml-1">Save up to 20%</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tier cards -->
+    <div class="grid md:grid-cols-3 gap-8 stagger">
+      {% for tier in tiers %}
+      <div class="reveal bg-white border {% if forloop.last %}border-gold-400 ring-2 ring-gold-400/20{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
+
+        {% if forloop.last %}
+        <div class="absolute top-0 left-0 right-0 bg-gold-500 text-center py-1.5">
+          <span class="text-charcoal-950 text-xs font-bold tracking-wide-plus uppercase">Most Popular</span>
+        </div>
+        {% endif %}
+
+        <div class="p-8 {% if forloop.last %}pt-14{% endif %} flex-1 flex flex-col">
+          <!-- Tier name -->
+          <h3 class="font-display text-2xl text-charcoal-900 mb-2">{{ tier.name }}</h3>
+          {% if tier.description %}
+          <p class="text-charcoal-500 text-sm mb-6">{{ tier.description }}</p>
+          {% endif %}
+
+          <!-- Price -->
+          <div class="mb-6">
+            <div class="flex items-baseline gap-1">
+              <span class="font-display text-4xl text-charcoal-900 font-semibold price-monthly" data-monthly="{{ tier.monthly_price }}">£{{ tier.monthly_price }}</span>
+              <span class="font-display text-4xl text-charcoal-900 font-semibold price-yearly hidden" data-yearly="{{ tier.yearly_price }}">£{{ tier.yearly_price }}</span>
+              <span class="text-charcoal-500 text-sm ml-1 period-label">/month</span>
+            </div>
+            <p class="text-charcoal-400 text-xs mt-1 yearly-saving hidden">
+              £{{ tier.yearly_monthly_equivalent }}/mo — save {{ tier.yearly_savings_percent }}%
+            </p>
+          </div>
+
+          <!-- Discount badge -->
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-50 rounded-full w-fit mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gold-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-gold-700 text-sm font-medium">{{ tier.discount_rate }}% off all products</span>
+          </div>
+
+          <!-- Benefits -->
+          <ul class="space-y-3 mb-8 flex-1">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>{{ tier.discount_rate }}% discount on every order</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>Free standard delivery on all orders</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>Complimentary fragrance samples</span>
+            </li>
+            {% if tier.discount_rate >= 15 %}
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>Early access to new releases</span>
+            </li>
+            {% endif %}
+            {% if tier.discount_rate >= 20 %}
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>Personal fragrance consultation</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span>Exclusive member-only promotions</span>
+            </li>
+            {% endif %}
+          </ul>
+
+          <!-- CTA -->
+          {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
+          <div class="text-center py-3 bg-gold-50 border border-gold-200 rounded-brand">
+            <span class="text-gold-700 text-sm font-semibold">✓ Your Current Plan</span>
+          </div>
+          {% else %}
+          <form method="POST" action="{% url 'membership_checkout' %}" class="membership-form">
+            {% csrf_token %}
+            <input type="hidden" name="tier_slug" value="{{ tier.slug }}">
+            <input type="hidden" name="billing" value="monthly" class="billing-input">
+            <button type="submit" class="w-full py-3.5 {% if forloop.last %}bg-gold-500 hover:bg-gold-600 text-charcoal-950{% else %}bg-charcoal-900 hover:bg-charcoal-800 text-cream-100{% endif %} text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+              {% if current_membership and current_membership.is_active %}
+                Switch to {{ tier.name }}
+              {% else %}
+                Subscribe — <span class="btn-price">£{{ tier.monthly_price }}/mo</span>
+              {% endif %}
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-3 text-center py-20">
+        <p class="text-charcoal-500 text-lg">No membership plans are currently available. Check back soon!</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Cancel membership -->
+    {% if current_membership and current_membership.is_active %}
+    <div class="mt-16 text-center">
+      <p class="text-charcoal-500 text-sm mb-3">Want to cancel your membership?</p>
+      <form method="POST" action="{% url 'membership_cancel' %}" class="inline" onsubmit="return confirm('Are you sure you want to cancel your {{ current_membership.tier.name }} membership? You will lose your {{ current_membership.tier.discount_rate }}% discount.');">
+        {% csrf_token %}
+        <button type="submit" class="text-burgundy-600 hover:text-burgundy-800 text-sm font-medium underline underline-offset-2 transition-colors">
+          Cancel Membership
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- FAQ / Trust section -->
+<section class="py-20 bg-cream-50">
+  <div class="max-w-4xl mx-auto px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <p class="reveal text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">FAQ</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display leading-tight">
+        Common Questions
+      </h2>
+    </div>
+    <div class="space-y-6 stagger">
+      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 mb-2">When does my membership start?</h3>
+        <p class="text-charcoal-500 text-sm leading-relaxed">Your membership activates immediately after payment. You'll receive a confirmation email and your discount will apply to your next order.</p>
+      </div>
+      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 mb-2">Can I switch plans?</h3>
+        <p class="text-charcoal-500 text-sm leading-relaxed">Yes! You can upgrade or downgrade at any time. Your new plan takes effect immediately and the price difference is prorated.</p>
+      </div>
+      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 mb-2">How do I cancel?</h3>
+        <p class="text-charcoal-500 text-sm leading-relaxed">You can cancel anytime from this page. Your membership remains active until the end of your current billing period — you won't be charged again.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  // ===== Billing toggle =====
+  const monthlyBtn = document.getElementById('bill-monthly');
+  const yearlyBtn = document.getElementById('bill-yearly');
+  const monthlyPrices = document.querySelectorAll('.price-monthly');
+  const yearlyPrices = document.querySelectorAll('.price-yearly');
+  const periodLabels = document.querySelectorAll('.period-label');
+  const yearlySavings = document.querySelectorAll('.yearly-saving');
+  const billingInputs = document.querySelectorAll('.billing-input');
+  const btnPrices = document.querySelectorAll('.btn-price');
+
+  function showMonthly() {
+    monthlyBtn.classList.add('bg-charcoal-900', 'text-cream-100');
+    monthlyBtn.classList.remove('text-charcoal-500', 'hover:text-charcoal-700');
+    yearlyBtn.classList.remove('bg-charcoal-900', 'text-cream-100');
+    yearlyBtn.classList.add('text-charcoal-500', 'hover:text-charcoal-700');
+    monthlyPrices.forEach(el => el.classList.remove('hidden'));
+    yearlyPrices.forEach(el => el.classList.add('hidden'));
+    periodLabels.forEach(el => el.textContent = '/month');
+    yearlySavings.forEach(el => el.classList.add('hidden'));
+    billingInputs.forEach(el => el.value = 'monthly');
+    btnPrices.forEach((el, i) => {
+      const price = monthlyPrices[i]?.dataset.monthly || '';
+      el.textContent = '£' + price + '/mo';
+    });
+  }
+
+  function showYearly() {
+    yearlyBtn.classList.add('bg-charcoal-900', 'text-cream-100');
+    yearlyBtn.classList.remove('text-charcoal-500', 'hover:text-charcoal-700');
+    monthlyBtn.classList.remove('bg-charcoal-900', 'text-cream-100');
+    monthlyBtn.classList.add('text-charcoal-500', 'hover:text-charcoal-700');
+    yearlyPrices.forEach(el => el.classList.remove('hidden'));
+    monthlyPrices.forEach(el => el.classList.add('hidden'));
+    periodLabels.forEach(el => el.textContent = '/year');
+    yearlySavings.forEach(el => el.classList.remove('hidden'));
+    billingInputs.forEach(el => el.value = 'yearly');
+    btnPrices.forEach((el, i) => {
+      const price = yearlyPrices[i]?.dataset.yearly || '';
+      el.textContent = '£' + price + '/yr';
+    });
+  }
+
+  monthlyBtn.addEventListener('click', showMonthly);
+  yearlyBtn.addEventListener('click', showYearly);
+</script>
+{% endblock extra_js %}

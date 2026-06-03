@@ -105,37 +105,80 @@ class Addresses(models.Model):
 
 class DiscountRate(models.Model):
     objects = models.Manager()
-    member_type = models.CharField(primary_key=True, max_length=50,
-                                   choices=[('Standard', 'Standard'), ('Premium', 'Premium'), ('Student', 'Student')])
-    discount_rate = models.FloatField()
+    member_type = models.CharField(primary_key=True, max_length=50)
+    discount_rate = models.FloatField(default=0)
 
     class Meta:
         managed = True
         db_table = 'DISCOUNT_RATE'
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(member_type__in=['Standard', 'Premium', 'Student']),
-                name='valid_member_type'
-            )
-        ]
 
     def __str__(self):
         return self.member_type
+
+
+class MembershipTier(models.Model):
+    objects = models.Manager()
+    tier_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True, help_text="Display name: Classic, Elite, Scholar")
+    slug = models.SlugField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    monthly_price = models.DecimalField(max_digits=8, decimal_places=2)
+    yearly_price = models.DecimalField(max_digits=8, decimal_places=2)
+    discount_rate = models.FloatField(default=0, help_text="Percentage discount on product prices")
+    stripe_monthly_price_id = models.CharField(max_length=100, blank=True)
+    stripe_yearly_price_id = models.CharField(max_length=100, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        db_table = 'MEMBERSHIP_TIER'
+        ordering = ['monthly_price']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def yearly_monthly_equivalent(self):
+        if self.yearly_price and self.monthly_price:
+            return round(float(self.yearly_price) / 12, 2)
+        return 0
+
+    @property
+    def yearly_savings_percent(self):
+        if self.monthly_price and self.yearly_price:
+            yearly_cost = float(self.monthly_price) * 12
+            if yearly_cost > 0:
+                return round((1 - float(self.yearly_price) / yearly_cost) * 100, 1)
+        return 0
 
 
 class Membership(models.Model):
     objects = models.Manager()
     member_id = models.AutoField(primary_key=True)
     customer = models.OneToOneField(Customer, models.CASCADE, related_name='membership', db_column='customer_id')
-    member_type = models.ForeignKey(DiscountRate, models.CASCADE, db_column='member_type')
-    end_ren_date = models.DateField(blank=True, null=True)
+    tier = models.ForeignKey(MembershipTier, models.SET_NULL, null=True, blank=True, related_name='subscriptions')
+    member_type = models.ForeignKey(DiscountRate, models.SET_NULL, null=True, blank=True, db_column='member_type')
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField(blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+    auto_renew = models.BooleanField(default=False)
 
     class Meta:
         managed = True
         db_table = 'MEMBERSHIP'
 
     def __str__(self):
-        return f"Membership for {self.customer}"
+        tier_name = self.tier.name if self.tier else "None"
+        return f"{self.customer} — {tier_name}"
+
+    @property
+    def is_current(self):
+        from django.utils import timezone
+        if not self.is_active or not self.end_date:
+            return False
+        return self.end_date >= timezone.now().date()
 
 
 class Products(models.Model):

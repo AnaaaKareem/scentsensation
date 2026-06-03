@@ -122,18 +122,18 @@
       </div>
 
       <!-- Membership -->
-      <div class="mb-8">
-        <label for="id_membership" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Membership</label>
-        <select id="id_membership" name="membership"
-          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white transition-colors">
-          <option value="None" {% if membership == 'None' or not membership %}selected{% endif %}>None</option>
-          <option value="Standard" {% if membership == 'Standard' %}selected{% endif %}>Standard</option>
-          <option value="Premium" {% if membership == 'Premium' %}selected{% endif %}>Premium</option>
-          <option value="Student" {% if membership == 'Student' %}selected{% endif %}>Student</option>
-        </select>
+      <div class="mb-8 text-center">
+        <p class="text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Membership</p>
+        {% if membership %}
+        <p class="text-charcoal-900 font-medium mb-2">{{ membership }} — Active</p>
+        {% else %}
+        <p class="text-charcoal-400 text-sm mb-2">No active membership</p>
+        {% endif %}
+        <a href="{% url 'membership' %}" class="inline-flex items-center gap-2 text-gold-600 hover:text-gold-700 text-sm font-medium transition-colors">
+          {% if membership %}Manage Membership{% else %}Subscribe to a Plan{% endif %}
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+        </a>
       </div>
-
-      <!-- Save Changes Button -->
       <div class="flex justify-center">
         <button type="submit" name="update" class="px-12 py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
           Save Changes
