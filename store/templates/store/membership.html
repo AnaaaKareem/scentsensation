@@ -45,9 +45,9 @@
     </div>
 
     <!-- Tier cards -->
-    <div class="grid md:grid-cols-3 gap-8 stagger">
+    <div class="grid md:grid-cols-3 gap-8">
       {% for tier in tiers %}
-      <div class="reveal bg-white border {% if forloop.last %}border-gold-400 ring-2 ring-gold-400/20{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
+      <div class="bg-white border {% if forloop.last %}border-gold-400 ring-2 ring-gold-400/20{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
 
         {% if forloop.last %}
         <div class="absolute top-0 left-0 right-0 bg-gold-500 text-center py-1.5">
@@ -162,21 +162,21 @@
 <section class="py-20 bg-cream-50">
   <div class="max-w-4xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-12">
-      <p class="reveal text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">FAQ</p>
-      <h2 class="reveal font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display leading-tight">
+      <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">FAQ</p>
+      <h2 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display leading-tight">
         Common Questions
       </h2>
     </div>
-    <div class="space-y-6 stagger">
-      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+    <div class="space-y-6">
+      <div class="bg-white border border-cream-300 rounded-brand p-6">
         <h3 class="font-display text-lg text-charcoal-900 mb-2">When does my membership start?</h3>
         <p class="text-charcoal-500 text-sm leading-relaxed">Your membership activates immediately after payment. You'll receive a confirmation email and your discount will apply to your next order.</p>
       </div>
-      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+      <div class="bg-white border border-cream-300 rounded-brand p-6">
         <h3 class="font-display text-lg text-charcoal-900 mb-2">Can I switch plans?</h3>
         <p class="text-charcoal-500 text-sm leading-relaxed">Yes! You can upgrade or downgrade at any time. Your new plan takes effect immediately and the price difference is prorated.</p>
       </div>
-      <div class="reveal bg-white border border-cream-300 rounded-brand p-6">
+      <div class="bg-white border border-cream-300 rounded-brand p-6">
         <h3 class="font-display text-lg text-charcoal-900 mb-2">How do I cancel?</h3>
         <p class="text-charcoal-500 text-sm leading-relaxed">You can cancel anytime from this page. Your membership remains active until the end of your current billing period — you won't be charged again.</p>
       </div>

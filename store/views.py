@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from django.utils.html import strip_tags
@@ -186,6 +187,29 @@ def verify_2fa(request):
     return render(request, 'store/verify_2fa.html')
 
 
+def resend_2fa(request):
+    if request.method == 'POST':
+        email = request.session.get('2fa_email')
+        if email:
+            verification_code = random.randint(100000, 999999)
+            request.session['2fa_code'] = str(verification_code)
+            request.session['2fa_expires'] = (datetime.now() + timedelta(minutes=5)).isoformat()
+            html_message = render_to_string('store/2fa_email.html', {
+                'verification_code': verification_code,
+                'email': email,
+            })
+            plain_message = strip_tags(html_message)
+            send_mail(
+                'Your 2FA Code',
+                plain_message,
+                settings.EMAIL_HOST_USER,
+                [email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+    return redirect(reverse('verify_2fa') + '?resent=1')
+
+
 def signout(request):
     request.session.flush()
     return redirect('signinAccount')
@@ -354,6 +378,20 @@ def store(request):
         'is_paginated': page_obj.has_other_pages()
     }
     return render(request, 'store/storepage.html', context)
+
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Products, product_id=product_id)
+    images = ProductImages.objects.filter(product=product)
+    personal = PersonalFragrances.objects.filter(product=product).first()
+    home = HomeFragrances.objects.filter(product=product).first()
+    context = {
+        'product': product,
+        'images': images,
+        'personal': personal,
+        'home': home,
+    }
+    return render(request, 'store/product_detail.html', context)
 
 
 def basket(request):
@@ -799,26 +837,58 @@ def membership_checkout(request):
     customer = Customer.objects.get(customer_id=customer_id)
 
     # Determine which price ID to use
-    if billing == 'yearly' and tier.stripe_yearly_price_id:
+    if billing == 'yearly':
         price_id = tier.stripe_yearly_price_id
-    elif tier.stripe_monthly_price_id:
-        price_id = tier.stripe_monthly_price_id
     else:
-        # Fallback: create a price on the fly if no stored price ID exists
-        from django.contrib import messages as django_messages
-        django_messages.error(request, "Stripe price not configured for this tier. Please contact support.")
-        return redirect('membership')
+        price_id = tier.stripe_monthly_price_id
+
+    # Auto-create Stripe price if not set
+    if not price_id:
+        try:
+            product = stripe.Product.create(
+                name=f"Scent Sensation — {tier.name} Membership",
+                description=f"{tier.name} plan — {tier.discount_rate}% off all products",
+                metadata={'tier_slug': tier.slug, 'tier_id': str(tier.tier_id)},
+            )
+            if billing == 'yearly':
+                price = stripe.Price.create(
+                    product=product.id,
+                    unit_amount=int(float(tier.yearly_price) * 100),
+                    currency='gbp',
+                    nickname=f"{tier.name} Yearly",
+                )
+                price_id = price.id
+                # Save for next time
+                tier.stripe_yearly_price_id = price_id
+                tier.save(update_fields=['stripe_yearly_price_id'])
+            else:
+                price = stripe.Price.create(
+                    product=product.id,
+                    unit_amount=int(float(tier.monthly_price) * 100),
+                    currency='gbp',
+                    recurring={'interval': 'month', 'interval_count': 1},
+                    nickname=f"{tier.name} Monthly",
+                )
+                price_id = price.id
+                # Save for next time
+                tier.stripe_monthly_price_id = price_id
+                tier.save(update_fields=['stripe_monthly_price_id'])
+        except Exception as e:
+            from django.contrib import messages as django_messages
+            django_messages.error(request, f"Error setting up payment: {e}")
+            return redirect('membership')
 
     try:
+        is_recurring = billing == 'monthly'
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
-            mode='payment',
+            mode='subscription' if is_recurring else 'payment',
             line_items=[{
                 'price': price_id,
                 'quantity': 1,
             }],
             success_url=request.build_absolute_uri('/membership/success/') + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri('/membership/'),
+            cancel_url=request.build_absolute_uri('/membership/failure/'),
             metadata={
                 'customer_id': customer_id,
                 'tier_id': tier.tier_id,
@@ -841,7 +911,8 @@ def membership_success(request):
 
     try:
         session = stripe.checkout.Session.retrieve(session_id)
-        if session.payment_status == 'paid':
+        # For payment mode: payment_status == 'paid'; for subscription mode: status == 'complete'
+        if session.payment_status == 'paid' or session.status == 'complete':
             metadata = session.metadata
             customer_id = metadata.get('customer_id')
             tier_id = metadata.get('tier_id')
@@ -872,13 +943,19 @@ def membership_success(request):
                 # Update session
                 request.session['membership'] = tier.name
 
-                from django.contrib import messages as django_messages
-                django_messages.success(request, f"Welcome to {tier.name}! Your membership is now active.")
-                return redirect('homepage')
+                return render(request, 'store/membership_success.html', {
+                    'tier': tier,
+                    'billing': billing,
+                })
     except Exception as e:
         pass
 
     return redirect('membership')
+
+
+def membership_failure(request):
+    """Handle failed membership payment (user clicked cancel on Stripe)."""
+    return render(request, 'store/membership_failure.html')
 
 
 def membership_cancel(request):
