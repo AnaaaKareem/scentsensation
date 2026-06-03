@@ -60,6 +60,19 @@
 
         <input type="hidden" name="code" id="final-code">
 
+        <!-- Paste code section -->
+        <div class="bg-cream-50 border border-cream-200 rounded-brand p-4">
+          <p class="text-charcoal-500 text-xs text-center mb-3">Have a code from your email? Paste it below:</p>
+          <div class="flex gap-2">
+            <input type="text" id="paste-input" placeholder="Paste 6-digit code here"
+              inputmode="numeric" pattern="[0-9]*"
+              class="flex-1 px-4 py-2.5 border border-charcoal-200 rounded-brand text-sm text-center tracking-[0.3em] font-semibold focus:outline-none focus:border-gold-500 transition-colors">
+            <button type="button" id="paste-btn" class="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide uppercase font-medium rounded-brand transition-colors whitespace-nowrap">
+              Fill Code
+            </button>
+          </div>
+        </div>
+
         <button type="submit" class="w-full py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
           Verify Code
         </button>
@@ -93,19 +106,17 @@
   const finalCodeInput = document.getElementById('final-code');
   const resendBtn = document.getElementById('resendBtn');
   const resendMsg = document.getElementById('resendMsg');
+  const pasteInput = document.getElementById('paste-input');
+  const pasteBtn = document.getElementById('paste-btn');
 
+  // --- Individual input handling ---
   inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
       input.value = input.value.replace(/[^0-9]/g, '');
       if (input.value && index < inputs.length - 1) {
         inputs[index + 1].focus();
       }
-      // Auto-submit when all 6 filled
-      const code = Array.from(inputs).map(i => i.value).join('');
-      if (code.length === 6) {
-        finalCodeInput.value = code;
-        form.submit();
-      }
+      checkAndSubmit();
     });
 
     input.addEventListener('keydown', (e) => {
@@ -113,28 +124,94 @@
         inputs[index - 1].focus();
       }
     });
+  });
 
-    input.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
-      pasted.split('').slice(0, 6).forEach((char, i) => {
-        if (inputs[i]) inputs[i].value = char;
-      });
-      const next = Math.min(pasted.length, 5);
-      inputs[next].focus();
-      // Auto-submit if 6 digits pasted
-      if (pasted.length >= 6) {
-        finalCodeInput.value = pasted.slice(0, 6);
-        form.submit();
+  // --- Auto-submit check ---
+  function checkAndSubmit() {
+    const code = Array.from(inputs).map(i => i.value).join('');
+    if (code.length === 6) {
+      finalCodeInput.value = code;
+      form.submit();
+    }
+  }
+
+  // --- Paste code handling ---
+  function fillCodeFromPaste(raw) {
+    const digits = raw.replace(/[^0-9]/g, '').slice(0, 6);
+    digits.split('').forEach((char, i) => {
+      if (inputs[i]) {
+        inputs[i].value = char;
+        inputs[i].classList.add('border-gold-500');
+        setTimeout(() => inputs[i].classList.remove('border-gold-500'), 300);
       }
     });
+    // Focus last filled input or next empty
+    const nextIndex = Math.min(digits.length, 5);
+    if (inputs[nextIndex]) inputs[nextIndex].focus();
+    checkAndSubmit();
+  }
+
+  // Paste button click
+  pasteBtn.addEventListener('click', () => {
+    const val = pasteInput.value.trim();
+    if (val) {
+      fillCodeFromPaste(val);
+      pasteInput.value = '';
+    } else {
+      // Try reading from clipboard
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(text => {
+          if (text) {
+            pasteInput.value = text.trim();
+            fillCodeFromPaste(text);
+            pasteInput.value = '';
+          }
+        }).catch(() => {
+          pasteInput.focus();
+          pasteInput.placeholder = 'Press Ctrl+V to paste';
+        });
+      } else {
+        pasteInput.focus();
+      }
+    }
+  });
+
+  // Allow Enter key in paste input
+  pasteInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      pasteBtn.click();
+    }
+  });
+
+  // Direct paste into the paste input field
+  pasteInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    if (pasted) {
+      pasteInput.value = pasted.trim();
+      fillCodeFromPaste(pasted);
+      pasteInput.value = '';
+    }
+  });
+
+  // --- Global paste: if user pastes a 6-digit code anywhere on the page ---
+  document.addEventListener('paste', (e) => {
+    // Don't intercept if paste already handled by paste-input
+    if (e.target === pasteInput) return;
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    const digits = pasted.replace(/[^0-9]/g, '');
+    if (digits.length >= 6) {
+      fillCodeFromPaste(digits);
+    }
+  });
+
+  // --- Resend ---
+  resendBtn.addEventListener('click', () => {
+    resendMsg.classList.remove('hidden');
   });
 
   // Focus first input on load
   if (inputs[0]) inputs[0].focus();
-
-  resendBtn.addEventListener('click', () => {
-    resendMsg.classList.remove('hidden');
-  });
 </script>
 {% endblock extra_js %}
