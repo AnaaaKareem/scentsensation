@@ -188,9 +188,6 @@ input:focus, select:focus, textarea:focus {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px); }
 }
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
 .animate-float-delayed {
   animation: float 6s ease-in-out 2s infinite;
 }
@@ -202,4 +199,50 @@ input:focus, select:focus, textarea:focus {
 }
 .animate-pulse-glow {
   animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* ===== Additional animation variants ===== */
+
+/* Blur reveal */
+.blur-reveal {
+  opacity: 0;
+  filter: blur(12px);
+  transition: opacity 0.8s ease, filter 0.8s ease;
+}
+.blur-reveal.visible {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* Rotate reveal */
+.rotate-reveal {
+  opacity: 0;
+  transform: rotate(-8deg) scale(0.9);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rotate-reveal.visible {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Slide up */
+.slide-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide down */
+.slide-down {
+  opacity: 0;
+  transform: translateY(-40px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-down.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
