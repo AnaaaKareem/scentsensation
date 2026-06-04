@@ -12,14 +12,14 @@
   </div>
   <!-- Hero Content -->
   <div class="relative z-10 text-center px-6 max-w-4xl">
-    <p class="text-gold-400 text-sm tracking-wide-plus uppercase font-medium mb-6">Curated Luxury Fragrances</p>
-    <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl text-cream-50 tracking-display leading-tight mb-8">
+    <p class="anim-hero anim-hero-delay-1 text-gold-400 text-sm tracking-wide-plus uppercase font-medium mb-6">Curated Luxury Fragrances</p>
+    <h1 class="anim-hero anim-hero-delay-2 font-display text-5xl sm:text-6xl lg:text-7xl text-cream-50 tracking-display leading-tight mb-8">
       Awaken Your<br> Senses
     </h1>
-    <p class="text-cream-300 text-lg sm:text-xl font-light max-w-2xl mx-auto mb-12 leading-relaxed">
+    <p class="anim-hero anim-hero-delay-2 text-cream-300 text-lg sm:text-xl font-light max-w-2xl mx-auto mb-12 leading-relaxed">
       Discover an exclusive collection of the world's finest fragrances — from timeless classics to modern masterpieces.
     </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <div class="anim-hero anim-hero-delay-3 flex flex-col sm:flex-row gap-4 justify-center">
       <a href="{% url 'store' %}" class="inline-flex items-center justify-center px-8 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
         Explore Collection
       </a>
@@ -29,7 +29,7 @@
     </div>
   </div>
   <!-- Scroll Indicator -->
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+  <div class="anim-hero anim-hero-delay-3 absolute bottom-8 left-1/2 -translate-x-1/2">
     <div class="w-px h-12 bg-gradient-to-b from-transparent to-gold-400/50"></div>
   </div>
 </section>
@@ -37,28 +37,28 @@
 <!-- Editorial Divider -->
 <section class="bg-cream-100 py-20 text-center">
   <div class="max-w-4xl mx-auto px-6">
-    <p class="text-burgundy-700 text-xs tracking-wide-plus uppercase font-medium mb-4">Since 2023</p>
-    <h2 class="font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal-900 tracking-display leading-tight mb-8">
+    <p class="anim text-burgundy-700 text-xs tracking-wide-plus uppercase font-medium mb-4">Since 2023</p>
+    <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal-900 tracking-display leading-tight mb-8">
       The Art of Scent
     </h2>
-    <div class="w-12 h-px bg-gold-500 mx-auto mb-8"></div>
-    <p class="text-charcoal-600 text-lg leading-relaxed max-w-2xl mx-auto">
+    <div class="anim anim-delay-2 w-12 h-px bg-gold-500 mx-auto mb-8"></div>
+    <p class="anim anim-delay-2 text-charcoal-600 text-lg leading-relaxed max-w-2xl mx-auto">
       Having access to top international brands for fragrances is a luxury that many people enjoy. These brands offer a wide range of scents that cater to various tastes and preferences, from fresh and floral to spicy and musky.
     </p>
   </div>
 </section>
 
 <!-- Featured Brands Strip -->
-<section class="bg-charcoal-950 py-16">
+<section class="bg-charcoal-950 py-16 overflow-hidden">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
-    <p class="text-center text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-10">Our Partner Brands</p>
-    <div class="grid grid-cols-3 sm:grid-cols-6 gap-8 items-center opacity-60">
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Tom Ford</p></div>
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Paco Rabanne</p></div>
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Hugo Boss</p></div>
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Gucci</p></div>
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Givenchy</p></div>
-      <div class="text-center"><p class="font-display text-cream-200 text-lg">Armani</p></div>
+    <p class="anim text-center text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-10">Our Partner Brands</p>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-8 items-center">
+      <div class="anim anim-delay-1 text-center"><p class="font-display text-cream-200 text-lg">Tom Ford</p></div>
+      <div class="anim anim-delay-1 text-center"><p class="font-display text-cream-200 text-lg">Paco Rabanne</p></div>
+      <div class="anim anim-delay-2 text-center"><p class="font-display text-cream-200 text-lg">Hugo Boss</p></div>
+      <div class="anim anim-delay-2 text-center"><p class="font-display text-cream-200 text-lg">Gucci</p></div>
+      <div class="anim anim-delay-3 text-center"><p class="font-display text-cream-200 text-lg">Givenchy</p></div>
+      <div class="anim anim-delay-3 text-center"><p class="font-display text-cream-200 text-lg">Armani</p></div>
     </div>
   </div>
 </section>
@@ -67,12 +67,12 @@
 <section class="bg-cream-50 py-24">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-16 items-center">
-      <div class="order-2 lg:order-1">
+      <div class="anim anim-left order-2 lg:order-1">
         <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
           <img src="{% static 'store/Pictures/More/Man-Applying-Perfume.jpg' %}" alt="For Him" class="w-full h-full object-cover">
         </div>
       </div>
-      <div class="order-1 lg:order-2">
+      <div class="anim anim-right order-1 lg:order-2">
         <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Him</p>
         <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
           Command Your Presence
@@ -96,7 +96,7 @@
 <section class="bg-cream-100 py-24">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-16 items-center">
-      <div>
+      <div class="anim anim-left">
         <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Her</p>
         <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
           Embrace Your Essence
@@ -112,8 +112,10 @@
           </svg>
         </a>
       </div>
-      <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
-        <img src="{% static 'store/Pictures/More/Woman-Applying-Perfume.jpg' %}" alt="For Her" class="w-full h-full object-cover">
+      <div class="anim anim-right">
+        <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
+          <img src="{% static 'store/Pictures/More/Woman-Applying-Perfume.jpg' %}" alt="For Her" class="w-full h-full object-cover">
+        </div>
       </div>
     </div>
   </div>
@@ -123,14 +125,14 @@
 <section class="bg-cream-50 py-24">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-16">
-      <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">Handpicked</p>
-      <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight">Our Picks</h2>
+      <p class="anim text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">Handpicked</p>
+      <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight">Our Picks</h2>
     </div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
       <!-- Product 1 -->
-      <a href="{% url 'store' %}" class="group">
+      <a href="{% url 'store' %}" class="anim anim-delay-1 group">
         <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">One Million</span>
           </div>
         </div>
@@ -140,9 +142,9 @@
         <p class="text-charcoal-900 font-medium mt-2">£99.99</p>
       </a>
       <!-- Product 2 -->
-      <a href="{% url 'store' %}" class="group">
+      <a href="{% url 'store' %}" class="anim anim-delay-2 group">
         <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Stronger</span>
           </div>
         </div>
@@ -152,9 +154,9 @@
         <p class="text-charcoal-900 font-medium mt-2">£89.99</p>
       </a>
       <!-- Product 3 -->
-      <a href="{% url 'store' %}" class="group">
+      <a href="{% url 'store' %}" class="anim anim-delay-3 group">
         <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Prada</span>
           </div>
         </div>
@@ -164,9 +166,9 @@
         <p class="text-charcoal-900 font-medium mt-2">£79.99</p>
       </a>
       <!-- Product 4 -->
-      <a href="{% url 'store' %}" class="group">
+      <a href="{% url 'store' %}" class="anim anim-delay-4 group">
         <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Black Opium</span>
           </div>
         </div>

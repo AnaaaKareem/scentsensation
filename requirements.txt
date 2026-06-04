@@ -2,3 +2,4 @@ Django>=5.2,<5.3
 psycopg2-binary>=2.9
 stripe>=10.0
 python-dotenv>=1.0
+paypalrestsdk>=1.13

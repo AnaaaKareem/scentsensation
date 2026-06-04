@@ -122,17 +122,74 @@
       </div>
 
       <!-- Membership -->
-      <div class="mb-8 text-center">
-        <p class="text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Membership</p>
-        {% if membership %}
-        <p class="text-charcoal-900 font-medium mb-2">{{ membership }} — Active</p>
-        {% else %}
-        <p class="text-charcoal-400 text-sm mb-2">No active membership</p>
-        {% endif %}
-        <a href="{% url 'membership' %}" class="inline-flex items-center gap-2 text-gold-600 hover:text-gold-700 text-sm font-medium transition-colors">
-          {% if membership %}Manage Membership{% else %}Subscribe to a Plan{% endif %}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-        </a>
+      <div class="mb-10 max-w-md mx-auto bg-charcoal-950 border border-charcoal-800 rounded-brand overflow-hidden shadow-lg">
+        <!-- Header bar -->
+        <div class="px-6 py-3 bg-charcoal-900 border-b border-charcoal-800 flex items-center justify-between">
+          <p class="text-cream-300 text-xs tracking-wide-plus uppercase font-medium">Membership</p>
+          {% if current_membership and current_membership.is_active and current_membership.tier %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-green-500/15 border border-green-500/30 rounded-full">
+            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+            <span class="text-green-400 text-[10px] font-semibold uppercase tracking-wide">Active</span>
+          </span>
+          {% else %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-charcoal-700 border border-charcoal-600 rounded-full">
+            <span class="text-charcoal-400 text-[10px] font-medium uppercase tracking-wide">None</span>
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="p-6">
+          {% if current_membership and current_membership.is_active and current_membership.tier %}
+          <!-- Active membership info -->
+          <div class="text-center mb-5">
+            <h3 class="font-display text-2xl text-cream-50 mb-1">{{ current_membership.tier.name }}</h3>
+            <p class="text-gold-400 text-sm font-medium">{{ current_membership.tier.discount_rate }}% store-wide discount</p>
+          </div>
+
+          <!-- Date details -->
+          <div class="space-y-2.5 mb-5">
+            {% if current_membership.start_date %}
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-charcoal-400">Member since</span>
+              <span class="text-cream-200 font-medium">{{ current_membership.start_date|date:"M d, Y" }}</span>
+            </div>
+            {% endif %}
+            {% if current_membership.end_date %}
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-charcoal-400">Current period ends</span>
+              <span class="text-cream-200 font-medium">{{ current_membership.end_date|date:"M d, Y" }}</span>
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-charcoal-400">Auto-renew</span>
+              <span class="font-medium {% if current_membership.auto_renew %}text-green-400{% else %}text-charcoal-500{% endif %}">
+                {{ current_membership.auto_renew|yesno:"Enabled,Disabled" }}
+              </span>
+            </div>
+          </div>
+          {% else %}
+          <!-- No membership -->
+          <div class="text-center py-4 mb-5">
+            <div class="w-14 h-14 bg-charcoal-800 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-charcoal-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+              </svg>
+            </div>
+            <p class="text-cream-200 text-sm font-medium mb-1">No Active Membership</p>
+            <p class="text-charcoal-400 text-xs leading-relaxed">Subscribe to unlock exclusive discounts, free delivery, and early access to new fragrances.</p>
+          </div>
+          {% endif %}
+
+          <!-- CTA -->
+          <a href="{% url 'membership' %}" class="flex items-center justify-center gap-2 w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm font-semibold rounded-brand transition-colors">
+            {% if current_membership and current_membership.is_active and current_membership.tier %}
+            Manage Membership
+            {% else %}
+            Explore Plans
+            {% endif %}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+          </a>
+        </div>
       </div>
       <div class="flex justify-center">
         <button type="submit" name="update" class="px-12 py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">

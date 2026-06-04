@@ -42,7 +42,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <input type="checkbox" id="remember" name="remember" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+          <input type="checkbox" id="remember" name="remember" {% if remember_checked %}checked{% endif %} class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
           <label for="remember" class="text-charcoal-600 text-sm">Remember me</label>
         </div>
 

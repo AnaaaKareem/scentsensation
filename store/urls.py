@@ -30,4 +30,6 @@ urlpatterns = [
     path('membership/success/', views.membership_success, name='membership_success'),
     path('membership/failure/', views.membership_failure, name='membership_failure'),
     path('membership/cancel/', views.membership_cancel, name='membership_cancel'),
+    path('paypal/success/', views.paypal_success, name='paypal_success'),
+    path('paypal/cancel/', views.paypal_cancel, name='paypal_cancel'),
 ]

@@ -13,7 +13,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from store.models import (
-    Customer, PhoneNumbers, Addresses, DiscountRate, Membership,
+    Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
     Products, PersonalFragrances, HomeFragrances, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
     ProductInventory, Instalments, OrderRef
@@ -696,3 +696,124 @@ class ViewEdgeCaseTests(BaseViewTestCase):
 
 
 # Note: The ViewEdgeCaseTests may contain additional tests that need to be defined similarly.
+
+
+class MembershipEnhancementTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.client = Client()
+        # Create customer
+        self.customer = Customer.objects.create(
+            first_name='Alice',
+            last_name='Smith',
+            DOB=date(1990, 1, 1),
+            gender='Female',
+            email_address='alice.membership@example.com',
+            password=make_password('TestPass123!')
+        )
+        self.other_customer1 = Customer.objects.create(
+            first_name='Bob',
+            last_name='Jones',
+            DOB=date(1992, 2, 2),
+            gender='Male',
+            email_address='bob.jones@example.com',
+            password=make_password('TestPass123!')
+        )
+        self.other_customer2 = Customer.objects.create(
+            first_name='Charlie',
+            last_name='Brown',
+            DOB=date(1994, 3, 3),
+            gender='Male',
+            email_address='charlie.brown@example.com',
+            password=make_password('TestPass123!')
+        )
+
+        # Create tiers
+        self.classic_tier = MembershipTier.objects.create(
+            name='Classic',
+            slug='classic',
+            description='Classic plan',
+            monthly_price=4.99,
+            yearly_price=47.90,
+            discount_rate=10.0,
+            is_active=True
+        )
+        self.elite_tier = MembershipTier.objects.create(
+            name='Elite',
+            slug='elite',
+            description='Elite plan',
+            monthly_price=9.99,
+            yearly_price=95.90,
+            discount_rate=20.0,
+            is_active=True
+        )
+        self.scholar_tier = MembershipTier.objects.create(
+            name='Scholar',
+            slug='scholar',
+            description='Scholar plan',
+            monthly_price=14.99,
+            yearly_price=143.90,
+            discount_rate=30.0,
+            is_active=True
+        )
+
+    def test_membership_page_most_popular_dynamic(self):
+        # 1 subscriber to Classic, 2 subscribers to Elite
+        Membership.objects.create(
+            customer=self.other_customer1,
+            tier=self.classic_tier,
+            is_active=True,
+            end_date=date(2026, 12, 31)
+        )
+        Membership.objects.create(
+            customer=self.other_customer2,
+            tier=self.elite_tier,
+            is_active=True,
+            end_date=date(2026, 12, 31)
+        )
+        Membership.objects.create(
+            customer=self.customer,
+            tier=self.elite_tier,
+            is_active=True,
+            end_date=date(2026, 12, 31)
+        )
+
+        # Set session for logged in client
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
+
+        response = self.client.get(reverse('membership'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['most_popular_tier'], self.elite_tier)
+        self.assertEqual(response.context['current_membership'].tier, self.elite_tier)
+
+    def test_membership_page_fallback_most_popular(self):
+        # If there are 0 subscribers, fallback to Elite tier
+        response = self.client.get(reverse('membership'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['most_popular_tier'], self.elite_tier)
+
+    def test_account_page_contains_current_membership_and_end_date(self):
+        # Create active membership for customer
+        end_date = date(2026, 8, 15)
+        Membership.objects.create(
+            customer=self.customer,
+            tier=self.classic_tier,
+            is_active=True,
+            end_date=end_date
+        )
+
+        # Login customer
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session['first_name'] = self.customer.first_name
+        session['last_name'] = self.customer.last_name
+        session['email_address'] = self.customer.email_address
+        session.save()
+
+        response = self.client.get(reverse('account'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['current_membership'].tier, self.classic_tier)
+        self.assertEqual(response.context['current_membership'].end_date, end_date)
+

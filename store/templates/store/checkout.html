@@ -1,6 +1,21 @@
 {% extends "store/base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+<style>
+  #store-map { height: 350px; width: 100%; border-radius: 2px; }
+  .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 13px; }
+</style>
+{% endblock extra_head %}
+
 {% block content %}
 <div class="max-w-6xl mx-auto px-6 lg:px-8 py-12">
 
@@ -27,8 +42,42 @@
     <!-- Left: Forms -->
     <div class="lg:col-span-2 space-y-8">
 
-      <!-- Delivery Address -->
+      <!-- Fulfilment Selection -->
       <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Fulfilment</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <button type="button" id="btn-delivery"
+            class="flex items-center gap-3 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-left transition-colors">
+            <div>
+              <p class="text-charcoal-900 text-sm font-medium">Delivery</p>
+              <p class="text-charcoal-500 text-xs">Ship to your address</p>
+            </div>
+          </button>
+          <button type="button" id="btn-pickup"
+            class="flex items-center gap-3 p-4 border-2 border-charcoal-200 rounded-brand text-left hover:border-charcoal-400 transition-colors">
+            <div>
+              <p class="text-charcoal-900 text-sm font-medium">Store Pickup</p>
+              <p class="text-charcoal-500 text-xs">Collect from a store</p>
+            </div>
+          </button>
+        </div>
+        <input type="hidden" name="fulfilment" id="fulfilment-input" value="Delivery">
+      </section>
+
+      <!-- Store Pickup Map (hidden by default) -->
+      <section id="pickup-section" class="bg-white border border-cream-300 rounded-brand p-6 hidden">
+        <h2 class="font-display text-xl text-charcoal-900 mb-2">Select a Store</h2>
+        <p class="text-charcoal-500 text-sm mb-4">Click on a marker to choose your pickup location.</p>
+        <div id="store-map" class="rounded-brand border border-charcoal-200"></div>
+        <div id="selected-store-info" class="mt-4 p-3 bg-gold-50 border border-gold-200 rounded-brand hidden">
+          <p class="text-charcoal-900 text-sm font-medium" id="selected-store-name"></p>
+          <p class="text-charcoal-500 text-xs mt-1" id="selected-store-address"></p>
+        </div>
+        <input type="hidden" name="selected_store_id" id="selected_store_id" value="{{ selected_store_id }}">
+      </section>
+
+      <!-- Delivery Address (shown by default) -->
+      <section id="delivery-section" class="bg-white border border-cream-300 rounded-brand p-6">
         <h2 class="font-display text-xl text-charcoal-900 mb-6">Delivery Address</h2>
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
@@ -80,13 +129,13 @@
         </div>
       </section>
 
-      <!-- Shipping Method -->
-      <section class="bg-white border border-cream-300 rounded-brand p-6">
+      <!-- Shipping Method (shown for Delivery) -->
+      <section id="shipping-section" class="bg-white border border-cream-300 rounded-brand p-6">
         <h2 class="font-display text-xl text-charcoal-900 mb-6">Shipping Method</h2>
         <div class="space-y-3">
-          <label class="flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-brand cursor-pointer">
+          <label class="flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-brand cursor-pointer transition-colors">
             <div class="flex items-center gap-3">
-              <input type="radio" name="shipping" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <input type="radio" name="shipping" value="standard" data-cost="0" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
               <div>
                 <p class="text-charcoal-900 text-sm font-medium">Standard Delivery</p>
                 <p class="text-charcoal-500 text-xs">5–7 business days</p>
@@ -96,23 +145,23 @@
           </label>
           <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
             <div class="flex items-center gap-3">
-              <input type="radio" name="shipping" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <input type="radio" name="shipping" value="express" data-cost="5.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
               <div>
                 <p class="text-charcoal-900 text-sm font-medium">Express Delivery</p>
                 <p class="text-charcoal-500 text-xs">2–3 business days</p>
               </div>
             </div>
-            <span class="text-charcoal-900 text-sm font-medium">£5.99</span>
+            <span class="text-charcoal-900 text-sm font-medium">&pound;5.99</span>
           </label>
           <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
             <div class="flex items-center gap-3">
-              <input type="radio" name="shipping" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <input type="radio" name="shipping" value="nextday" data-cost="9.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
               <div>
                 <p class="text-charcoal-900 text-sm font-medium">Next Day Delivery</p>
                 <p class="text-charcoal-500 text-xs">Order before 2pm</p>
               </div>
             </div>
-            <span class="text-charcoal-900 text-sm font-medium">£9.99</span>
+            <span class="text-charcoal-900 text-sm font-medium">&pound;9.99</span>
           </label>
         </div>
       </section>
@@ -121,8 +170,8 @@
       <section class="bg-white border border-cream-300 rounded-brand p-6">
         <h2 class="font-display text-xl text-charcoal-900 mb-4">Gift Options</h2>
         <label class="flex items-center gap-3 cursor-pointer mb-4">
-          <input type="checkbox" name="gift_wrap" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-          <span class="text-charcoal-600 text-sm">This order is a gift — add premium gift wrapping (+£5.00)</span>
+          <input type="checkbox" name="gift_wrap" id="gift-wrap" data-cost="5.00" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+          <span class="text-charcoal-600 text-sm">This order is a gift — add premium gift wrapping (+&pound;5.00)</span>
         </label>
         <div>
           <label for="giftMessage" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gift Message <span class="text-charcoal-400 normal-case">(optional)</span></label>
@@ -153,7 +202,7 @@
               <p class="text-charcoal-900 text-sm font-medium truncate">{{ item.product.brand }} — {{ item.product.product_name }}</p>
               <div class="flex justify-between mt-1">
                 <span class="text-charcoal-400 text-xs">×{{ item.quantity }}</span>
-                <span class="text-charcoal-900 text-sm">£{{ item.product.price }}</span>
+                <span class="text-charcoal-900 text-sm">&pound;{{ item.product.price }}</span>
               </div>
             </div>
           </div>
@@ -175,55 +224,53 @@
         <div class="border-t border-cream-300 pt-4 space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-charcoal-500">Subtotal</span>
-            <span class="text-charcoal-900">£{{ subtotal }}</span>
+            <span class="text-charcoal-900" id="summary-subtotal">&pound;{{ subtotal }}</span>
           </div>
           {% if discount > 0 %}
           <div class="flex justify-between">
             <span class="text-charcoal-500">Discount ({{ discount_rate }}%)</span>
-            <span class="text-burgundy-700">−£{{ discount }}</span>
+            <span class="text-burgundy-700" id="summary-discount">−&pound;{{ discount }}</span>
           </div>
           {% endif %}
           <div class="flex justify-between">
             <span class="text-charcoal-500">Shipping</span>
-            <span class="text-charcoal-900">Free</span>
+            <span class="text-charcoal-900" id="summary-shipping">Free</span>
+          </div>
+          <div class="flex justify-between" id="gift-row" style="display: none;">
+            <span class="text-charcoal-500">Gift Wrapping</span>
+            <span class="text-charcoal-900" id="summary-gift">&pound;5.00</span>
           </div>
           <div class="border-t border-cream-300 pt-3 mt-3">
-            <div class="flex justify-between">
+            <div class="flex justify-between items-baseline">
               <span class="text-charcoal-900 font-semibold">Total</span>
-              <span class="font-display text-2xl text-charcoal-900">£{{ total }}</span>
+              <span class="font-display text-2xl text-charcoal-900" id="summary-total">&pound;{{ total }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Payment Method -->
-        <div class="mt-6">
-          <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
-          <div class="space-y-2 mb-4">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="radio" name="payment_method" value="Card" {% if payment_method == 'Card' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">Card</span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="radio" name="payment_method" value="PayPal" {% if payment_method == 'PayPal' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">PayPal</span>
-            </label>
-          </div>
-
-          <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Fulfilment</h5>
-          <div class="space-y-2 mb-4">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="radio" name="fulfilment" value="Pickup" {% if fulfilment == 'Pickup' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">Pickup</span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="radio" name="fulfilment" value="Delivery" {% if fulfilment == 'Delivery' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">Delivery</span>
-            </label>
-          </div>
-        </div>
-
-        <form method="POST" action="{% url 'checkout' %}">
+        <form method="POST" action="{% url 'checkout' %}" id="checkout-form">
           {% csrf_token %}
+          <input type="hidden" name="fulfilment" id="form-fulfilment" value="Delivery">
+          <input type="hidden" name="shipping_cost" id="form-shipping-cost" value="0">
+          <input type="hidden" name="gift_wrap_cost" id="form-gift-cost" value="0">
+          <input type="hidden" name="computed_total" id="form-computed-total" value="{{ total }}">
+          <input type="hidden" name="payment_method" id="form-payment-method" value="{{ payment_method|default:'Card' }}">
+
+          <!-- Payment Method -->
+          <div class="mt-6">
+            <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
+            <div class="space-y-2 mb-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="payment_method_radio" value="Card" {% if payment_method == 'Card' or not payment_method %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-700 text-sm">Card (Stripe)</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="payment_method_radio" value="PayPal" {% if payment_method == 'PayPal' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-700 text-sm">PayPal</span>
+              </label>
+            </div>
+          </div>
+
           <button type="submit" class="w-full mt-4 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
             Proceed to Payment
           </button>
@@ -236,10 +283,209 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
             </svg>
           </div>
-          <p class="text-charcoal-400 text-xs">Secure checkout with Stripe</p>
+          <p class="text-charcoal-400 text-xs">Secure checkout</p>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  // Base values from Django
+  const baseSubtotal = parseFloat("{{ subtotal }}");
+  const baseDiscount = parseFloat("{{ discount }}");
+  const baseTotal = parseFloat("{{ total }}"); // subtotal - discount
+
+  // Store data from Django
+  const stores = [
+    {% for store in stores %}
+    {
+      id: {{ store.store_id }},
+      name: "{{ store.name|escapejs }}",
+      address: "{{ store.address|escapejs }}",
+      lat: {{ store.latitude }},
+      lng: {{ store.longitude }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const selectedStoreId = "{{ selected_store_id }}";
+
+  // --- Fulfilment toggle (button-based) ---
+  const btnDelivery = document.getElementById('btn-delivery');
+  const btnPickup = document.getElementById('btn-pickup');
+  const fulfilmentInput = document.getElementById('fulfilment-input');
+  const formFulfilment = document.getElementById('form-fulfilment');
+  const deliverySection = document.getElementById('delivery-section');
+  const shippingSection = document.getElementById('shipping-section');
+  const pickupSection = document.getElementById('pickup-section');
+  const summaryShipping = document.getElementById('summary-shipping');
+
+  let map = null;
+  let markers = [];
+  let selectedStore = null;
+
+  function updateTotal() {
+    const shippingCost = parseFloat(document.querySelector('input[name="shipping"]:checked')?.dataset.cost || 0);
+    const giftWrapCost = document.getElementById('gift-wrap').checked ? parseFloat(document.getElementById('gift-wrap').dataset.cost) : 0;
+
+    const total = baseTotal + shippingCost + giftWrapCost;
+
+    // Update shipping label
+    if (summaryShipping) {
+      summaryShipping.textContent = shippingCost === 0 ? 'Free' : '\u00A3' + shippingCost.toFixed(2);
+    }
+
+    // Update gift row
+    const giftRow = document.getElementById('gift-row');
+    if (giftRow) {
+      giftRow.style.display = giftWrapCost > 0 ? 'flex' : 'none';
+    }
+
+    // Update total display
+    const summaryTotal = document.getElementById('summary-total');
+    if (summaryTotal) {
+      summaryTotal.textContent = '\u00A3' + total.toFixed(2);
+    }
+
+    // Update hidden form fields for backend
+    document.getElementById('form-shipping-cost').value = shippingCost.toFixed(2);
+    document.getElementById('form-gift-cost').value = giftWrapCost.toFixed(2);
+    document.getElementById('form-computed-total').value = total.toFixed(2);
+  }
+
+  function setDelivery() {
+    fulfilmentInput.value = 'Delivery';
+    formFulfilment.value = 'Delivery';
+
+    btnDelivery.classList.add('border-gold-500', 'bg-gold-50');
+    btnDelivery.classList.remove('border-charcoal-200');
+    btnPickup.classList.remove('border-gold-500', 'bg-gold-50');
+    btnPickup.classList.add('border-charcoal-200');
+
+    deliverySection.classList.remove('hidden');
+    shippingSection.classList.remove('hidden');
+    pickupSection.classList.add('hidden');
+
+    updateTotal();
+  }
+
+  function setPickup() {
+    fulfilmentInput.value = 'Pickup';
+    formFulfilment.value = 'Pickup';
+
+    btnPickup.classList.add('border-gold-500', 'bg-gold-50');
+    btnPickup.classList.remove('border-charcoal-200');
+    btnDelivery.classList.remove('border-gold-500', 'bg-gold-50');
+    btnDelivery.classList.add('border-charcoal-200');
+
+    deliverySection.classList.add('hidden');
+    shippingSection.classList.add('hidden');
+    pickupSection.classList.remove('hidden');
+
+    // Init map after section is visible
+    setTimeout(initMap, 100);
+
+    updateTotal();
+  }
+
+  btnDelivery.addEventListener('click', setDelivery);
+  btnPickup.addEventListener('click', setPickup);
+
+  // --- Shipping method change ---
+  document.querySelectorAll('input[name="shipping"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      // Update visual selection styling
+      document.querySelectorAll('#shipping-section label').forEach(function(lbl) {
+        lbl.classList.remove('border-gold-500', 'bg-gold-50');
+        lbl.classList.add('border-charcoal-200');
+      });
+      this.closest('label').classList.remove('border-charcoal-200');
+      this.closest('label').classList.add('border-gold-500', 'bg-gold-50');
+
+      updateTotal();
+    });
+  });
+
+  // --- Gift wrap change ---
+  document.getElementById('gift-wrap').addEventListener('change', updateTotal);
+
+  // --- Map functions ---
+  function initMap() {
+    if (map) return;
+
+    if (stores.length === 0) {
+      document.getElementById('store-map').innerHTML =
+        '<div class="flex items-center justify-center h-full text-charcoal-400 text-sm">No stores available.</div>';
+      return;
+    }
+
+    const center = stores.length > 0 ? [stores[0].lat, stores[0].lng] : [51.5074, -0.1278];
+
+    map = L.map('store-map').setView(center, 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    stores.forEach(function(store) {
+      const marker = L.marker([store.lat, store.lng]).addTo(map);
+      marker.bindPopup('<strong>' + store.name + '</strong><br>' + store.address +
+        '<br><button type="button" class="select-store-btn mt-2 px-3 py-1 bg-gold-500 text-charcoal-950 text-xs font-semibold rounded" ' +
+        'data-store-id="' + store.id + '" data-store-name="' + store.name + '" data-store-address="' + store.address + '">' +
+        'Select this store</button>');
+
+      marker.on('popupopen', function() {
+        const btn = document.querySelector('.select-store-btn[data-store-id="' + store.id + '"]');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            selectStore(store.id, store.name, store.address);
+          });
+        }
+      });
+
+      markers.push(marker);
+    });
+
+    if (stores.length > 1) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    if (selectedStoreId) {
+      const store = stores.find(s => s.id == selectedStoreId);
+      if (store) {
+        selectStore(store.id, store.name, store.address);
+      }
+    }
+  }
+
+  function selectStore(id, name, address) {
+    selectedStore = { id, name, address };
+    document.getElementById('selected_store_id').value = id;
+    document.getElementById('selected-store-name').textContent = name;
+    document.getElementById('selected-store-address').textContent = address;
+    document.getElementById('selected-store-info').classList.remove('hidden');
+
+    markers.forEach(function(m) {
+      const latlng = m.getLatLng();
+      const store = stores.find(s => s.lat === latlng.lat && s.lng === latlng.lng);
+      if (store && store.id === id) {
+        m.setZIndexOffset(1000);
+        m.openPopup();
+      } else {
+        m.setZIndexOffset(0);
+      }
+    });
+  }
+
+  // --- Payment method sync ---
+  document.querySelectorAll('input[name="payment_method_radio"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('form-payment-method').value = this.value;
+    });
+  });
+
+  // Initialize total on page load
+  updateTotal();
+</script>
 {% endblock content %}

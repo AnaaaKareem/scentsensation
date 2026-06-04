@@ -123,6 +123,12 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds (adjust as needed)
 
 
+# PayPal Configuration
+PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
+
+
 # Security headers (for production)
 if not DEBUG:
     SECURE_SSL_REDIRECT = True

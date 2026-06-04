@@ -19,10 +19,17 @@
       Unlock exclusive discounts, early access to new fragrances, and personalized recommendations. Pick the plan that suits your scent lifestyle.
     </p>
     {% if current_membership and current_membership.is_active and current_membership.tier %}
-    <div class="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-gold-500/10 border border-gold-500/30 rounded-brand">
-      <span class="text-gold-400 text-sm font-medium">Current Plan:</span>
-      <span class="text-cream-100 text-sm font-semibold">{{ current_membership.tier.name }}</span>
-      <span class="text-charcoal-400 text-xs">— {{ current_membership.tier.discount_rate }}% off all products</span>
+    <div class="mt-8 inline-flex flex-col sm:flex-row items-center gap-3 px-6 py-3 bg-gold-500/10 border border-gold-500/30 rounded-brand">
+      <div class="flex items-center gap-2">
+        <span class="text-gold-400 text-sm font-medium">Current Plan:</span>
+        <span class="text-cream-100 text-sm font-semibold">{{ current_membership.tier.name }}</span>
+        <span class="text-charcoal-400 text-xs">— {{ current_membership.tier.discount_rate }}% off all products</span>
+      </div>
+      {% if current_membership.end_date %}
+      <span class="text-cream-200/80 text-xs sm:border-l border-gold-500/30 pt-1 sm:pt-0 sm:pl-3">
+        Expires on <span class="font-semibold text-cream-100">{{ current_membership.end_date|date:"F d, Y" }}</span>
+      </span>
+      {% endif %}
     </div>
     {% endif %}
   </div>
@@ -47,17 +54,32 @@
     <!-- Tier cards -->
     <div class="grid md:grid-cols-3 gap-8">
       {% for tier in tiers %}
-      <div class="bg-white border {% if forloop.last %}border-gold-400 ring-2 ring-gold-400/20{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
+      <div class="bg-white border {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}border-gold-500 ring-4 ring-gold-500/40 shadow-xl shadow-gold-500/20 z-10 scale-[1.02]{% elif tier == most_popular_tier %}border-gold-400 ring-2 ring-gold-400/20 shadow-lg shadow-gold-400/5{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
 
-        {% if forloop.last %}
-        <div class="absolute top-0 left-0 right-0 bg-gold-500 text-center py-1.5">
+        {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
+        <div class="absolute top-0 left-0 right-0 bg-gold-600 text-center py-1.5 z-10 shadow-sm">
+          <span class="text-cream-50 text-xs font-bold tracking-wide-plus uppercase">Your Active Plan</span>
+        </div>
+        {% elif tier == most_popular_tier %}
+        <div class="absolute top-0 left-0 right-0 bg-gold-500 text-center py-1.5 z-10">
           <span class="text-charcoal-950 text-xs font-bold tracking-wide-plus uppercase">Most Popular</span>
+          {% if tier.subscriber_count > 0 %}
+          <span class="text-charcoal-950 text-xs font-medium ml-2">({{ tier.subscriber_count }} active subscriber{{ tier.subscriber_count|pluralize }})</span>
+          {% endif %}
         </div>
         {% endif %}
 
-        <div class="p-8 {% if forloop.last %}pt-14{% endif %} flex-1 flex flex-col">
+        <div class="p-8 {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id or tier == most_popular_tier %}pt-14{% endif %} flex-1 flex flex-col">
           <!-- Tier name -->
-          <h3 class="font-display text-2xl text-charcoal-900 mb-2">{{ tier.name }}</h3>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display text-2xl text-charcoal-900">{{ tier.name }}</h3>
+            {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gold-100 border border-gold-300 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-gold-600"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <span class="text-gold-700 text-xs font-semibold">Current</span>
+            </span>
+            {% endif %}
+          </div>
           {% if tier.description %}
           <p class="text-charcoal-500 text-sm mb-6">{{ tier.description }}</p>
           {% endif %}
@@ -116,8 +138,17 @@
 
           <!-- CTA -->
           {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
-          <div class="text-center py-3 bg-gold-50 border border-gold-200 rounded-brand">
-            <span class="text-gold-700 text-sm font-semibold">✓ Your Current Plan</span>
+          <div class="text-center py-3.5 bg-gold-50 border-2 border-gold-400 rounded-brand shadow-sm">
+            <div class="flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-gold-600"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span class="text-gold-700 text-sm font-bold tracking-wide">Your Active Plan</span>
+            </div>
+            <p class="text-gold-600 text-xs mt-1">{{ current_membership.tier.discount_rate }}% discount active</p>
+            {% if current_membership.end_date %}
+            <p class="text-charcoal-500 text-xs mt-1.5 border-t border-gold-200/60 pt-1.5 mx-4">
+              Expires on <span class="font-medium text-charcoal-800">{{ current_membership.end_date|date:"F d, Y" }}</span>
+            </p>
+            {% endif %}
           </div>
           {% else %}
           <form method="POST" action="{% url 'membership_checkout' %}" class="membership-form">

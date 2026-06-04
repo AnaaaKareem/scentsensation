@@ -47,11 +47,69 @@
   <style>
     [x-cloak] { display: none !important; }
     html { scroll-behavior: smooth; }
+
+    /* ===== Scroll-triggered animations ===== */
+    .anim {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .anim.anim-left {
+      transform: translateX(-40px);
+    }
+    .anim.anim-right {
+      transform: translateX(40px);
+    }
+    .anim.anim-scale {
+      transform: scale(0.92);
+    }
+    .anim.anim-delay-1 { transition-delay: 0.1s; }
+    .anim.anim-delay-2 { transition-delay: 0.2s; }
+    .anim.anim-delay-3 { transition-delay: 0.3s; }
+    .anim.anim-delay-4 { transition-delay: 0.4s; }
+    .anim.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Hero-specific animations */
+    .anim-hero {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .anim-hero.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .anim-hero-delay-1 { transition-delay: 0.2s; }
+    .anim-hero-delay-2 { transition-delay: 0.4s; }
+    .anim-hero-delay-3 { transition-delay: 0.6s; }
+
+    /* ===== Basket add animation ===== */
+    @keyframes basket-bounce {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.35); }
+      50% { transform: scale(0.9); }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes added-flash {
+      0% { background-color: #d4a824; color: #0d0d0d; }
+      50% { background-color: #22c55e; color: #fff; }
+      100% { background-color: #d4a824; color: #0d0d0d; }
+    }
+    .basket-bounce {
+      animation: basket-bounce 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .added-flash {
+      animation: added-flash 0.6s ease-in-out;
+    }
   </style>
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-cream-100 text-charcoal-900 font-body antialiased">
+<body class="bg-cream-100 text-charcoal-900 font-body antialiased flex flex-col min-h-screen">
 
   <!-- Messages -->
   {% if messages %}
@@ -80,9 +138,12 @@
         <div class="hidden md:flex items-center gap-8">
           <a href="{% url 'homepage' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Home</a>
           <a href="{% url 'store' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Shop</a>
-          <a href="{% url 'about' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">About</a>
-          <a href="{% url 'contact' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Contact</a>
-          <a href="{% url 'basket' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Basket</a>
+          <a href="{% url 'basket' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
+            Basket
+            <span id="basket-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-gold-500 text-charcoal-950 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
+              {{ request.session.basket_count|default:'' }}
+            </span>
+          </a>
           {% if request.session.customer_id %}
             <!-- Logged in: show dropdown -->
             <div class="relative group">
@@ -122,9 +183,7 @@
       <div class="px-6 py-4 space-y-3">
         <a href="{% url 'homepage' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Home</a>
         <a href="{% url 'store' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Shop</a>
-        <a href="{% url 'about' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">About</a>
-        <a href="{% url 'contact' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Contact</a>
-        <a href="{% url 'basket' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Basket</a>
+        <a href="{% url 'basket' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Basket<span id="basket-badge-mobile" class="hidden ml-1.5 w-5 h-5 bg-gold-500 text-charcoal-950 text-[10px] font-bold rounded-full inline-flex items-center justify-center transition-transform duration-300">{{ request.session.basket_count|default:'' }}</span></a>
         {% if request.session.customer_id %}
           <a href="{% url 'account' %}" class="block text-gold-400 text-sm tracking-wide-plus uppercase font-medium">{{ request.session.first_name|default:"Account" }}</a>
           <a href="{% url 'signout' %}" class="block text-burgundy-400 text-sm tracking-wide-plus uppercase font-medium">Sign Out</a>
@@ -136,7 +195,7 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="pt-16">
+  <main class="pt-16 flex-1">
     {% block content %}{% endblock %}
   </main>
 
@@ -203,6 +262,77 @@
         mobileMenu.classList.toggle('hidden');
       });
     }
+
+    /* ===== Scroll animation observer ===== */
+    (function() {
+      var els = document.querySelectorAll('.anim, .anim-hero');
+      if (!els.length) return;
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        els.forEach(function(el) { observer.observe(el); });
+      } else {
+        els.forEach(function(el) { el.classList.add('visible'); });
+      }
+
+      /* Hero elements animate immediately on load */
+      var heroes = document.querySelectorAll('.anim-hero');
+      heroes.forEach(function(el) {
+        setTimeout(function() { el.classList.add('visible'); }, 100);
+      });
+    })();
+
+    /* ===== Basket add animation ===== */
+    (function() {
+      // Read the basket count from Django session
+      var basketCount = parseInt('{{ request.session.basket_count|default:0 }}') || 0;
+
+      function updateBadge(count) {
+        var badge = document.getElementById('basket-badge');
+        var badgeMobile = document.getElementById('basket-badge-mobile');
+        if (count > 0) {
+          if (badge) { badge.textContent = count; badge.classList.remove('hidden'); }
+          if (badgeMobile) { badgeMobile.textContent = count; badgeMobile.classList.remove('hidden'); }
+          // Trigger bounce
+          if (badge) { badge.classList.remove('basket-bounce'); void badge.offsetWidth; badge.classList.add('basket-bounce'); }
+          if (badgeMobile) { badgeMobile.classList.remove('basket-bounce'); void badgeMobile.offsetWidth; badgeMobile.classList.add('basket-bounce'); }
+        } else {
+          if (badge) badge.classList.add('hidden');
+          if (badgeMobile) badgeMobile.classList.add('hidden');
+        }
+      }
+
+      // Intercept all "Add to Basket" form submissions
+      document.querySelectorAll('form').forEach(function(form) {
+        var addBtn = form.querySelector('button[name="add_basket"]');
+        if (!addBtn) return;
+
+        form.addEventListener('submit', function(e) {
+          // Animate the button
+          var originalText = addBtn.textContent;
+          addBtn.textContent = 'Added ✓';
+          addBtn.classList.add('added-flash');
+          setTimeout(function() {
+            addBtn.textContent = originalText;
+            addBtn.classList.remove('added-flash');
+          }, 800);
+
+          // Update badge count
+          basketCount++;
+          updateBadge(basketCount);
+        });
+      });
+
+      // Run on page load to initialize the badge state
+      updateBadge(basketCount);
+    })();
   </script>
 
   {% block extra_js %}{% endblock %}

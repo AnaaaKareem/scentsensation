@@ -15,15 +15,23 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Q, Count, Sum, F
+from django.db.models import Q, Count, Sum, F, Sum as _Sum
 from django.db import transaction
 from .models import *
 from .forms import *
 import stripe
 import random
+import paypalrestsdk
 
 # Initialize Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# Initialize PayPal
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET,
+})
 
 
 def home(request):
@@ -91,12 +99,20 @@ def signup(request):
 
 
 def signin(request):
+    remember_checked = False
     if request.method == 'POST':
         email = request.POST.get('username')
         password = request.POST.get('password')
+        remember = request.POST.get('remember') == 'on'
+        remember_checked = remember
         try:
             customer = Customer.objects.get(email_address=email)
             if check_password(password, customer.password):
+                # If "remember me" is checked, extend session to 30 days
+                if remember:
+                    request.session.set_expiry(2592000)  # 30 days in seconds
+                else:
+                    request.session.set_expiry(0)  # expire when browser closes
                 verification_code = random.randint(100000, 999999)
                 print(verification_code)
                 request.session['2fa_code'] = str(verification_code)
@@ -121,7 +137,7 @@ def signin(request):
                 messages.error(request, 'Invalid email or password')
         except Customer.DoesNotExist:
             messages.error(request, 'Invalid email or password')
-    return render(request, 'store/signin.html')
+    return render(request, 'store/signin.html', {'remember_checked': remember_checked})
 
 
 def verify_2fa(request):
@@ -310,6 +326,14 @@ def account(request):
                 request.session.flush()
                 return redirect('homepage')
 
+    current_membership = None
+    if customer_id:
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            current_membership = getattr(customer, 'membership', None)
+        except Customer.DoesNotExist:
+            pass
+
     context = {
         'first_name': request.session.get('first_name'),
         'middle_name': request.session.get('middle_name', ''),
@@ -323,7 +347,8 @@ def account(request):
         'county': request.session.get('county'),
         'postcode': request.session.get('postcode'),
         'country': request.session.get('country'),
-        'membership': request.session.get('membership')
+        'current_membership': current_membership,
+        'membership': current_membership.tier.name if (current_membership and current_membership.is_active and current_membership.tier) else None
     }
     return render(request, 'store/accountInfo.html', context)
 
@@ -447,8 +472,10 @@ def basket(request):
             'subtotal': round(subtotal, 2),
             'discount': round(discount, 2),
             'total': round(total, 2),
-            'discount_rate': discount_rate
+            'discount_rate': discount_rate,
+            'basket_count': sum(item['quantity'] for item in items),
         }
+        request.session['basket_count'] = context['basket_count']
     except Customer.DoesNotExist:
         messages.error(request, "Customer not found")
         return redirect('signinAccount')
@@ -464,6 +491,9 @@ def delete_from_basket(request, product_id):
     if not customer_id:
         return redirect('signinAccount')
     Basket.objects.filter(customer_id=customer_id, product_id=product_id).delete()
+    # Recalculate basket count
+    request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
+        total=models.Sum('quantity'))['total'] or 0
     return redirect('basket')
 
 
@@ -481,6 +511,9 @@ def add_quantity(request, product_id):
                 basket_item.save()
         except Exception as e:
             messages.error(request, f"Error: {e}")
+    # Recalculate basket count
+    request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
+        total=models.Sum('quantity'))['total'] or 0
     return redirect('basket')
 
 
@@ -498,6 +531,9 @@ def remove_quantity(request, product_id):
             pass
         except Exception as e:
             messages.error(request, f"Error: {e}")
+    # Recalculate basket count
+    request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
+        total=models.Sum('quantity'))['total'] or 0
     return redirect('basket')
 
 
@@ -506,13 +542,19 @@ def checkout(request):
     if not customer_id:
         return redirect('homepage')
 
-    # Get fulfilment and payment method from POST if available
+    # Get fulfilment, payment method, shipping, gift from POST if available
     if request.method == 'POST':
-        fulfilment = request.POST.get('fulfilment', 'Pickup')
+        fulfilment = request.POST.get('fulfilment', 'Delivery')
         payment_method = request.POST.get('payment_method', 'Card')
+        selected_store_id = request.POST.get('selected_store_id', '')
+        shipping_cost = float(request.POST.get('shipping_cost', 0))
+        gift_wrap_cost = float(request.POST.get('gift_wrap_cost', 0))
     else:
-        fulfilment = request.session.get('fulfilment', 'Pickup')
+        fulfilment = request.session.get('fulfilment', 'Delivery')
         payment_method = 'Card'
+        selected_store_id = ''
+        shipping_cost = 0
+        gift_wrap_cost = 0
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
@@ -526,7 +568,7 @@ def checkout(request):
 
         subtotal = sum(item.product.price * item.quantity for item in basket_items)
         discount = round(subtotal * (discount_rate / 100), 2)
-        total = round(subtotal - discount, 2)
+        total = round(subtotal - discount + shipping_cost + gift_wrap_cost, 2)
 
         # Build items for template display
         items_data = []
@@ -543,19 +585,119 @@ def checkout(request):
                 'image': image,
             })
 
+        # Get all stores for the map
+        stores = Store.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
+
         if request.method == 'POST':
-            # Build Stripe line items
+            # Store selection validation for pickup
+            selected_store = None
+            if fulfilment == 'Pickup':
+                if selected_store_id:
+                    try:
+                        selected_store = Store.objects.get(store_id=selected_store_id)
+                    except Store.DoesNotExist:
+                        messages.error(request, "Selected store not found. Please try again.")
+                        return redirect('checkout')
+                else:
+                    messages.error(request, "Please select a store for pickup.")
+                    return redirect('checkout')
+
+            # --- PayPal payment flow ---
+            if payment_method == 'PayPal':
+                # Build PayPal payment
+                item_list = []
+                for item in basket_items:
+                    item_list.append({
+                        "name": f"{item.product.brand} - {item.product.product_name}",
+                        "sku": str(item.product.product_id),
+                        "price": f"{item.product.price:.2f}",
+                        "currency": "GBP",
+                        "quantity": item.quantity,
+                    })
+
+                payment = paypalrestsdk.Payment({
+                    "intent": "sale",
+                    "payer": {"payment_method": "paypal"},
+                    "redirect_urls": {
+                        "return_url": request.build_absolute_uri('/paypal/success/'),
+                        "cancel_url": request.build_absolute_uri('/paypal/cancel/'),
+                    },
+                    "transactions": [{
+                        "item_list": {"items": item_list},
+                        "amount": {
+                            "total": f"{total:.2f}",
+                            "currency": "GBP",
+                            "details": {
+                                "subtotal": f"{subtotal:.2f}",
+                                "discount": f"{discount:.2f}",
+                                "shipping": f"{shipping_cost:.2f}",
+                            },
+                        },
+                        "description": f"Scent Sensation Order — {fulfilment}",
+                    }],
+                })
+
+                if payment.create():
+                    # Save pending order data in session
+                    request.session['pending_checkout'] = {
+                        'customer_id': customer_id,
+                        'subtotal': str(subtotal),
+                        'discount': str(discount),
+                        'shipping_cost': str(shipping_cost),
+                        'gift_wrap_cost': str(gift_wrap_cost),
+                        'total': str(total),
+                        'fulfilment': fulfilment,
+                        'payment_method': payment_method,
+                        'selected_store_id': selected_store_id,
+                        'paypal_payment_id': payment.id,
+                    }
+                    # Redirect to PayPal approval URL
+                    for link in payment.links:
+                        if link.rel == "approval_url":
+                            return redirect(link.href)
+                else:
+                    messages.error(request, f"PayPal error: {payment.error}")
+                    return redirect('checkout')
+
+            # --- Stripe / Card payment flow ---
             line_items = []
             for item in basket_items:
                 line_items.append({
                     'price_data': {
-                        'currency': 'usd',
+                        'currency': 'gbp',
                         'unit_amount': int(item.product.price * 100),
                         'product_data': {
                             'name': f"{item.product.brand} - {item.product.product_name}",
                         },
                     },
                     'quantity': item.quantity,
+                })
+
+            # Add shipping as a line item if applicable
+            if shipping_cost > 0:
+                shipping_label = "Express Delivery" if shipping_cost < 9 else "Next Day Delivery"
+                line_items.append({
+                    'price_data': {
+                        'currency': 'gbp',
+                        'unit_amount': int(shipping_cost * 100),
+                        'product_data': {
+                            'name': shipping_label,
+                        },
+                    },
+                    'quantity': 1,
+                })
+
+            # Add gift wrap as a line item if applicable
+            if gift_wrap_cost > 0:
+                line_items.append({
+                    'price_data': {
+                        'currency': 'gbp',
+                        'unit_amount': int(gift_wrap_cost * 100),
+                        'product_data': {
+                            'name': "Gift Wrapping",
+                        },
+                    },
+                    'quantity': 1,
                 })
 
             # Discount handling
@@ -576,9 +718,12 @@ def checkout(request):
                     'customer_id': customer_id,
                     'subtotal': str(subtotal),
                     'discount': str(discount),
+                    'shipping_cost': str(shipping_cost),
+                    'gift_wrap_cost': str(gift_wrap_cost),
                     'total': str(total),
                     'fulfilment': fulfilment,
                     'payment_method': payment_method,
+                    'selected_store_id': selected_store_id,
                 }
             )
 
@@ -586,9 +731,12 @@ def checkout(request):
                 'customer_id': customer_id,
                 'subtotal': subtotal,
                 'discount': discount,
+                'shipping_cost': shipping_cost,
+                'gift_wrap_cost': gift_wrap_cost,
                 'total': total,
                 'fulfilment': fulfilment,
                 'payment_method': payment_method,
+                'selected_store_id': selected_store_id,
             }
 
             return redirect(session.url, code=303)
@@ -602,6 +750,8 @@ def checkout(request):
             'discount_rate': discount_rate,
             'fulfilment': fulfilment,
             'payment_method': payment_method,
+            'stores': stores,
+            'selected_store_id': selected_store_id,
         }
         return render(request, 'store/checkout.html', context)
 
@@ -666,6 +816,14 @@ def payment_success(request):
                     product=item.product,
                     order=order
                 )
+
+            # If pickup, store the selected store in session for receipt
+            selected_store_id = metadata.get('selected_store_id', '')
+            if selected_store_id:
+                try:
+                    request.session['pickup_store'] = Store.objects.get(store_id=selected_store_id).name
+                except Store.DoesNotExist:
+                    pass
 
             # Clear basket
             Basket.objects.filter(customer=customer).delete()
@@ -799,7 +957,9 @@ def contact(request):
 
 def membership_page(request):
     """Display all active membership tiers for subscription."""
-    tiers = MembershipTier.objects.filter(is_active=True).order_by('monthly_price')
+    tiers = MembershipTier.objects.filter(is_active=True).annotate(
+        subscriber_count=Count('subscriptions', filter=Q(subscriptions__is_active=True))
+    ).order_by('monthly_price')
     customer_id = request.session.get('customer_id')
     current_membership = None
     if customer_id:
@@ -808,9 +968,21 @@ def membership_page(request):
             current_membership = getattr(customer, 'membership', None)
         except Customer.DoesNotExist:
             pass
+
+    # Determine the most popular tier based on active subscriptions count
+    most_popular_tier = None
+    if tiers.exists():
+        max_subscribers = max(t.subscriber_count for t in tiers)
+        if max_subscribers > 0:
+            most_popular_tier = next(t for t in tiers if t.subscriber_count == max_subscribers)
+        else:
+            # Fallback to the 'elite' slug tier if no subscriptions exist
+            most_popular_tier = next((t for t in tiers if t.slug == 'elite'), None)
+
     context = {
         'tiers': tiers,
         'current_membership': current_membership,
+        'most_popular_tier': most_popular_tier,
     }
     return render(request, 'store/membership.html', context)
 
@@ -914,9 +1086,9 @@ def membership_success(request):
         # For payment mode: payment_status == 'paid'; for subscription mode: status == 'complete'
         if session.payment_status == 'paid' or session.status == 'complete':
             metadata = session.metadata
-            customer_id = metadata.get('customer_id')
-            tier_id = metadata.get('tier_id')
-            billing = metadata.get('billing', 'monthly')
+            customer_id = metadata['customer_id']
+            tier_id = metadata['tier_id']
+            billing = metadata['billing'] if 'billing' in metadata else 'monthly'
 
             if customer_id and tier_id:
                 customer = Customer.objects.get(customer_id=customer_id)
@@ -943,12 +1115,23 @@ def membership_success(request):
                 # Update session
                 request.session['membership'] = tier.name
 
+                # Calculate next payment date
+                if billing == 'yearly':
+                    next_payment_date = end_date.date()
+                else:
+                    from django.utils import timezone as tz
+                    next_payment_date = (tz.now() + tz.timedelta(days=30)).date()
+
                 return render(request, 'store/membership_success.html', {
                     'tier': tier,
                     'billing': billing,
+                    'start_date': timezone.now().date(),
+                    'end_date': end_date.date(),
+                    'next_payment_date': next_payment_date,
                 })
     except Exception as e:
-        pass
+        from django.contrib import messages as django_messages
+        django_messages.error(request, f"Error activating membership: {e}")
 
     return redirect('membership')
 
@@ -979,3 +1162,121 @@ def membership_cancel(request):
             pass
 
     return redirect('membership')
+
+
+def paypal_success(request):
+    """Handle PayPal return after user approves payment."""
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    if not payment_id or not payer_id:
+        messages.error(request, "PayPal payment was not completed.")
+        return redirect('basket')
+
+    pending = request.session.get('pending_checkout')
+    if not pending or pending.get('paypal_payment_id') != payment_id:
+        messages.error(request, "Invalid PayPal session. Please try again.")
+        return redirect('basket')
+
+    try:
+        payment = paypalrestsdk.Payment.find(payment_id)
+
+        if payment.execute({"payer_id": payer_id}):
+            # Payment executed successfully — create the order
+            customer_id = pending['customer_id']
+            customer = Customer.objects.get(customer_id=customer_id)
+            basket_items = list(Basket.objects.filter(customer=customer).select_related('product'))
+
+            subtotal = float(pending['subtotal'])
+            discount = float(pending['discount'])
+            total = float(pending['total'])
+            fulfilment = pending['fulfilment']
+            selected_store_id = pending.get('selected_store_id', '')
+
+            with transaction.atomic():
+                order = Orders.objects.create(
+                    gift_card=None,
+                    order_date=timezone.now(),
+                    order_status='Paid',
+                    order_type=fulfilment,
+                    payment_method='PayPal',
+                    installment=False,
+                    total_payment=total,
+                )
+
+                for item in basket_items:
+                    OrderItems.objects.create(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        price=item.product.price,
+                    )
+                    Places.objects.create(
+                        customer=customer,
+                        product=item.product,
+                        order=order,
+                    )
+
+                # If pickup, store the selected store name for receipt
+                if selected_store_id:
+                    try:
+                        request.session['pickup_store'] = Store.objects.get(store_id=selected_store_id).name
+                    except Store.DoesNotExist:
+                        pass
+
+                # Clear basket
+                Basket.objects.filter(customer=customer).delete()
+
+            # Clear pending checkout
+            request.session.pop('pending_checkout', None)
+
+            # Send confirmation email
+            items_data = []
+            for item in basket_items:
+                image = ProductImages.objects.filter(product=item.product).first()
+                items_data.append({
+                    'brand': item.product.brand,
+                    'product_name': item.product.product_name,
+                    'price': item.product.price,
+                    'quantity': item.quantity,
+                    'image': image,
+                })
+
+            discount_rate = int((discount / subtotal * 100) if subtotal else 0)
+
+            subject = f"Order #{order.order_id}"
+            html_message = render_to_string('store/receipt.html', {
+                'customer_email': request.session.get('email_address'),
+                'order_id': order.order_id,
+                'items': items_data,
+                'subtotal': round(subtotal, 2),
+                'discount_rate': discount_rate,
+                'discount': round(discount, 2),
+                'total': round(total, 2),
+            })
+            plain_message = strip_tags(html_message)
+            send_mail(subject, plain_message, settings.EMAIL_HOST_USER,
+                      [request.session.get('email_address')], html_message=html_message)
+
+            return render(request, 'store/payment_success.html', {
+                'order_id': order.order_id,
+                'items': items_data,
+                'subtotal': round(subtotal, 2),
+                'discount_rate': discount_rate,
+                'discount': round(discount, 2),
+                'total': round(total, 2),
+            })
+        else:
+            messages.error(request, f"PayPal execution error: {payment.error}")
+            return redirect('basket')
+
+    except Exception as e:
+        messages.error(request, f"PayPal processing error: {e}")
+        return redirect('basket')
+
+
+def paypal_cancel(request):
+    """Handle PayPal cancellation."""
+    request.session.pop('pending_checkout', None)
+    messages.warning(request, "PayPal payment was cancelled.")
+    return redirect('checkout')
