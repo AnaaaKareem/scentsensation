@@ -214,10 +214,11 @@
         <div class="mb-6">
           <label for="promo" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Promo Code</label>
           <div class="flex gap-2">
-            <input type="text" id="promo" name="promo_code" placeholder="Enter code"
+            <input type="text" id="promo" name="promo_code" value="{{ promo_code|default:'' }}" placeholder="Enter code"
               class="flex-1 px-4 py-2.5 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500">
-            <button type="button" class="px-4 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand hover:bg-charcoal-800 transition-colors">Apply</button>
+            <button type="button" id="apply-promo-btn" class="px-4 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand hover:bg-charcoal-800 transition-colors">Apply</button>
           </div>
+          <div id="promo-msg" class="mt-2 text-xs hidden"></div>
         </div>
 
         <!-- Totals -->
@@ -240,6 +241,10 @@
             <span class="text-charcoal-500">Gift Wrapping</span>
             <span class="text-charcoal-900" id="summary-gift">&pound;5.00</span>
           </div>
+          <div class="flex justify-between" id="promo-row" {% if not promo_discount %}style="display: none;"{% endif %}>
+            <span class="text-charcoal-500">Promo Code{% if promo_code %} ({{ promo_code }}){% endif %}</span>
+            <span class="text-burgundy-700" id="summary-promo">−&pound;{{ promo_discount|default:"0.00" }}</span>
+          </div>
           <div class="border-t border-cream-300 pt-3 mt-3">
             <div class="flex justify-between items-baseline">
               <span class="text-charcoal-900 font-semibold">Total</span>
@@ -255,19 +260,36 @@
           <input type="hidden" name="gift_wrap_cost" id="form-gift-cost" value="0">
           <input type="hidden" name="computed_total" id="form-computed-total" value="{{ total }}">
           <input type="hidden" name="payment_method" id="form-payment-method" value="{{ payment_method|default:'Card' }}">
+          <input type="hidden" name="promo_code" id="form-promo-code" value="{{ promo_code|default:'' }}">
 
           <!-- Payment Method -->
           <div class="mt-6">
             <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
-            <div class="space-y-2 mb-4">
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="payment_method_radio" value="Card" {% if payment_method == 'Card' or not payment_method %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-700 text-sm">Card (Stripe)</span>
-              </label>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="payment_method_radio" value="PayPal" {% if payment_method == 'PayPal' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-700 text-sm">PayPal</span>
-              </label>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <button type="button" id="pay-card"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-center transition-all hover:border-gold-400 {% if payment_method == 'Card' or not payment_method %}selected{% endif %}"
+                data-value="Card">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-charcoal-700">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9.75V18A2.25 2.25 0 004.5 20.25h15A2.25 2.25 0 0021.75 18V9.75m-9-3.75h9.75m-9 0V5.25A2.25 2.25 0 0112 3H6.75A2.25 2.25 0 004.5 5.25v.75" />
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">Card</span>
+              </button>
+              <button type="button" id="pay-paypal"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'PayPal' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'PayPal' %}selected{% endif %}"
+                data-value="PayPal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-blue-600">
+                  <path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.093 3.12a.77.77 0 01.76-.65h5.38c3.68 0 5.56 1.88 5.02 4.72-.64 3.36-3.28 4.96-6.38 4.96H7.15l-1.08 5.7a.64.64 0 01-.63.53h.01zm1.34-7.44h1.48c1.9 0 3.16-.92 3.5-2.68.3-1.56-.54-2.48-2.24-2.48H9.64l-1.22 5.16zm10.6 8.4h-4.46a.64.64 0 01-.63-.74l1.7-8.9a.77.77 0 01.76-.65h2.2c1.76 0 2.88.42 3.36 1.26.24.42.28.94.12 1.54l-.04.2c-.3 1.56-1.26 2.6-2.82 3.02.58.32.82.9.62 1.92l-.38 2c-.08.4-.02.66.2.82.2.14.5.17.86.09h-.01z"/>
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">PayPal</span>
+              </button>
+              <button type="button" id="pay-cash"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'Cash' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'Cash' %}selected{% endif %}"
+                data-value="Cash">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.104 1.454.17 2.18.17h.002a.776.776 0 00.613-.326.78.78 0 00.088-.746 9.72 9.72 0 00-2.938-4.018M2.25 18.75a60.07 60.07 0 00-1.313-3.746m13.313 3.746a60.07 60.07 0 01-1.313-3.746M6.75 7.364c-3.048 0-5.523 2.096-5.523 4.682 0 2.587 2.475 4.682 5.523 4.682 3.047 0 5.523-2.095 5.523-4.682 0-2.586-2.476-4.682-5.523-4.682zm0 0c1.668 0 3.018 1.066 3.018 2.382 0 1.316-1.35 2.382-3.018 2.382S3.732 11.062 3.732 9.746c0-1.316 1.35-2.382 3.018-2.382z" />
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">Cash</span>
+              </button>
             </div>
           </div>
 
@@ -478,12 +500,52 @@
     });
   }
 
-  // --- Payment method sync ---
-  document.querySelectorAll('input[name="payment_method_radio"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-      document.getElementById('form-payment-method').value = this.value;
+  // --- Payment method selection (button-based) ---
+  const paymentOptions = document.querySelectorAll('.payment-option');
+  const formPaymentMethod = document.getElementById('form-payment-method');
+
+  // Set active state based on current value
+  function setActivePayment(value) {
+    paymentOptions.forEach(function(btn) {
+      if (btn.dataset.value === value) {
+        btn.classList.add('border-gold-500', 'bg-gold-50');
+        btn.classList.remove('border-charcoal-200');
+      } else {
+        btn.classList.remove('border-gold-500', 'bg-gold-50');
+        btn.classList.add('border-charcoal-200');
+      }
+    });
+    if (formPaymentMethod) formPaymentMethod.value = value;
+  }
+
+  paymentOptions.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setActivePayment(this.dataset.value);
     });
   });
+
+  // --- Promo code Apply button ---
+  // Apply reloads the page with the promo code as a GET param so the server
+  // validates it server-side without triggering payment.
+  const applyPromoBtn = document.getElementById('apply-promo-btn');
+  const promoInput = document.getElementById('promo');
+  const promoMsg = document.getElementById('promo-msg');
+
+  if (applyPromoBtn && promoInput) {
+    applyPromoBtn.addEventListener('click', function() {
+      const code = promoInput.value.trim();
+      if (!code) {
+        if (promoMsg) {
+          promoMsg.textContent = 'Please enter a promo code.';
+          promoMsg.className = 'mt-2 text-xs text-burgundy-600';
+        }
+        return;
+      }
+      const params = new URLSearchParams(window.location.search);
+      params.set('promo_code', code);
+      window.location.search = params.toString();
+    });
+  }
 
   // Initialize total on page load
   updateTotal();

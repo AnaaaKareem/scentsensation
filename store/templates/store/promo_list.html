@@ -1,0 +1,81 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 lg:px-8 py-12">
+
+  <!-- Nav tabs -->
+  <div class="flex items-center gap-4 mb-10">
+    <a href="{% url 'promo_generate' %}" class="px-5 py-2.5 border border-charcoal-200 text-charcoal-600 text-sm font-medium rounded-brand hover:border-charcoal-400 transition-colors">
+      Generate
+    </a>
+    <a href="{% url 'promo_list' %}" class="px-5 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand transition-colors">
+      All Codes
+    </a>
+  </div>
+
+  <!-- Heading -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="font-display text-3xl text-charcoal-900 mb-2">All Promo Codes</h1>
+      <p class="text-charcoal-500 text-sm">{{ promo_codes|length }} promo code{{ promo_codes|pluralize }} total</p>
+    </div>
+  </div>
+
+  {% if promo_codes %}
+  <div class="bg-white border border-cream-300 rounded-brand overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-cream-100 border-b border-cream-300">
+          <th class="text-left px-4 py-3 text-charcoal-600 text-xs tracking-wide-plus uppercase font-semibold">Code</th>
+          <th class="text-left px-4 py-3 text-charcoal-600 text-xs tracking-wide-plus uppercase font-semibold">Amount</th>
+          <th class="text-left px-4 py-3 text-charcoal-600 text-xs tracking-wide-plus uppercase font-semibold">Created</th>
+          <th class="text-left px-4 py-3 text-charcoal-600 text-xs tracking-wide-plus uppercase font-semibold">Status</th>
+          <th class="text-left px-4 py-3 text-charcoal-600 text-xs tracking-wide-plus uppercase font-semibold">Redeemed At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for promo in promo_codes %}
+        <tr class="border-b border-cream-200 last:border-0 hover:bg-cream-50 transition-colors">
+          <td class="px-4 py-3 font-mono text-charcoal-900 tracking-wide">{{ promo.code }}</td>
+          <td class="px-4 py-3 text-charcoal-900 font-medium">£{{ promo.amount }}</td>
+          <td class="px-4 py-3 text-charcoal-500">{{ promo.created_at|date:"M d, Y H:i" }}</td>
+          <td class="px-4 py-3">
+            {% if promo.redeemed %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-charcoal-100 text-charcoal-500 text-xs font-medium rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Redeemed
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gold-50 text-gold-700 text-xs font-medium rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Active
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-charcoal-500">
+            {% if promo.redeemed_at %}
+              {{ promo.redeemed_at|date:"M d, Y H:i" }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-20">
+    <div class="w-16 h-16 bg-cream-200 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-charcoal-400">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <p class="text-charcoal-500 text-lg mb-2">No promo codes yet</p>
+    <a href="{% url 'promo_generate' %}" class="text-gold-600 hover:text-gold-700 text-sm font-medium underline">Generate your first code</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock content %}

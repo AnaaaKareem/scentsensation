@@ -292,7 +292,7 @@ class Orders(models.Model):
     order_date = models.DateTimeField()
     order_status = models.CharField(max_length=50)
     order_type = models.CharField(max_length=50, choices=[('Delivery', 'Delivery'), ('Pickup', 'Pickup')])
-    payment_method = models.CharField(max_length=50, choices=[('Card', 'Card'), ('Paypal', 'Paypal')])
+    payment_method = models.CharField(max_length=50, choices=[('Card', 'Card'), ('Paypal', 'Paypal'), ('Cash', 'Cash')])
     installment = models.BooleanField(default=False)
     total_payment = models.FloatField()
 
@@ -350,6 +350,23 @@ class GiftCards(models.Model):
 
     def __str__(self):
         return f"Gift Card #{self.gift_card_num}"
+
+
+class PromoCode(models.Model):
+    objects = models.Manager()
+    promo_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=20, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    redeemed = models.BooleanField(default=False)
+    redeemed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'PROMO_CODES'
+
+    def __str__(self):
+        return f"{self.code} (£{self.amount})"
 
 
 class Favourite(models.Model):

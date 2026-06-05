@@ -32,4 +32,6 @@ urlpatterns = [
     path('membership/cancel/', views.membership_cancel, name='membership_cancel'),
     path('paypal/success/', views.paypal_success, name='paypal_success'),
     path('paypal/cancel/', views.paypal_cancel, name='paypal_cancel'),
+    path('promo/', views.promo_generate, name='promo_generate'),
+    path('promo/list/', views.promo_list, name='promo_list'),
 ]

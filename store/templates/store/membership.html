@@ -177,12 +177,10 @@
     {% if current_membership and current_membership.is_active %}
     <div class="mt-16 text-center">
       <p class="text-charcoal-500 text-sm mb-3">Want to cancel your membership?</p>
-      <form method="POST" action="{% url 'membership_cancel' %}" class="inline" onsubmit="return confirm('Are you sure you want to cancel your {{ current_membership.tier.name }} membership? You will lose your {{ current_membership.tier.discount_rate }}% discount.');">
-        {% csrf_token %}
-        <button type="submit" class="text-burgundy-600 hover:text-burgundy-800 text-sm font-medium underline underline-offset-2 transition-colors">
-          Cancel Membership
-        </button>
-      </form>
+      <button type="button" id="cancel-membership-btn"
+        class="text-burgundy-600 hover:text-burgundy-800 text-sm font-medium underline underline-offset-2 transition-colors">
+        Cancel Membership
+      </button>
     </div>
     {% endif %}
 
@@ -214,6 +212,40 @@
     </div>
   </div>
 </section>
+
+<!-- Cancel Membership Modal -->
+{% if current_membership and current_membership.is_active %}
+<div id="cancel-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+  <!-- Backdrop -->
+  <div id="cancel-modal-backdrop" class="absolute inset-0 bg-charcoal-950/60 backdrop-blur-sm"></div>
+  <!-- Dialog -->
+  <div class="relative bg-white border border-cream-300 rounded-brand p-8 max-w-md w-full mx-6 shadow-2xl shadow-charcoal-950/20">
+    <div class="text-center">
+      <div class="w-14 h-14 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-burgundy-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.553c.036.098.118.197.254.254A48.4 48.4 0 0112 21c2.828 0 5.566-.312 8.053-.897.136-.057.218-.156.254-.254M12 9.75c.036-.098.118-.197.254-.254A48.4 48.4 0 0112 3c2.828 0 5.566.312 8.053.897.136.057.218.156.254.254M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+      </div>
+      <h3 class="font-display text-xl text-charcoal-900 mb-2">Cancel Membership?</h3>
+      <p class="text-charcoal-500 text-sm leading-relaxed mb-1">You are about to cancel your <span class="font-semibold text-charcoal-700">{{ current_membership.tier.name }}</span> membership.</p>
+      <p class="text-burgundy-600 text-sm font-medium mb-6">You will lose your {{ current_membership.tier.discount_rate }}% discount.</p>
+      <form method="POST" action="{% url 'membership_cancel' %}" id="cancel-membership-form">
+        {% csrf_token %}
+        <div class="flex gap-3">
+          <button type="button" id="cancel-modal-close"
+            class="flex-1 py-3 border border-charcoal-200 rounded-brand text-charcoal-700 text-sm font-medium hover:bg-cream-100 transition-colors">
+            Keep Membership
+          </button>
+          <button type="submit"
+            class="flex-1 py-3 bg-burgundy-600 hover:bg-burgundy-700 text-cream-50 rounded-brand text-sm font-semibold transition-colors">
+            Yes, Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {% endblock content %}
 
@@ -263,5 +295,36 @@
 
   monthlyBtn.addEventListener('click', showMonthly);
   yearlyBtn.addEventListener('click', showYearly);
+
+  // ===== Cancel membership modal =====
+  const cancelBtn = document.getElementById('cancel-membership-btn');
+  const cancelModal = document.getElementById('cancel-modal');
+  const cancelBackdrop = document.getElementById('cancel-modal-backdrop');
+  const cancelClose = document.getElementById('cancel-modal-close');
+
+  if (cancelBtn && cancelModal) {
+    function openCancelModal() {
+      cancelModal.classList.remove('hidden');
+      cancelModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCancelModal() {
+      cancelModal.classList.add('hidden');
+      cancelModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    cancelBtn.addEventListener('click', openCancelModal);
+    cancelClose.addEventListener('click', closeCancelModal);
+    cancelBackdrop.addEventListener('click', closeCancelModal);
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !cancelModal.classList.contains('hidden')) {
+        closeCancelModal();
+      }
+    });
+  }
 </script>
 {% endblock extra_js %}

@@ -16,6 +16,7 @@
         <form method="GET" action="{% url 'store' %}">
           <!-- Preserve existing query params (like page) -->
           {% if request.GET.page %}<input type="hidden" name="page" value="1">{% endif %}
+          <input type="hidden" name="sort" value="{{ sort|default:'featured' }}">
 
           <!-- Category -->
           <div class="mb-8">
@@ -93,12 +94,12 @@
       <div class="flex items-center justify-between mb-8">
         <p class="text-charcoal-500 text-sm">Showing <span class="text-charcoal-900 font-medium">{{ products.paginator.count }}</span> products</p>
         <label for="sort" class="sr-only">Sort by</label>
-        <select id="sort" class="border border-charcoal-200 rounded-brand px-4 py-2 text-sm text-charcoal-700 focus:outline-none focus:border-gold-500">
-          <option>Featured</option>
-          <option>Price: Low to High</option>
-          <option>Price: High to Low</option>
-          <option>Newest</option>
-          <option>Name: A–Z</option>
+        <select id="sort" name="sort" class="border border-charcoal-200 rounded-brand px-4 py-2 text-sm text-charcoal-700 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
+          <option value="featured" {% if sort == 'featured' or not sort %}selected{% endif %}>Featured</option>
+          <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="name_az" {% if sort == 'name_az' %}selected{% endif %}>Name: A–Z</option>
         </select>
       </div>
 
@@ -190,4 +191,13 @@
     </div>
   </div>
 </div>
+
+<script>
+function applySort(value) {
+  const params = new URLSearchParams(window.location.search);
+  params.set('sort', value);
+  params.delete('page'); // reset to page 1 on sort change
+  window.location.search = params.toString();
+}
+</script>
 {% endblock content %}

@@ -377,6 +377,18 @@ def store(request):
     if max_price:
         all_products = all_products.filter(price__lte=max_price)
 
+    sort_map = {
+        'featured': None,
+        'price_low': 'price',
+        'price_high': '-price',
+        'newest': '-product_id',
+        'name_az': 'product_name',
+    }
+    sort_param = request.GET.get('sort', 'featured')
+    order_field = sort_map.get(sort_param)
+    if order_field:
+        all_products = all_products.order_by(order_field)
+
     paginator = Paginator(all_products, 6)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -400,7 +412,8 @@ def store(request):
     context = {
         'products': page_obj,
         'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages()
+        'is_paginated': page_obj.has_other_pages(),
+        'sort': sort_param,
     }
     return render(request, 'store/storepage.html', context)
 
@@ -549,12 +562,14 @@ def checkout(request):
         selected_store_id = request.POST.get('selected_store_id', '')
         shipping_cost = float(request.POST.get('shipping_cost', 0))
         gift_wrap_cost = float(request.POST.get('gift_wrap_cost', 0))
+        promo_code_str = request.POST.get('promo_code', '').strip()
     else:
         fulfilment = request.session.get('fulfilment', 'Delivery')
         payment_method = 'Card'
         selected_store_id = ''
         shipping_cost = 0
         gift_wrap_cost = 0
+        promo_code_str = request.GET.get('promo_code', '').strip()
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
@@ -569,6 +584,25 @@ def checkout(request):
         subtotal = sum(item.product.price * item.quantity for item in basket_items)
         discount = round(subtotal * (discount_rate / 100), 2)
         total = round(subtotal - discount + shipping_cost + gift_wrap_cost, 2)
+
+        # Promo code handling
+        promo_code_obj = None
+        promo_discount = 0
+        if promo_code_str:
+            try:
+                promo_code_obj = PromoCode.objects.get(code=promo_code_str)
+                if promo_code_obj.redeemed:
+                    messages.warning(request, f"Promo code {promo_code_str} has already been redeemed.")
+                    promo_code_obj = None
+                    promo_code_str = ''
+                else:
+                    promo_discount = float(promo_code_obj.amount)
+                    total = round(total - promo_discount, 2)
+                    if total < 0:
+                        total = 0
+            except PromoCode.DoesNotExist:
+                messages.warning(request, f"Promo code {promo_code_str} is not valid.")
+                promo_code_str = ''
 
         # Build items for template display
         items_data = []
@@ -650,6 +684,8 @@ def checkout(request):
                         'payment_method': payment_method,
                         'selected_store_id': selected_store_id,
                         'paypal_payment_id': payment.id,
+                        'promo_code': promo_code_str,
+                        'promo_discount': str(promo_discount),
                     }
                     # Redirect to PayPal approval URL
                     for link in payment.links:
@@ -659,87 +695,127 @@ def checkout(request):
                     messages.error(request, f"PayPal error: {payment.error}")
                     return redirect('checkout')
 
+            # --- Cash payment flow ---
+            elif payment_method == 'Cash':
+                with transaction.atomic():
+                    order = Orders.objects.create(
+                        gift_card=None,
+                        order_date=timezone.now(),
+                        order_status='Paid',
+                        order_type=fulfilment,
+                        payment_method='Cash',
+                        installment=False,
+                        total_payment=total
+                    )
+                    for item in basket_items:
+                        OrderItems.objects.create(
+                            order=order,
+                            product=item.product,
+                            quantity=item.quantity,
+                            price=item.product.price
+                        )
+                        Places.objects.create(
+                            customer=customer,
+                            product=item.product,
+                            order=order
+                        )
+                    # Clear basket
+                    Basket.objects.filter(customer=customer).delete()
+                    # Redeem promo code
+                    if promo_code_obj:
+                        promo_code_obj.redeemed = True
+                        promo_code_obj.redeemed_at = timezone.now()
+                        promo_code_obj.save()
+
+                request.session['last_order_id'] = order.order_id
+                return redirect('payment_success')
+
             # --- Stripe / Card payment flow ---
-            line_items = []
-            for item in basket_items:
-                line_items.append({
-                    'price_data': {
-                        'currency': 'gbp',
-                        'unit_amount': int(item.product.price * 100),
-                        'product_data': {
-                            'name': f"{item.product.brand} - {item.product.product_name}",
-                        },
-                    },
-                    'quantity': item.quantity,
-                })
-
-            # Add shipping as a line item if applicable
-            if shipping_cost > 0:
-                shipping_label = "Express Delivery" if shipping_cost < 9 else "Next Day Delivery"
-                line_items.append({
-                    'price_data': {
-                        'currency': 'gbp',
-                        'unit_amount': int(shipping_cost * 100),
-                        'product_data': {
-                            'name': shipping_label,
-                        },
-                    },
-                    'quantity': 1,
-                })
-
-            # Add gift wrap as a line item if applicable
-            if gift_wrap_cost > 0:
-                line_items.append({
-                    'price_data': {
-                        'currency': 'gbp',
-                        'unit_amount': int(gift_wrap_cost * 100),
-                        'product_data': {
-                            'name': "Gift Wrapping",
-                        },
-                    },
-                    'quantity': 1,
-                })
-
-            # Discount handling
-            if discount_rate > 0:
-                coupon = stripe.Coupon.create(percent_off=int(discount_rate), duration="once")
-                discounts = [{"coupon": coupon}]
             else:
-                discounts = []
+                line_items = []
+                for item in basket_items:
+                    line_items.append({
+                        'price_data': {
+                            'currency': 'gbp',
+                            'unit_amount': int(item.product.price * 100),
+                            'product_data': {
+                                'name': f"{item.product.brand} - {item.product.product_name}",
+                            },
+                        },
+                        'quantity': item.quantity,
+                    })
 
-            session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=line_items,
-                mode='payment',
-                discounts=discounts,
-                success_url=request.build_absolute_uri('/payment_success/') + '?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=request.build_absolute_uri('/basket/'),
-                metadata={
+                # Add shipping as a line item if applicable
+                if shipping_cost > 0:
+                    shipping_label = "Express Delivery" if shipping_cost < 9 else "Next Day Delivery"
+                    line_items.append({
+                        'price_data': {
+                            'currency': 'gbp',
+                            'unit_amount': int(shipping_cost * 100),
+                            'product_data': {
+                                'name': shipping_label,
+                            },
+                        },
+                        'quantity': 1,
+                    })
+
+                # Add gift wrap as a line item if applicable
+                if gift_wrap_cost > 0:
+                    line_items.append({
+                        'price_data': {
+                            'currency': 'gbp',
+                            'unit_amount': int(gift_wrap_cost * 100),
+                            'product_data': {
+                                'name': "Gift Wrapping",
+                            },
+                        },
+                        'quantity': 1,
+                    })
+
+                # Discount handling
+                if discount_rate > 0:
+                    coupon = stripe.Coupon.create(percent_off=int(discount_rate), duration="once")
+                    discounts = [{"coupon": coupon}]
+                else:
+                    discounts = []
+
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=line_items,
+                    mode='payment',
+                    discounts=discounts,
+                    success_url=request.build_absolute_uri('/payment_success/') + '?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=request.build_absolute_uri('/basket/'),
+                    metadata={
+                        'customer_id': customer_id,
+                        'subtotal': str(subtotal),
+                        'discount': str(discount),
+                        'shipping_cost': str(shipping_cost),
+                        'gift_wrap_cost': str(gift_wrap_cost),
+                        'total': str(total),
+                        'fulfilment': fulfilment,
+                        'payment_method': payment_method,
+                        'selected_store_id': selected_store_id,
+                        'promo_code': promo_code_str,
+                        'promo_discount': str(promo_discount),
+                    }
+                )
+
+                request.session['pending_checkout'] = {
                     'customer_id': customer_id,
-                    'subtotal': str(subtotal),
-                    'discount': str(discount),
-                    'shipping_cost': str(shipping_cost),
-                    'gift_wrap_cost': str(gift_wrap_cost),
-                    'total': str(total),
+                    'subtotal': subtotal,
+                    'discount': discount,
+                    'shipping_cost': shipping_cost,
+                    'gift_wrap_cost': gift_wrap_cost,
+                    'total': total,
                     'fulfilment': fulfilment,
                     'payment_method': payment_method,
                     'selected_store_id': selected_store_id,
+                    'promo_code': promo_code_str,
+                    'promo_discount': str(promo_discount),
                 }
-            )
 
-            request.session['pending_checkout'] = {
-                'customer_id': customer_id,
-                'subtotal': subtotal,
-                'discount': discount,
-                'shipping_cost': shipping_cost,
-                'gift_wrap_cost': gift_wrap_cost,
-                'total': total,
-                'fulfilment': fulfilment,
-                'payment_method': payment_method,
-                'selected_store_id': selected_store_id,
-            }
-
-            return redirect(session.url, code=303)
+                return redirect(session.url, code=303)
 
         # GET: render checkout page
         context = {
@@ -752,6 +828,8 @@ def checkout(request):
             'payment_method': payment_method,
             'stores': stores,
             'selected_store_id': selected_store_id,
+            'promo_code': promo_code_str,
+            'promo_discount': promo_discount,
         }
         return render(request, 'store/checkout.html', context)
 
@@ -827,6 +905,17 @@ def payment_success(request):
 
             # Clear basket
             Basket.objects.filter(customer=customer).delete()
+
+            # Redeem promo code if one was used
+            promo_code_str = metadata.get('promo_code', '')
+            if promo_code_str:
+                try:
+                    promo = PromoCode.objects.get(code=promo_code_str)
+                    promo.redeemed = True
+                    promo.redeemed_at = timezone.now()
+                    promo.save()
+                except PromoCode.DoesNotExist:
+                    pass
 
             # Extract totals for email/receipt
             subtotal = float(metadata.get('subtotal', 0))
@@ -1227,6 +1316,17 @@ def paypal_success(request):
                 # Clear basket
                 Basket.objects.filter(customer=customer).delete()
 
+                # Redeem promo code if one was used
+                promo_code_used = pending.get('promo_code', '')
+                if promo_code_used:
+                    try:
+                        promo = PromoCode.objects.get(code=promo_code_used)
+                        promo.redeemed = True
+                        promo.redeemed_at = timezone.now()
+                        promo.save()
+                    except PromoCode.DoesNotExist:
+                        pass
+
             # Clear pending checkout
             request.session.pop('pending_checkout', None)
 
@@ -1280,3 +1380,41 @@ def paypal_cancel(request):
     request.session.pop('pending_checkout', None)
     messages.warning(request, "PayPal payment was cancelled.")
     return redirect('checkout')
+
+
+# ===== Promo Code Management =====
+
+def promo_generate(request):
+    """Generate a new promo code with a specified cash amount."""
+    if request.method == 'POST':
+        amount_str = request.POST.get('amount', '').strip()
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                messages.error(request, "Amount must be greater than zero.")
+                return redirect('promo_generate')
+        except (ValueError, TypeError):
+            messages.error(request, "Please enter a valid number.")
+            return redirect('promo_generate')
+
+        # Generate a unique 8-char alphanumeric code
+        import string
+        chars = string.ascii_uppercase + string.digits
+        while True:
+            code = 'PROMO-' + ''.join(random.choices(chars, k=8))
+            if not PromoCode.objects.filter(code=code).exists():
+                break
+
+        promo = PromoCode.objects.create(code=code, amount=amount)
+        messages.success(request, f"Promo code {promo.code} created for £{promo.amount:.2f}")
+        return redirect('promo_generate')
+
+    # GET — show the form + recently generated codes
+    recent_codes = PromoCode.objects.order_by('-created_at')[:10]
+    return render(request, 'store/promo_generate.html', {'recent_codes': recent_codes})
+
+
+def promo_list(request):
+    """List all promo codes with their status."""
+    all_codes = PromoCode.objects.order_by('-created_at')
+    return render(request, 'store/promo_list.html', {'promo_codes': all_codes})
