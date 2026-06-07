@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 
 def custom_404(request, exception):
-    return render(request, '404.html', status=404)
+    return render(request, 'store/404.html', status=404)
 
 urlpatterns = [
     path('', views.home, name='homepage'),

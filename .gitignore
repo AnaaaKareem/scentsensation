@@ -65,3 +65,7 @@ setup_test_env.sh
 
 # Design prototypes (generated HTML from opendesign)
 designs/
+
+# Local agent/tooling directories
+.hermes/
+.od-skills/
