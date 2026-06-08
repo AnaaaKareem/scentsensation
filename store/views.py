@@ -450,6 +450,10 @@ def store(request):
         ).values_list('product_id', flat=True))
         request.session['wishlist_count'] = len(wishlist_ids)
 
+    # Save region to session for basket/checkout currency
+    if region_filter in ('US', 'UK', 'EU'):
+        request.session['region'] = region_filter
+
     currency = get_currency_config(region_filter or 'US')
 
     context = {
@@ -590,6 +594,9 @@ def basket(request):
         discount = subtotal * (discount_rate / 100)
         total = subtotal - discount
 
+        region = request.GET.get('region') or request.session.get('region') or 'US'
+        currency = get_currency_config(region)
+
         context = {
             'items': items,
             'subtotal': round(subtotal, 2),
@@ -597,6 +604,7 @@ def basket(request):
             'total': round(total, 2),
             'discount_rate': discount_rate,
             'basket_count': sum(item['quantity'] for item in items),
+            'currency': currency,
         }
         request.session['basket_count'] = context['basket_count']
     except Customer.DoesNotExist:
@@ -749,15 +757,27 @@ def checkout(request):
             # --- PayPal payment flow ---
             if payment_method == 'PayPal':
                 # Build PayPal payment
+                # Get currency for PayPal
+                region_pp = request.GET.get('region') or request.session.get('region') or 'US'
+                pp_currency = get_currency_config(region_pp)
+                pp_currency_code = pp_currency['code']
+                pp_rate = pp_currency['rate']
+
                 item_list = []
                 for item in basket_items:
+                    converted_price = round(item.product.price * pp_rate, 2)
                     item_list.append({
                         "name": f"{item.product.brand} - {item.product.product_name}",
                         "sku": str(item.product.product_id),
-                        "price": f"{item.product.price:.2f}",
-                        "currency": "GBP",
+                        "price": f"{converted_price:.2f}",
+                        "currency": pp_currency_code,
                         "quantity": item.quantity,
                     })
+
+                converted_total = round(total * pp_rate, 2)
+                converted_subtotal = round(subtotal * pp_rate, 2)
+                converted_discount = round(discount * pp_rate, 2)
+                converted_shipping = round(shipping_cost * pp_rate, 2)
 
                 payment = paypalrestsdk.Payment({
                     "intent": "sale",
@@ -769,12 +789,12 @@ def checkout(request):
                     "transactions": [{
                         "item_list": {"items": item_list},
                         "amount": {
-                            "total": f"{total:.2f}",
-                            "currency": "GBP",
+                            "total": f"{converted_total:.2f}",
+                            "currency": pp_currency_code,
                             "details": {
-                                "subtotal": f"{subtotal:.2f}",
-                                "discount": f"{discount:.2f}",
-                                "shipping": f"{shipping_cost:.2f}",
+                                "subtotal": f"{converted_subtotal:.2f}",
+                                "discount": f"{converted_discount:.2f}",
+                                "shipping": f"{converted_shipping:.2f}",
                             },
                         },
                         "description": f"Scent Sensation Order — {fulfilment}",
@@ -842,12 +862,19 @@ def checkout(request):
 
             # --- Stripe / Card payment flow ---
             else:
+                # Get currency for Stripe
+                region = request.GET.get('region') or request.session.get('region') or 'US'
+                stripe_currency = get_currency_config(region)
+                currency_code = stripe_currency['code'].lower()
+                fx_rate = stripe_currency['rate']
+
                 line_items = []
                 for item in basket_items:
+                    converted_price = round(item.product.price * fx_rate, 2)
                     line_items.append({
                         'price_data': {
-                            'currency': 'gbp',
-                            'unit_amount': int(item.product.price * 100),
+                            'currency': currency_code,
+                            'unit_amount': int(converted_price * 100),
                             'product_data': {
                                 'name': f"{item.product.brand} - {item.product.product_name}",
                             },
@@ -858,10 +885,11 @@ def checkout(request):
                 # Add shipping as a line item if applicable
                 if shipping_cost > 0:
                     shipping_label = "Express Delivery" if shipping_cost < 9 else "Next Day Delivery"
+                    converted_shipping = round(shipping_cost * fx_rate, 2)
                     line_items.append({
                         'price_data': {
-                            'currency': 'gbp',
-                            'unit_amount': int(shipping_cost * 100),
+                            'currency': currency_code,
+                            'unit_amount': int(converted_shipping * 100),
                             'product_data': {
                                 'name': shipping_label,
                             },
@@ -871,10 +899,11 @@ def checkout(request):
 
                 # Add gift wrap as a line item if applicable
                 if gift_wrap_cost > 0:
+                    converted_gift = round(gift_wrap_cost * fx_rate, 2)
                     line_items.append({
                         'price_data': {
-                            'currency': 'gbp',
-                            'unit_amount': int(gift_wrap_cost * 100),
+                            'currency': currency_code,
+                            'unit_amount': int(converted_gift * 100),
                             'product_data': {
                                 'name': "Gift Wrapping",
                             },
@@ -888,6 +917,8 @@ def checkout(request):
                     discounts = [{"coupon": coupon}]
                 else:
                     discounts = []
+
+                converted_total = round(total * fx_rate, 2)
 
                 session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
@@ -928,6 +959,11 @@ def checkout(request):
                 return redirect(session.url, code=303)
 
         # GET: render checkout page
+        region = request.GET.get('region') or request.session.get('region') or 'US'
+        currency = get_currency_config(region)
+        if region in ('US', 'UK', 'EU'):
+            request.session['region'] = region
+
         context = {
             'items': items_data,
             'subtotal': round(subtotal, 2),
@@ -940,6 +976,7 @@ def checkout(request):
             'selected_store_id': selected_store_id,
             'promo_code': promo_code_str,
             'promo_discount': promo_discount,
+            'currency': currency,
         }
         return render(request, 'store/checkout.html', context)
 
