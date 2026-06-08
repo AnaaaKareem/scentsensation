@@ -1,0 +1,253 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+
+  <div class="text-center mb-16">
+    <h1 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display mb-4">Our Brands</h1>
+    <p class="text-charcoal-500 max-w-lg mx-auto">Discover the world's most prestigious fragrance houses, each with a unique story and signature scents.</p>
+  </div>
+
+  {% if brands %}
+  <div class="brand-wall" id="brandWall">
+    {% for brand in brands %}
+    <a href="{% url 'brand_detail' brand.slug %}" class="bcard group" data-brand="{{ brand.name }}">
+      {% if brand.logo %}
+      <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="bcard-img" loading="lazy" onload="this.closest('.bcard').classList.add('loaded')">
+      {% else %}
+      <div class="bcard-img bcard-placeholder">
+        <span class="font-display text-5xl text-charcoal-500">{{ brand.name|first }}</span>
+      </div>
+      {% endif %}
+      <div class="bcard-label">
+        <h3 class="font-display text-sm sm:text-base text-cream-100 truncate">{{ brand.name }}</h3>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not brands and product_brands %}
+  <div class="brand-wall" id="brandWall">
+    {% for brand_name in product_brands %}
+    <div class="bcard group" data-brand="{{ brand_name }}">
+      <div class="bcard-img bcard-placeholder">
+        <span class="font-display text-5xl text-charcoal-500">{{ brand_name|first }}</span>
+      </div>
+      <div class="bcard-label">
+        <h3 class="font-display text-sm sm:text-base text-cream-100 truncate">{{ brand_name }}</h3>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not brands and not product_brands %}
+  <div class="text-center py-20">
+    <p class="text-charcoal-500 text-lg">No brands available yet.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+  .brand-wall {
+    position: relative;
+    width: 100%;
+  }
+
+  .bcard {
+    position: absolute;
+    top: 0; left: 0;
+    aspect-ratio: 16/9;
+    border-radius: 2px;
+    overflow: hidden;
+    /* size + position animated by JS via inline styles */
+  }
+
+  .bcard-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: scale(1.35);
+  }
+
+  .bcard-placeholder {
+    background: linear-gradient(135deg, #d1d1d1, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bcard-label {
+    position: absolute; inset-x: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(13,13,13,0.9), rgba(13,13,13,0.5), transparent);
+    padding: 0.75rem 1rem;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bcard.hover .bcard-img { transform: scale(1); }
+  .bcard.hover .bcard-label { transform: translateY(0); opacity: 1; }
+  .bcard.hover { z-index: 20; box-shadow: 0 25px 60px rgba(0,0,0,0.35); }
+
+  .bcard.shrink .bcard-img { transform: scale(1.15); }
+
+  /* Skeleton shimmer while images load */
+  .bcard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, #d1d1d1 8%, #e7e7e7 18%, #d1d1d1 33%);
+    background-size: 200% 100%;
+    animation: brand-shimmer 1.5s linear infinite;
+    z-index: 1;
+    border-radius: inherit;
+  }
+  .bcard.loaded::before { display: none; }
+  @keyframes brand-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+</style>
+
+<script>
+(function(){
+  var wall = document.getElementById('brandWall');
+  if (!wall) return;
+  var cards = Array.prototype.slice.call(wall.querySelectorAll('.bcard'));
+  var cols = 4, gap = 16, cw = 0, ch = 0;
+  var hoverIdx = -1, raf = null;
+
+  function rc(w){ return w >= 1024 ? 4 : w >= 640 ? 3 : 2; }
+
+  function measure(){
+    cols = rc(window.innerWidth);
+    var s = getComputedStyle(wall);
+    gap = 16;
+    cw = (wall.clientWidth - gap * (cols - 1)) / cols;
+    ch = cw * 9 / 16;
+  }
+
+  // Compute layout positions. expandedIdx = card taking 2x2, or -1.
+  function positions(expandedIdx){
+    var pos = [];
+    for (var i = 0; i < cards.length; i++){
+      var col, row;
+      if (i === expandedIdx){
+        col = Math.min(i % cols, cols - 2);
+        row = Math.floor(i / cols);
+        pos.push({ x: col * (cw + gap), y: row * (ch + gap), w: cw * 2 + gap, h: ch * 2 + gap });
+      } else {
+        // Build a virtual grid accounting for the expanded card
+        var expCol = expandedIdx >= 0 ? Math.min(expandedIdx % cols, cols - 2) : -1;
+        var expRow = expandedIdx >= 0 ? Math.floor(expandedIdx / cols) : -1;
+
+        // Assign grid cells skipping the expanded 2x2 block
+        var cellIdx = 0;
+        var found = false;
+        for (var r = 0; r < 100 && !found; r++){
+          for (var c = 0; c < cols && !found; c++){
+            // Skip cells occupied by expanded card
+            if (expandedIdx >= 0 && c >= expCol && c <= expCol+1 && r >= expRow && r <= expRow+1) continue;
+            if (cellIdx === i){
+              col = c; row = r; found = true;
+            }
+            cellIdx++;
+          }
+        }
+        if (!found) col = 0, row = 0;
+        pos.push({ x: col * (cw + gap), y: row * (ch + gap), w: cw, h: ch });
+      }
+    }
+    return pos;
+  }
+
+  function applyPos(pos, setClass){
+    for (var i = 0; i < cards.length; i++){
+      var c = cards[i];
+      var p = pos[i];
+      c.style.width = p.w + 'px';
+      c.style.height = p.h + 'px';
+      c.style.transform = 'translate3d(' + p.x + 'px,' + p.y + 'px,0)';
+      if (setClass){
+        c.classList.toggle('hover', i === hoverIdx);
+        c.classList.toggle('shrink', i !== hoverIdx && hoverIdx >= 0);
+      }
+    }
+    // Set wall height
+    var maxH = 0;
+    for (var j = 0; j < pos.length; j++){
+      var bottom = pos[j].y + pos[j].h;
+      if (bottom > maxH) maxH = bottom;
+    }
+    wall.style.height = maxH + 'px';
+  }
+
+  // Easing
+  function ease(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+
+  function animate(fromIdx, toIdx){
+    measure();
+    var startP = positions(fromIdx);
+    var targetP = positions(toIdx);
+
+    // Apply target classes for CSS transitions
+    hoverIdx = toIdx;
+    for (var i = 0; i < cards.length; i++){
+      cards[i].classList.toggle('hover', i === toIdx);
+      cards[i].classList.toggle('shrink', i !== toIdx && toIdx >= 0);
+    }
+
+    var t0 = performance.now();
+    var DUR = 450;
+
+    // Reset to start
+    applyPos(startP, false);
+
+    function tick(now){
+      var p = Math.min((now - t0) / DUR, 1);
+      var e = ease(p);
+      var cur = [];
+      for (var i = 0; i < cards.length; i++){
+        cur.push({
+          x: startP[i].x + (targetP[i].x - startP[i].x) * e,
+          y: startP[i].y + (targetP[i].y - startP[i].y) * e,
+          w: startP[i].w + (targetP[i].w - startP[i].w) * e,
+          h: startP[i].h + (targetP[i].h - startP[i].h) * e
+        });
+      }
+      applyPos(cur, false);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    }
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  }
+
+  wall.addEventListener('mouseover', function(e){
+    var card = e.target.closest('.bcard');
+    if (!card) return;
+    var idx = cards.indexOf(card);
+    if (idx < 0 || idx === hoverIdx) return;
+    animate(hoverIdx, idx);
+  });
+
+  wall.addEventListener('mouseleave', function(){
+    animate(hoverIdx, -1);
+  });
+
+  window.addEventListener('resize', function(){
+    measure();
+    applyPos(positions(hoverIdx), true);
+  });
+
+  // Init
+  measure();
+  applyPos(positions(-1), true);
+})();
+</script>
+{% endblock content %}

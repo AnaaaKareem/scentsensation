@@ -12,6 +12,8 @@ urlpatterns = [
     path('signin/', views.signin, name='signinAccount'),
     path('signout/', views.signout, name='signout'),
     path('account/', views.account, name='account'),
+    path('brands/', views.brand_list, name='brand_list'),
+    path('brands/<slug:slug>/', views.brand_detail, name='brand_detail'),
     path('store/', views.store, name='store'),
     path('store/product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('basket/', views.basket, name='basket'),
@@ -34,4 +36,8 @@ urlpatterns = [
     path('paypal/cancel/', views.paypal_cancel, name='paypal_cancel'),
     path('promo/', views.promo_generate, name='promo_generate'),
     path('promo/list/', views.promo_list, name='promo_list'),
+    path('wishlist/', views.wishlist, name='wishlist'),
+    path('wishlist/add/<int:product_id>/', views.wishlist_add, name='wishlist_add'),
+    path('wishlist/remove/<int:product_id>/', views.wishlist_remove, name='wishlist_remove'),
+    path('wishlist/check/<int:product_id>/', views.wishlist_check, name='wishlist_check'),
 ]

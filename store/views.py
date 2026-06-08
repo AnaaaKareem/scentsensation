@@ -357,6 +357,9 @@ def store(request):
     all_products = Products.objects.all()
     images = ProductImages.objects.all()  # not used? template uses reverse relation
 
+    # Build a mapping of brand name -> brand slug for linking
+    brand_slug_map = {b.name: b.slug for b in Brand.objects.all()}
+
     category_filter = request.GET.getlist('category')
     if category_filter:
         q_objects = Q()
@@ -409,13 +412,67 @@ def store(request):
             basket_item.save()
         return redirect('store')
 
+    # Get wishlist product IDs for the current user
+    wishlist_ids = set()
+    customer_id_session = request.session.get('customer_id')
+    if customer_id_session:
+        wishlist_ids = set(Wishlist.objects.filter(
+            customer_id=customer_id_session
+        ).values_list('product_id', flat=True))
+        request.session['wishlist_count'] = len(wishlist_ids)
+
     context = {
         'products': page_obj,
         'page_obj': page_obj,
         'is_paginated': page_obj.has_other_pages(),
         'sort': sort_param,
+        'brand_slug_map': brand_slug_map,
+        'wishlist_ids': wishlist_ids,
     }
     return render(request, 'store/storepage.html', context)
+
+
+def brand_list(request):
+    brands = Brand.objects.all()
+    # Also get distinct brand names from Products that might not have a Brand record yet
+    product_brands = Products.objects.values_list('brand', flat=True).distinct().order_by('brand')
+    context = {
+        'brands': brands,
+        'product_brands': product_brands,
+    }
+    return render(request, 'store/brand_list.html', context)
+
+
+def brand_detail(request, slug):
+    # Try to find a Brand record by slug first
+    try:
+        brand = Brand.objects.get(slug=slug)
+        brand_name = brand.name
+    except Brand.DoesNotExist:
+        # Fallback: treat the slug as a brand name (for products without a Brand record)
+        brand = None
+        brand_name = slug.replace('-', ' ').title()
+        # Verify at least one product exists with this brand
+        if not Products.objects.filter(brand__iexact=brand_name).exists():
+            # Try case-insensitive match on the slug directly
+            brand_name = slug.replace('-', ' ')
+            if not Products.objects.filter(brand__icontains=brand_name).exists():
+                from django.http import Http404
+                raise Http404("Brand not found")
+
+    products = Products.objects.filter(brand__iexact=brand.name if brand else brand_name)
+
+    gender_filter = request.GET.get('gender')
+    if gender_filter in ('Male', 'Female'):
+        products = products.filter(personal_fragrance__gender=gender_filter).distinct()
+
+    context = {
+        'brand': brand,
+        'brand_name': brand_name,
+        'products': products,
+        'gender_filter': gender_filter,
+    }
+    return render(request, 'store/brand_detail.html', context)
 
 
 def product_detail(request, product_id):
@@ -423,11 +480,23 @@ def product_detail(request, product_id):
     images = ProductImages.objects.filter(product=product)
     personal = PersonalFragrances.objects.filter(product=product).first()
     home = HomeFragrances.objects.filter(product=product).first()
+    brand_slug = None
+    try:
+        brand_slug = Brand.objects.get(name=product.brand).slug
+    except Brand.DoesNotExist:
+        pass
+    in_wishlist = False
+    customer_id_pd = request.session.get('customer_id')
+    if customer_id_pd:
+        in_wishlist = Wishlist.objects.filter(customer_id=customer_id_pd, product_id=product_id).exists()
+
     context = {
         'product': product,
         'images': images,
         'personal': personal,
         'home': home,
+        'brand_slug': brand_slug,
+        'in_wishlist': in_wishlist,
     }
     return render(request, 'store/product_detail.html', context)
 
@@ -1418,3 +1487,83 @@ def promo_list(request):
     """List all promo codes with their status."""
     all_codes = PromoCode.objects.order_by('-created_at')
     return render(request, 'store/promo_list.html', {'promo_codes': all_codes})
+
+
+def wishlist(request):
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        return redirect('signinAccount')
+
+    customer = Customer.objects.get(customer_id=customer_id)
+    wishlist_items = Wishlist.objects.filter(customer=customer).select_related('product')
+
+    products = []
+    for item in wishlist_items:
+        product = item.product
+        image = ProductImages.objects.filter(product=product).first()
+        personal = PersonalFragrances.objects.filter(product=product).first()
+        home = HomeFragrances.objects.filter(product=product).first()
+        products.append({
+            'product': product,
+            'image': image,
+            'personal': personal,
+            'home': home,
+        })
+
+    from django.db.models import Sum
+    wishlist_subtotal = Wishlist.objects.filter(
+        customer=customer
+    ).select_related('product').aggregate(
+        total=models.Sum('product__price')
+    )['total'] or 0
+
+    request.session['wishlist_count'] = len(products)
+
+    return render(request, 'store/wishlist.html', {
+        'products': products,
+        'wishlist_count': len(products),
+        'wishlist_subtotal': round(wishlist_subtotal, 2),
+    })
+
+
+def wishlist_add(request, product_id):
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        return redirect('signinAccount')
+
+    Wishlist.objects.get_or_create(customer_id=customer_id, product_id=product_id)
+    request.session['wishlist_count'] = Wishlist.objects.filter(customer_id=customer_id).count()
+
+    # Return JSON if AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        return JsonResponse({'status': 'added', 'wishlist_count': request.session['wishlist_count']})
+
+    return redirect(request.META.get('HTTP_REFERER', 'store'))
+
+
+def wishlist_remove(request, product_id):
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        return redirect('signinAccount')
+
+    Wishlist.objects.filter(customer_id=customer_id, product_id=product_id).delete()
+    request.session['wishlist_count'] = Wishlist.objects.filter(customer_id=customer_id).count()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        return JsonResponse({'status': 'removed', 'wishlist_count': request.session['wishlist_count']})
+
+    return redirect(request.META.get('HTTP_REFERER', 'wishlist'))
+
+
+def wishlist_check(request, product_id):
+    """Check if a product is in the user's wishlist (for initial heart state)."""
+    customer_id = request.session.get('customer_id')
+    if not customer_id:
+        from django.http import JsonResponse
+        return JsonResponse({'in_wishlist': False})
+
+    in_wishlist = Wishlist.objects.filter(customer_id=customer_id, product_id=product_id).exists()
+    from django.http import JsonResponse
+    return JsonResponse({'in_wishlist': in_wishlist})

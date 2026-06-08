@@ -9,7 +9,7 @@
     <ol class="flex items-center gap-2 text-sm text-charcoal-500">
       <li><a href="{% url 'store' %}" class="hover:text-charcoal-900 transition-colors">Store</a></li>
       <li><span>/</span></li>
-      <li class="text-charcoal-900 font-medium">{{ product.brand }}</li>
+      <li><a href="{% url 'brand_detail' product.brand|slugify %}" class="hover:text-charcoal-900 transition-colors">{{ product.brand }}</a></li>
       <li><span>/</span></li>
       <li class="text-charcoal-900 font-medium truncate max-w-xs">{{ product.product_name }}</li>
     </ol>
@@ -21,19 +21,41 @@
     <!-- Left: Image Gallery -->
     <div>
       {% if images %}
-      <div class="aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-        <img id="main-image" src="data:image/png;base64,{{ images.0.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover">
+      <div class="flex gap-3" id="gallery-wrap">
+        <!-- Thumbnails: vertical column on the left -->
+        {% if images|length > 1 %}
+        <div class="flex flex-col gap-2 w-16 shrink-0">
+          {% for image in images %}
+          <button type="button" onclick="galleryGo({{ forloop.counter0 }})"
+            class="gallery-thumb aspect-square bg-charcoal-100 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 transition-colors">
+            <img src="data:image/png;base64,{{ image.image }}" alt="" class="w-full h-full object-cover">
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <!-- Main image -->
+        <div class="flex-1 aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden relative img-skeleton" id="gallery-main">
+          {% for image in images %}
+          <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}"
+               class="gallery-img absolute inset-0 w-full h-full object-cover transition-opacity duration-500 {% if not forloop.first %}opacity-0{% endif %}"
+               data-idx="{{ forloop.counter0 }}"
+               onload="this.closest('.img-skeleton').classList.add('loaded')">
+          {% endfor %}
+          {% if images|length > 1 %}
+          <button type="button" onclick="galleryPrev()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white rounded-full flex items-center justify-center text-charcoal-700 shadow-md transition-colors z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+          </button>
+          <button type="button" onclick="galleryNext()" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white rounded-full flex items-center justify-center text-charcoal-700 shadow-md transition-colors z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+          </button>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {% for image in images %}
+            <span class="gallery-dot w-2 h-2 rounded-full transition-all {% if forloop.first %}bg-white w-5{% else %}bg-white/50{% endif %}" data-idx="{{ forloop.counter0 }}"></span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
       </div>
-      {% if images|length > 1 %}
-      <div class="grid grid-cols-4 gap-3">
-        {% for image in images %}
-        <button type="button" onclick="document.getElementById('main-image').src='data:image/png;base64,{{ image.image }}'"
-          class="aspect-square bg-charcoal-100 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 transition-colors">
-          <img src="data:image/png;base64,{{ image.image }}" alt="" class="w-full h-full object-cover">
-        </button>
-        {% endfor %}
-      </div>
-      {% endif %}
       {% else %}
       <div class="aspect-[4/5] bg-gradient-to-b from-cream-200 to-charcoal-100 rounded-brand flex items-center justify-center">
         <span class="text-charcoal-400 text-sm uppercase tracking-wide">{{ product.product_name }}</span>
@@ -43,7 +65,7 @@
 
     <!-- Right: Product Info -->
     <div class="flex flex-col">
-      <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-2">{{ product.brand }}</p>
+      <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-2 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
       <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display mb-4">{{ product.product_name }}</h1>
       <p class="text-charcoal-900 font-semibold text-2xl mb-6">£{{ product.price }}</p>
 
@@ -112,6 +134,18 @@
         </button>
       </form>
 
+      <!-- Wishlist Button -->
+      <button id="detailWishBtn" class="wish-btn{% if in_wishlist %} active{% endif %} mt-4"
+              data-product-id="{{ product.product_id }}"
+              data-active="{% if in_wishlist %}true{% else %}false{% endif %}"
+              onclick="toggleWishDetail(this)"
+              aria-label="{% if in_wishlist %}Remove from wishlist{% else %}Add to wishlist{% endif %}">
+        <svg viewBox="0 0 24 24" width="20" height="20" class="wish-heart mr-2">
+          <path d="M12 21s-7-4.35-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.65-9.5 9-9.5 9z"/>
+        </svg>
+        <span class="text-sm font-medium" id="detailWishLabel">{% if in_wishlist %}In Wishlist{% else %}Add to Wishlist{% endif %}</span>
+      </button>
+
       <!-- Back -->
       <a href="{% url 'store' %}" class="mt-4 text-center text-charcoal-500 hover:text-charcoal-700 text-sm transition-colors">
         &larr; Back to Store
@@ -119,4 +153,124 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Skeleton placeholders while images load */
+  .img-skeleton { position: relative; }
+  .img-skeleton::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, #3a3a3a 8%, #4a4a4a 18%, #3a3a3a 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: inherit;
+    z-index: 1;
+  }
+  .img-skeleton.loaded::before { display: none; }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  #detailWishBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: 1.5px solid #d1d1d1;
+    border-radius: 2px;
+    background: none;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  #detailWishBtn:hover {
+    border-color: #e04d76;
+    background: rgba(224,77,118,0.04);
+  }
+  #detailWishBtn .wish-heart {
+    transition: fill 0.35s ease, stroke 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    stroke: #888;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  #detailWishBtn.active .wish-heart {
+    fill: #e04d76;
+    stroke: #e04d76;
+    animation: heart-beat 0.6s ease;
+  }
+  #detailWishBtn.removing .wish-heart {
+    fill: none;
+    stroke: #888;
+  }
+  @keyframes heart-beat {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(1.25); }
+    40%  { transform: scale(0.95); }
+    60%  { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+</style>
+
+<script>
+// === Image Gallery ===
+(function(){
+  var imgs = document.querySelectorAll('#gallery-main .gallery-img');
+  var dots = document.querySelectorAll('#gallery-main .gallery-dot');
+  var thumbs = document.querySelectorAll('.gallery-thumb');
+  var total = imgs.length;
+  var current = 0;
+  if (total <= 1) return;
+
+  function show(idx) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    current = idx;
+    for (var i = 0; i < total; i++) {
+      if (i === idx) imgs[i].style.opacity = '1'; else imgs[i].style.opacity = '0';
+      if (dots[i]) {
+        dots[i].className = 'gallery-dot ' + (i === idx ? 'bg-white w-5' : 'bg-white/50');
+      }
+      if (thumbs[i]) {
+        thumbs[i].className = 'gallery-thumb aspect-square bg-charcoal-100 rounded-brand overflow-hidden border-2 ' + (i === idx ? 'border-gold-500' : 'border-transparent') + ' hover:border-gold-400 transition-colors';
+      }
+    }
+  }
+
+  window.galleryNext = function(){ show(current + 1); };
+  window.galleryPrev = function(){ show(current - 1); };
+  window.galleryGo = function(idx){ show(idx); };
+}());
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+function toggleWishDetail(btn) {
+  var productId = btn.dataset.productId;
+  var isActive = btn.dataset.active === 'true';
+  var label = document.getElementById('detailWishLabel');
+
+  if (isActive) {
+    btn.classList.remove('active');
+    btn.classList.add('removing');
+    btn.dataset.active = 'false';
+    if (label) label.textContent = 'Add to Wishlist';
+    setTimeout(function(){ btn.classList.remove('removing'); }, 400);
+    fetch('/wishlist/remove/' + productId + '/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
+    });
+  } else {
+    btn.classList.add('active');
+    btn.dataset.active = 'true';
+    if (label) label.textContent = 'In Wishlist';
+    fetch('/wishlist/add/' + productId + '/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
+    });
+  }
+}
+</script>
 {% endblock content %}

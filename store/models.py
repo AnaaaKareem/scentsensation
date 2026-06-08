@@ -181,6 +181,26 @@ class Membership(models.Model):
         return self.end_date >= timezone.now().date()
 
 
+class Brand(models.Model):
+    objects = models.Manager()
+    brand_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    logo = models.ImageField(upload_to='brand_logos/', blank=True, null=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'BRAND'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def product_count(self):
+        return Products.objects.filter(brand=self.name).count()
+
+
 class Products(models.Model):
     objects = models.Manager()
     product_id = models.AutoField(primary_key=True)
@@ -381,6 +401,20 @@ class Favourite(models.Model):
 
     def __str__(self):
         return f"{self.customer} favorites {self.product}"
+
+
+class Wishlist(models.Model):
+    objects = models.Manager()
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='wishlist_items', db_column='customer_id')
+    product = models.ForeignKey(Products, models.CASCADE, related_name='wishlisted_by', db_column='product_id')
+
+    class Meta:
+        managed = True
+        db_table = 'WISHLIST'
+        unique_together = (('customer', 'product'),)
+
+    def __str__(self):
+        return f"{self.customer} wishlists {self.product}"
 
 
 class Store(models.Model):

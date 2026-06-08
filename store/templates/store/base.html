@@ -145,6 +145,14 @@
             </span>
           </a>
           {% if request.session.customer_id %}
+          <a href="{% url 'wishlist' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
+            Wishlist
+            <span id="wishlist-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-burgundy-500 text-cream-100 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
+              {{ request.session.wishlist_count|default:'' }}
+            </span>
+          </a>
+          {% endif %}
+          {% if request.session.customer_id %}
             <!-- Logged in: show dropdown -->
             <div class="relative group">
               <button class="text-gold-400 hover:text-gold-300 text-sm tracking-wide-plus uppercase font-medium transition-colors flex items-center gap-1 py-2">
@@ -234,7 +242,7 @@
           <ul class="space-y-3">
             <li><a href="{% url 'store' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">For Him</a></li>
             <li><a href="{% url 'store' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">For Her</a></li>
-            <li><a href="{% url 'store' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">Brands</a></li>
+            <li><a href="{% url 'brand_list' %}" class="text-charcoal-400 hover:text-gold-400 text-sm transition-colors">Brands</a></li>
           </ul>
         </div>
       </div>

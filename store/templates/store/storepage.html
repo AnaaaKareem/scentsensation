@@ -1,5 +1,6 @@
 {% extends "store/base.html" %}
 {% load static %}
+{% load brand_tags %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
@@ -110,23 +111,25 @@
           <!-- Product Image Carousel -->
           {% with product_images=product.product_images.all %}
           {% if product_images %}
-          <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4 relative">
+          <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] rounded-brand overflow-hidden mb-4 relative store-card-imgs img-skeleton">
             {% for image in product_images %}
-            <div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center {% if not forloop.first %}hidden{% endif %}">
-              <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover">
-            </div>
+            <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" loading="lazy"
+                 class="store-card-img absolute inset-0 w-full h-full object-cover {% if forloop.first %}{% else %} sc-hidden{% endif %}"
+                 onload="this.closest('.img-skeleton').classList.add('loaded')">
             {% endfor %}
+            {% include "store/includes/wish_btn.html" with product_id=product.product_id wishlist_ids=wishlist_ids only %}
           </a>
           {% else %}
-          <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+          <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4 relative">
             <div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center">
               <span class="text-charcoal-400 text-xs uppercase tracking-wide">{{ product.product_name }}</span>
             </div>
+            {% include "store/includes/wish_btn.html" with product_id=product.product_id wishlist_ids=wishlist_ids only %}
           </a>
           {% endif %}
           {% endwith %}
 
-          <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">{{ product.brand }}</p>
+          <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
           <a href="{% url 'product_detail' product.product_id %}">
             <h3 class="font-display text-lg text-charcoal-900 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
           </a>
@@ -192,12 +195,181 @@
   </div>
 </div>
 
+<style>
+  .wish-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background 0.3s ease;
+  }
+  .wish-btn:hover {
+    transform: scale(1.25);
+    background: rgba(255,255,255,1);
+  }
+  .wish-btn.active {
+    animation: heart-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .wish-btn.removing {
+    animation: heart-break 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .wish-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: fill 0.3s ease, stroke 0.3s ease;
+    stroke: #888;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .wish-btn.active svg {
+    fill: #e04d76;
+    stroke: #e04d76;
+  }
+  .wish-btn.removing svg {
+    fill: none;
+    stroke: #888;
+  }
+  @keyframes heart-pop {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.5); }
+    60%  { transform: scale(0.85); }
+    100% { transform: scale(1.15); }
+  }
+  @keyframes heart-break {
+    0%   { transform: scale(1.15); }
+    25%  { transform: scale(0.6) rotate(-10deg); }
+    50%  { transform: scale(1.3) rotate(6deg); }
+    75%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  .wish-particles {
+    position: absolute;
+    pointer-events: none;
+    width: 0; height: 0;
+    top: 50%; left: 50%;
+  }
+  .wish-particles span {
+    position: absolute;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .wish-btn.active .wish-particles span {
+    animation: particle-fly 0.55s ease-out forwards;
+  }
+  @keyframes particle-fly {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(0); }
+  }
+  .wish-particles span:nth-child(1) { --px: -14px; --py: -16px; background: #e04d76; }
+  .wish-particles span:nth-child(2) { --px: 12px;  --py: -18px; background: #ec7896; }
+  .wish-particles span:nth-child(3) { --px: -16px; --py: 8px;  background: #f4a9bb; }
+  .wish-particles span:nth-child(4) { --px: 16px;  --py: 6px;   background: #e04d76; }
+  .wish-particles span:nth-child(5) { --px: -8px;  --py: -20px; background: #cc2d5d; }
+  .wish-particles span:nth-child(6) { --px: 10px;  --py: 14px;  background: #ec7896; }
+
+  /* Skeleton placeholders while images load */
+  .img-skeleton {
+    position: relative;
+  }
+  .img-skeleton::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, #e7e7e7 8%, #f5f5f5 18%, #e7e7e7 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: inherit;
+    z-index: 1;
+  }
+  .img-skeleton.loaded::before {
+    display: none;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+</style>
+
 <script>
 function applySort(value) {
   const params = new URLSearchParams(window.location.search);
   params.set('sort', value);
-  params.delete('page'); // reset to page 1 on sort change
+  params.delete('page');
   window.location.search = params.toString();
+}
+
+// === Store Card Image Hover Scroll ===
+(function(){
+  var STORE_CARD_STYLE = document.getElementById('store-card-style');
+  if (!STORE_CARD_STYLE) {
+    STORE_CARD_STYLE = document.createElement('style');
+    STORE_CARD_STYLE.id = 'store-card-style';
+    STORE_CARD_STYLE.textContent = '.store-card-img{transition:opacity .5s ease}.store-card-img.sc-hidden{opacity:0!important}';
+    document.head.appendChild(STORE_CARD_STYLE);
+  }
+  document.querySelectorAll('.store-card-imgs').forEach(function(container){
+    var imgs = container.querySelectorAll('.store-card-img');
+    if (imgs.length <= 1) return;
+    var idx = 0, timer = null;
+    function show(i){
+      for (var j = 0; j < imgs.length; j++){
+        if (j === i) imgs[j].classList.remove('sc-hidden');
+        else imgs[j].classList.add('sc-hidden');
+      }
+    }
+    container.addEventListener('mouseenter', function(){
+      timer = setInterval(function(){
+        idx = (idx + 1) % imgs.length;
+        show(idx);
+      }, 800);
+    });
+    container.addEventListener('mouseleave', function(){
+      if (timer){ clearInterval(timer); timer = null; }
+      idx = 0;
+      show(0);
+    });
+  });
+})();
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+function toggleWish(e, btn) {
+  e.preventDefault();
+  e.stopPropagation();
+  var productId = btn.dataset.productId;
+  var isActive = btn.dataset.active === 'true';
+
+  if (isActive) {
+    btn.classList.remove('active');
+    btn.classList.add('removing');
+    btn.dataset.active = 'false';
+    setTimeout(function(){ btn.classList.remove('removing'); }, 400);
+    fetch('/wishlist/remove/' + productId + '/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
+    });
+  } else {
+    btn.classList.add('active');
+    btn.dataset.active = 'true';
+    fetch('/wishlist/add/' + productId + '/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
+    });
+  }
 }
 </script>
 {% endblock content %}

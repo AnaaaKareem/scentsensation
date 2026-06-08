@@ -1,0 +1,10 @@
+<button class="wish-btn{% if product_id in wishlist_ids %} active{% endif %}"
+        data-product-id="{{ product_id }}"
+        data-active="{% if product_id in wishlist_ids %}true{% else %}false{% endif %}"
+        onclick="toggleWish(event, this)"
+        aria-label="{% if product_id in wishlist_ids %}Remove from wishlist{% else %}Add to wishlist{% endif %}">
+  <svg viewBox="0 0 24 24" width="20" height="20">
+    <path d="M12 21s-7-4.35-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.65-9.5 9-9.5 9z"/>
+  </svg>
+  <span class="wish-particles"><span></span><span></span><span></span><span></span><span></span><span></span></span>
+</button>
