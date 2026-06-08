@@ -1,501 +1,554 @@
-1|{% extends "store/base.html" %}
-2|{% load static %}
-3|{% load currency_tags %}
-4|
-5|{% block extra_head %}
-6|<!-- Leaflet CSS -->
-7|<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-8|      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-9|      crossorigin="" />
-10|<!-- Leaflet JS -->
-11|<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-12|        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-13|        crossorigin=""></script>
-14|<style>
-15|  #store-map { height: 350px; width: 100%; border-radius: 2px; }
-16|  .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 13px; }
-17|</style>
-18|{% endblock extra_head %}
-19|
-20|{% block content %}
-21|<div class="max-w-6xl mx-auto px-6 lg:px-8 py-12">
-22|
-23|  <!-- Checkout Steps -->
-24|  <div class="flex items-center justify-center gap-4 mb-12">
-25|    <div class="flex items-center gap-2">
-26|      <span class="w-8 h-8 rounded-full bg-gold-500 text-charcoal-950 text-sm font-semibold flex items-center justify-center">1</span>
-27|      <span class="text-charcoal-900 text-sm font-medium hidden sm:inline">Delivery</span>
-28|    </div>
-29|    <div class="w-12 h-px bg-charcoal-300"></div>
-30|    <div class="flex items-center gap-2">
-31|      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">2</span>
-32|      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Payment</span>
-33|    </div>
-34|    <div class="w-12 h-px bg-charcoal-300"></div>
-35|    <div class="flex items-center gap-2">
-36|      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">3</span>
-37|      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Confirm</span>
-38|    </div>
-39|  </div>
-40|
-41|  <div class="grid lg:grid-cols-3 gap-10">
-42|
-43|    <!-- Left: Forms -->
-44|    <div class="lg:col-span-2 space-y-8">
-45|
-46|      <!-- Fulfilment Selection -->
-47|      <section class="bg-white border border-cream-300 rounded-brand p-6">
-48|        <h2 class="font-display text-xl text-charcoal-900 mb-6">Fulfilment</h2>
-49|        <div class="grid sm:grid-cols-2 gap-4">
-50|          <button type="button" id="btn-delivery"
-51|            class="flex items-center gap-3 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-left transition-colors">
-52|            <div>
-53|              <p class="text-charcoal-900 text-sm font-medium">Delivery</p>
-54|              <p class="text-charcoal-500 text-xs">Ship to your address</p>
-55|            </div>
-56|          </button>
-57|          <button type="button" id="btn-pickup"
-58|            class="flex items-center gap-3 p-4 border-2 border-charcoal-200 rounded-brand text-left hover:border-charcoal-400 transition-colors">
-59|            <div>
-60|              <p class="text-charcoal-900 text-sm font-medium">Store Pickup</p>
-61|              <p class="text-charcoal-500 text-xs">Collect from a store</p>
-62|            </div>
-63|          </button>
-64|        </div>
-65|        <input type="hidden" name="fulfilment" id="fulfilment-input" value="Delivery">
-66|      </section>
-67|
-68|      <!-- Store Pickup Map (hidden by default) -->
-69|      <section id="pickup-section" class="bg-white border border-cream-300 rounded-brand p-6 hidden">
-70|        <h2 class="font-display text-xl text-charcoal-900 mb-2">Select a Store</h2>
-71|        <p class="text-charcoal-500 text-sm mb-4">Click on a marker to choose your pickup location.</p>
-72|        <div id="store-map" class="rounded-brand border border-charcoal-200"></div>
-73|        <div id="selected-store-info" class="mt-4 p-3 bg-gold-50 border border-gold-200 rounded-brand hidden">
-74|          <p class="text-charcoal-900 text-sm font-medium" id="selected-store-name"></p>
-75|          <p class="text-charcoal-500 text-xs mt-1" id="selected-store-address"></p>
-76|        </div>
-77|        <input type="hidden" name="selected_store_id" id="selected_store_id" value="{{ selected_store_id }}">
-78|      </section>
-79|
-80|      <!-- Delivery Address (shown by default) -->
-81|      <section id="delivery-section" class="bg-white border border-cream-300 rounded-brand p-6">
-82|        <h2 class="font-display text-xl text-charcoal-900 mb-6">Delivery Address</h2>
-83|        <div class="grid sm:grid-cols-2 gap-4">
-84|          <div>
-85|            <label for="firstName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
-86|            <input type="text" id="firstName" value="{{ request.session.first_name|default:'' }}" placeholder="John"
-87|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-88|          </div>
-89|          <div>
-90|            <label for="lastName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
-91|            <input type="text" id="lastName" value="{{ request.session.last_name|default:'' }}" placeholder="Smith"
-92|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-93|          </div>
-94|          <div class="sm:col-span-2">
-95|            <label for="address1" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 1</label>
-96|            <input type="text" id="address1" value="{{ request.session.street_name|default:'' }}" placeholder="24 Mayfair Gardens"
-97|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-98|          </div>
-99|          <div class="sm:col-span-2">
-100|            <label for="address2" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 2 <span class="text-charcoal-400 normal-case">(optional)</span></label>
-101|            <input type="text" id="address2" placeholder="Apartment, suite, etc."
-102|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-103|          </div>
-104|          <div>
-105|            <label for="city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">City</label>
-106|            <input type="text" id="city" value="{{ request.session.town_city|default:'' }}" placeholder="London"
-107|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-108|          </div>
-109|          <div>
-110|            <label for="postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
-111|            <input type="text" id="postcode" value="{{ request.session.postcode|default:'' }}" placeholder="W1K 1AA"
-112|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-113|          </div>
-114|          <div>
-115|            <label for="country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
-116|            <select id="country" class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white">
-117|              <option>United Kingdom</option>
-118|              <option>United States</option>
-119|              <option>France</option>
-120|              <option>Germany</option>
-121|              <option>Italy</option>
-122|              <option>Spain</option>
-123|            </select>
-124|          </div>
-125|          <div>
-126|            <label for="phone" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone</label>
-127|            <input type="tel" id="phone" placeholder="+44 7700 900123"
-128|              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-129|          </div>
-130|        </div>
-131|      </section>
-132|
-133|      <!-- Shipping Method (shown for Delivery) -->
-134|      <section id="shipping-section" class="bg-white border border-cream-300 rounded-brand p-6">
-135|        <h2 class="font-display text-xl text-charcoal-900 mb-6">Shipping Method</h2>
-136|        <div class="space-y-3">
-137|          <label class="flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-brand cursor-pointer transition-colors">
-138|            <div class="flex items-center gap-3">
-139|              <input type="radio" name="shipping" value="standard" data-cost="0" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-140|              <div>
-141|                <p class="text-charcoal-900 text-sm font-medium">Standard Delivery</p>
-142|                <p class="text-charcoal-500 text-xs">5–7 business days</p>
-143|              </div>
-144|            </div>
-145|            <span class="text-charcoal-900 text-sm font-medium">Free</span>
-146|          </label>
-147|          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
-148|            <div class="flex items-center gap-3">
-149|              <input type="radio" name="shipping" value="express" data-cost="5.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-150|              <div>
-151|                <p class="text-charcoal-900 text-sm font-medium">Express Delivery</p>
-152|                <p class="text-charcoal-500 text-xs">2–3 business days</p>
-153|              </div>
-154|            </div>
-155|            <span class="text-charcoal-900 text-sm font-medium">{{ currency.symbol }}5.99</span>
-156|          </label>
-157|          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
-158|            <div class="flex items-center gap-3">
-159|              <input type="radio" name="shipping" value="nextday" data-cost="9.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-160|              <div>
-161|                <p class="text-charcoal-900 text-sm font-medium">Next Day Delivery</p>
-162|                <p class="text-charcoal-500 text-xs">Order before 2pm</p>
-163|              </div>
-164|            </div>
-165|            <span class="text-charcoal-900 text-sm font-medium">{{ currency.symbol }}9.99</span>
-166|          </label>
-167|        </div>
-168|      </section>
-169|
-170|      <!-- Gift Options -->
-171|      <section class="bg-white border border-cream-300 rounded-brand p-6">
-172|        <h2 class="font-display text-xl text-charcoal-900 mb-4">Gift Options</h2>
-173|        <label class="flex items-center gap-3 cursor-pointer mb-4">
-174|          <input type="checkbox" name="gift_wrap" id="gift-wrap" data-cost="5.00" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-175|          <span class="text-charcoal-600 text-sm">This order is a gift — add premium gift wrapping (+{{ currency.symbol }}5.00)</span>
-176|        </label>
-177|        <div>
-178|          <label for="giftMessage" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gift Message <span class="text-charcoal-400 normal-case">(optional)</span></label>
-179|          <textarea id="giftMessage" name="gift_message" rows="3" placeholder="Write a personal message..."
-180|            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors resize-none"></textarea>
-181|        </div>
-182|      </section>
-183|    </div>
-184|
-185|    <!-- Right: Order Summary -->
-186|    <div>
-187|      <div class="bg-cream-200 border border-cream-300 rounded-brand p-6 sticky top-24">
-188|        <h2 class="font-display text-xl text-charcoal-900 mb-6">Order Summary</h2>
-189|
-190|        <!-- Cart Items -->
-191|        {% if items %}
-192|        <div class="space-y-4 mb-6">
-193|          {% for item in items %}
-194|          <div class="flex gap-3">
-195|            <div class="w-14 h-18 bg-charcoal-100 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
-196|              {% if item.image %}
-197|                <img src="data:image/png;base64,{{ item.image.image }}" alt="{{ item.product.product_name }}" class="w-full h-full object-cover">
-198|              {% else %}
-199|                <span class="text-charcoal-400 text-[8px] uppercase tracking-wide text-center px-1">{{ item.product.product_name|truncatewords:2 }}</span>
-200|              {% endif %}
-201|            </div>
-202|            <div class="flex-1 min-w-0">
-203|              <p class="text-charcoal-900 text-sm font-medium truncate">{{ item.product.brand }} — {{ item.product.product_name }}</p>
-204|              <div class="flex justify-between mt-1">
-205|                <span class="text-charcoal-400 text-xs">×{{ item.quantity }}</span>
-206|                <span class="text-charcoal-900 text-sm">{{ currency.symbol }}{{ item.product.price }}</span>
-207|              </div>
-208|            </div>
-209|          </div>
-210|          {% endfor %}
-211|        </div>
-212|        {% endif %}
-213|
-214|        <!-- Promo Code -->
-215|        <div class="mb-6">
-216|          <label for="promo" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Promo Code</label>
-217|          <div class="flex gap-2">
-218|            <input type="text" id="promo" name="promo_code" value="{{ promo_code|default:'' }}" placeholder="Enter code"
-219|              class="flex-1 px-4 py-2.5 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500">
-220|            <button type="button" id="apply-promo-btn" class="px-4 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand hover:bg-charcoal-800 transition-colors">Apply</button>
-221|          </div>
-222|          <div id="promo-msg" class="mt-2 text-xs hidden"></div>
-223|        </div>
-224|
-225|        <!-- Totals -->
-226|        <div class="border-t border-cream-300 pt-4 space-y-2 text-sm">
-227|          <div class="flex justify-between">
-228|            <span class="text-charcoal-500">Subtotal</span>
-229|            <span class="text-charcoal-900" id="summary-subtotal">{{ currency.symbol }}{{ subtotal }}</span>
-230|          </div>
-231|          {% if discount > 0 %}
-232|          <div class="flex justify-between">
-233|            <span class="text-charcoal-500">Discount ({{ discount_rate }}%)</span>
-234|            <span class="text-burgundy-700" id="summary-discount">−{{ currency.symbol }}{{ discount }}</span>
-235|          </div>
-236|          {% endif %}
-237|          <div class="flex justify-between">
-238|            <span class="text-charcoal-500">Shipping</span>
-239|            <span class="text-charcoal-900" id="summary-shipping">Free</span>
-240|          </div>
-241|          <div class="flex justify-between" id="gift-row" style="display: none;">
-242|            <span class="text-charcoal-500">Gift Wrapping</span>
-243|            <span class="text-charcoal-900" id="summary-gift">{{ currency.symbol }}5.00</span>
-244|          </div>
-245|          <div class="flex justify-between" id="promo-row" {% if not promo_discount %}style="display: none;"{% endif %}>
-246|            <span class="text-charcoal-500">Promo Code{% if promo_code %} ({{ promo_code }}){% endif %}</span>
-247|            <span class="text-burgundy-700" id="summary-promo">−{{ currency.symbol }}{{ promo_discount|default:"0.00" }}</span>
-248|          </div>
-249|          <div class="border-t border-cream-300 pt-3 mt-3">
-250|            <div class="flex justify-between items-baseline">
-251|              <span class="text-charcoal-900 font-semibold">Total</span>
-252|              <span class="font-display text-2xl text-charcoal-900" id="summary-total">{{ currency.symbol }}{{ total }}</span>
-253|            </div>
-254|          </div>
-255|        </div>
-256|
-257|        <form method="POST" action="{% url 'checkout' %}" id="checkout-form">
-258|          {% csrf_token %}
-259|          <input type="hidden" name="fulfilment" id="form-fulfilment" value="Delivery">
-260|          <input type="hidden" name="shipping_cost" id="form-shipping-cost" value="0">
-261|          <input type="hidden" name="gift_wrap_cost" id="form-gift-cost" value="0">
-262|          <input type="hidden" name="computed_total" id="form-computed-total" value="{{ total }}">
-263|          <input type="hidden" name="payment_method" id="form-payment-method" value="{{ payment_method|default:'Card' }}">
-264|          <input type="hidden" name="promo_code" id="form-promo-code" value="{{ promo_code|default:'' }}">
-265|
-266|          <!-- Payment Method -->
-267|          <div class="mt-6">
-268|            <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
-269|            <div class="grid grid-cols-3 gap-3 mb-4">
-270|              <button type="button" id="pay-card"
-271|                class="payment-option flex flex-col items-center gap-2 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-center transition-all hover:border-gold-400 {% if payment_method == 'Card' or not payment_method %}selected{% endif %}"
-272|                data-value="Card">
-273|                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-charcoal-700">
-274|                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9.75V18A2.25 2.25 0 004.5 20.25h15A2.25 2.25 0 0021.75 18V9.75m-9-3.75h9.75m-9 0V5.25A2.25 2.25 0 0112 3H6.75A2.25 2.25 0 004.5 5.25v.75" />
-275|                </svg>
-276|                <span class="text-charcoal-700 text-xs font-medium">Card</span>
-277|              </button>
-278|              <button type="button" id="pay-paypal"
-279|                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'PayPal' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'PayPal' %}selected{% endif %}"
-280|                data-value="PayPal">
-281|                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-blue-600">
-282|                  <path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.093 3.12a.77.77 0 01.76-.65h5.38c3.68 0 5.56 1.88 5.02 4.72-.64 3.36-3.28 4.96-6.38 4.96H7.15l-1.08 5.7a.64.64 0 01-.63.53h.01zm1.34-7.44h1.48c1.9 0 3.16-.92 3.5-2.68.3-1.56-.54-2.48-2.24-2.48H9.64l-1.22 5.16zm10.6 8.4h-4.46a.64.64 0 01-.63-.74l1.7-8.9a.77.77 0 01.76-.65h2.2c1.76 0 2.88.42 3.36 1.26.24.42.28.94.12 1.54l-.04.2c-.3 1.56-1.26 2.6-2.82 3.02.58.32.82.9.62 1.92l-.38 2c-.08.4-.02.66.2.82.2.14.5.17.86.09h-.01z"/>
-283|                </svg>
-284|                <span class="text-charcoal-700 text-xs font-medium">PayPal</span>
-285|              </button>
-286|              <button type="button" id="pay-cash"
-287|                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'Cash' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'Cash' %}selected{% endif %}"
-288|                data-value="Cash">
-289|                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600">
-290|                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.104 1.454.17 2.18.17h.002a.776.776 0 00.613-.326.78.78 0 00.088-.746 9.72 9.72 0 00-2.938-4.018M2.25 18.75a60.07 60.07 0 00-1.313-3.746m13.313 3.746a60.07 60.07 0 01-1.313-3.746M6.75 7.364c-3.048 0-5.523 2.096-5.523 4.682 0 2.587 2.475 4.682 5.523 4.682 3.047 0 5.523-2.095 5.523-4.682 0-2.586-2.476-4.682-5.523-4.682zm0 0c1.668 0 3.018 1.066 3.018 2.382 0 1.316-1.35 2.382-3.018 2.382S3.732 11.062 3.732 9.746c0-1.316 1.35-2.382 3.018-2.382z" />
-291|                </svg>
-292|                <span class="text-charcoal-700 text-xs font-medium">Cash</span>
-293|              </button>
-294|            </div>
-295|          </div>
-296|
-297|          <button type="submit" class="w-full mt-4 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
-298|            Proceed to Payment
-299|          </button>
-300|        </form>
-301|
-302|        <!-- Trust Badges -->
-303|        <div class="mt-6 pt-4 border-t border-cream-300 flex items-center justify-center gap-4">
-304|          <div class="text-charcoal-400" title="Secure payment">
-305|            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-306|              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
-307|            </svg>
-308|          </div>
-309|          <p class="text-charcoal-400 text-xs">Secure checkout</p>
-310|        </div>
-311|      </div>
-312|    </div>
-313|  </div>
-314|</div>
-315|
-316|<script>
-317|  // Base values from Django
-318|  const baseSubtotal = parseFloat("{{ subtotal }}");
-319|  const baseDiscount = parseFloat("{{ discount }}");
-320|  const baseTotal = parseFloat("{{ total }}"); // subtotal - discount
-321|
-322|  // Store data from Django
-323|  const stores = [
-324|    {% for store in stores %}
-325|    {
-326|      id: {{ store.store_id }},
-327|      name: "{{ store.name|escapejs }}",
-328|      address: "{{ store.address|escapejs }}",
-329|      lat: {{ store.latitude }},
-330|      lng: {{ store.longitude }}
-331|    }{% if not forloop.last %},{% endif %}
-332|    {% endfor %}
-333|  ];
-334|
-335|  const selectedStoreId = "{{ selected_store_id }}";
-336|
-337|  // --- Fulfilment toggle (button-based) ---
-338|  const btnDelivery = document.getElementById('btn-delivery');
-339|  const btnPickup = document.getElementById('btn-pickup');
-340|  const fulfilmentInput = document.getElementById('fulfilment-input');
-341|  const formFulfilment = document.getElementById('form-fulfilment');
-342|  const deliverySection = document.getElementById('delivery-section');
-343|  const shippingSection = document.getElementById('shipping-section');
-344|  const pickupSection = document.getElementById('pickup-section');
-345|  const summaryShipping = document.getElementById('summary-shipping');
-346|
-347|  let map = null;
-348|  let markers = [];
-349|  let selectedStore = null;
-350|
-351|  function updateTotal() {
-352|    const shippingCost = parseFloat(document.querySelector('input[name="shipping"]:checked')?.dataset.cost || 0);
-353|    const giftWrapCost = document.getElementById('gift-wrap').checked ? parseFloat(document.getElementById('gift-wrap').dataset.cost) : 0;
-354|
-355|    const total = baseTotal + shippingCost + giftWrapCost;
-356|
-357|    // Update shipping label
-358|    if (summaryShipping) {
-359|      summaryShipping.textContent = shippingCost === 0 ? 'Free' : '\u00A3' + shippingCost.toFixed(2);
-360|    }
-361|
-362|    // Update gift row
-363|    const giftRow = document.getElementById('gift-row');
-364|    if (giftRow) {
-365|      giftRow.style.display = giftWrapCost > 0 ? 'flex' : 'none';
-366|    }
-367|
-368|    // Update total display
-369|    const summaryTotal = document.getElementById('summary-total');
-370|    if (summaryTotal) {
-371|      summaryTotal.textContent = '{{ currency.symbol }}' + total.toFixed(2);
-372|    }
-373|
-374|    // Update hidden form fields for backend
-375|    document.getElementById('form-shipping-cost').value = shippingCost.toFixed(2);
-376|    document.getElementById('form-gift-cost').value = giftWrapCost.toFixed(2);
-377|    document.getElementById('form-computed-total').value = total.toFixed(2);
-378|  }
-379|
-380|  function setDelivery() {
-381|    fulfilmentInput.value = 'Delivery';
-382|    formFulfilment.value = 'Delivery';
-383|
-384|    btnDelivery.classList.add('border-gold-500', 'bg-gold-50');
-385|    btnDelivery.classList.remove('border-charcoal-200');
-386|    btnPickup.classList.remove('border-gold-500', 'bg-gold-50');
-387|    btnPickup.classList.add('border-charcoal-200');
-388|
-389|    deliverySection.classList.remove('hidden');
-390|    shippingSection.classList.remove('hidden');
-391|    pickupSection.classList.add('hidden');
-392|
-393|    updateTotal();
-394|  }
-395|
-396|  function setPickup() {
-397|    fulfilmentInput.value = 'Pickup';
-398|    formFulfilment.value = 'Pickup';
-399|
-400|    btnPickup.classList.add('border-gold-500', 'bg-gold-50');
-401|    btnPickup.classList.remove('border-charcoal-200');
-402|    btnDelivery.classList.remove('border-gold-500', 'bg-gold-50');
-403|    btnDelivery.classList.add('border-charcoal-200');
-404|
-405|    deliverySection.classList.add('hidden');
-406|    shippingSection.classList.add('hidden');
-407|    pickupSection.classList.remove('hidden');
-408|
-409|    // Init map after section is visible
-410|    setTimeout(initMap, 100);
-411|
-412|    updateTotal();
-413|  }
-414|
-415|  btnDelivery.addEventListener('click', setDelivery);
-416|  btnPickup.addEventListener('click', setPickup);
-417|
-418|  // --- Shipping method change ---
-419|  document.querySelectorAll('input[name="shipping"]').forEach(function(radio) {
-420|    radio.addEventListener('change', function() {
-421|      // Update visual selection styling
-422|      document.querySelectorAll('#shipping-section label').forEach(function(lbl) {
-423|        lbl.classList.remove('border-gold-500', 'bg-gold-50');
-424|        lbl.classList.add('border-charcoal-200');
-425|      });
-426|      this.closest('label').classList.remove('border-charcoal-200');
-427|      this.closest('label').classList.add('border-gold-500', 'bg-gold-50');
-428|
-429|      updateTotal();
-430|    });
-431|  });
-432|
-433|  // --- Gift wrap change ---
-434|  document.getElementById('gift-wrap').addEventListener('change', updateTotal);
-435|
-436|  // --- Map functions ---
-437|  function initMap() {
-438|    if (map) return;
-439|
-440|    if (stores.length === 0) {
-441|      document.getElementById('store-map').innerHTML =
-442|        '<div class="flex items-center justify-center h-full text-charcoal-400 text-sm">No stores available.</div>';
-443|      return;
-444|    }
-445|
-446|    const center = stores.length > 0 ? [stores[0].lat, stores[0].lng] : [51.5074, -0.1278];
-447|
-448|    map = L.map('store-map').setView(center, 11);
-449|    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-450|      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-451|    }).addTo(map);
-452|
-453|    stores.forEach(function(store) {
-454|      const marker = L.marker([store.lat, store.lng]).addTo(map);
-455|      marker.bindPopup('<strong>' + store.name + '</strong><br>' + store.address +
-456|        '<br><button type="button" class="select-store-btn mt-2 px-3 py-1 bg-gold-500 text-charcoal-950 text-xs font-semibold rounded" ' +
-457|        'data-store-id="' + store.id + '" data-store-name="' + store.name + '" data-store-address="' + store.address + '">' +
-458|        'Select this store</button>');
-459|
-460|      marker.on('popupopen', function() {
-461|        const btn = document.querySelector('.select-store-btn[data-store-id="' + store.id + '"]');
-462|        if (btn) {
-463|          btn.addEventListener('click', function() {
-464|            selectStore(store.id, store.name, store.address);
-465|          });
-466|        }
-467|      });
-468|
-469|      markers.push(marker);
-470|    });
-471|
-472|    if (stores.length > 1) {
-473|      const group = L.featureGroup(markers);
-474|      map.fitBounds(group.getBounds().pad(0.1));
-475|    }
-476|
-477|    if (selectedStoreId) {
-478|      const store = stores.find(s => s.id == selectedStoreId);
-479|      if (store) {
-480|        selectStore(store.id, store.name, store.address);
-481|      }
-482|    }
-483|  }
-484|
-485|  function selectStore(id, name, address) {
-486|    selectedStore = { id, name, address };
-487|    document.getElementById('selected_store_id').value = id;
-488|    document.getElementById('selected-store-name').textContent = name;
-489|    document.getElementById('selected-store-address').textContent = address;
-490|    document.getElementById('selected-store-info').classList.remove('hidden');
-491|
-492|    markers.forEach(function(m) {
-493|      const latlng = m.getLatLng();
-494|      const store = stores.find(s => s.lat === latlng.lat && s.lng === latlng.lng);
-495|      if (store && store.id === id) {
-496|        m.setZIndexOffset(1000);
-497|        m.openPopup();
-498|      } else {
-499|        m.setZIndexOffset(0);
-500|      }
-501|
+{% extends "store/base.html" %}
+{% load static %}
+{% load currency_tags %}
+
+{% block extra_head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+<style>
+  #store-map { height: 350px; width: 100%; border-radius: 2px; }
+  .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 13px; }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 lg:px-8 py-12">
+
+  <!-- Checkout Steps -->
+  <div class="flex items-center justify-center gap-4 mb-12">
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-gold-500 text-charcoal-950 text-sm font-semibold flex items-center justify-center">1</span>
+      <span class="text-charcoal-900 text-sm font-medium hidden sm:inline">Delivery</span>
+    </div>
+    <div class="w-12 h-px bg-charcoal-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">2</span>
+      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Payment</span>
+    </div>
+    <div class="w-12 h-px bg-charcoal-300"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-charcoal-200 text-charcoal-500 text-sm font-semibold flex items-center justify-center">3</span>
+      <span class="text-charcoal-500 text-sm font-medium hidden sm:inline">Confirm</span>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-10">
+
+    <!-- Left: Forms -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- Fulfilment Selection -->
+      <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Fulfilment</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <button type="button" id="btn-delivery"
+            class="flex items-center gap-3 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-left transition-colors">
+            <div>
+              <p class="text-charcoal-900 text-sm font-medium">Delivery</p>
+              <p class="text-charcoal-500 text-xs">Ship to your address</p>
+            </div>
+          </button>
+          <button type="button" id="btn-pickup"
+            class="flex items-center gap-3 p-4 border-2 border-charcoal-200 rounded-brand text-left hover:border-charcoal-400 transition-colors">
+            <div>
+              <p class="text-charcoal-900 text-sm font-medium">Store Pickup</p>
+              <p class="text-charcoal-500 text-xs">Collect from a store</p>
+            </div>
+          </button>
+        </div>
+        <input type="hidden" name="fulfilment" id="fulfilment-input" value="Delivery">
+      </section>
+
+      <!-- Store Pickup Map (hidden by default) -->
+      <section id="pickup-section" class="bg-white border border-cream-300 rounded-brand p-6 hidden">
+        <h2 class="font-display text-xl text-charcoal-900 mb-2">Select a Store</h2>
+        <p class="text-charcoal-500 text-sm mb-4">Click on a marker to choose your pickup location.</p>
+        <div id="store-map" class="rounded-brand border border-charcoal-200"></div>
+        <div id="selected-store-info" class="mt-4 p-3 bg-gold-50 border border-gold-200 rounded-brand hidden">
+          <p class="text-charcoal-900 text-sm font-medium" id="selected-store-name"></p>
+          <p class="text-charcoal-500 text-xs mt-1" id="selected-store-address"></p>
+        </div>
+        <input type="hidden" name="selected_store_id" id="selected_store_id" value="{{ selected_store_id }}">
+      </section>
+
+      <!-- Delivery Address (shown by default) -->
+      <section id="delivery-section" class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Delivery Address</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
+            <input type="text" id="firstName" value="{{ request.session.first_name|default:'' }}" placeholder="John"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="lastName" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
+            <input type="text" id="lastName" value="{{ request.session.last_name|default:'' }}" placeholder="Smith"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="address1" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 1</label>
+            <input type="text" id="address1" value="{{ request.session.street_name|default:'' }}" placeholder="24 Mayfair Gardens"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="address2" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Address Line 2 <span class="text-charcoal-400 normal-case">(optional)</span></label>
+            <input type="text" id="address2" placeholder="Apartment, suite, etc."
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">City</label>
+            <input type="text" id="city" value="{{ request.session.town_city|default:'' }}" placeholder="London"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
+            <input type="text" id="postcode" value="{{ request.session.postcode|default:'' }}" placeholder="W1K 1AA"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+          <div>
+            <label for="country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
+            <select id="country" class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white">
+              <option>United Kingdom</option>
+              <option>United States</option>
+              <option>France</option>
+              <option>Germany</option>
+              <option>Italy</option>
+              <option>Spain</option>
+            </select>
+          </div>
+          <div>
+            <label for="phone" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone</label>
+            <input type="tel" id="phone" placeholder="+44 7700 900123"
+              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          </div>
+        </div>
+      </section>
+
+      <!-- Shipping Method (shown for Delivery) -->
+      <section id="shipping-section" class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Shipping Method</h2>
+        <div class="space-y-3">
+          <label class="flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-brand cursor-pointer transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" value="standard" data-cost="0" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Standard Delivery</p>
+                <p class="text-charcoal-500 text-xs">5–7 business days</p>
+              </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">Free</span>
+          </label>
+          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" value="express" data-cost="5.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Express Delivery</p>
+                <p class="text-charcoal-500 text-xs">2–3 business days</p>
+              </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">{{ currency.symbol }}5.99</span>
+          </label>
+          <label class="flex items-center justify-between p-4 border border-charcoal-200 rounded-brand cursor-pointer hover:border-charcoal-400 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="shipping" value="nextday" data-cost="9.99" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
+              <div>
+                <p class="text-charcoal-900 text-sm font-medium">Next Day Delivery</p>
+                <p class="text-charcoal-500 text-xs">Order before 2pm</p>
+              </div>
+            </div>
+            <span class="text-charcoal-900 text-sm font-medium">{{ currency.symbol }}9.99</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Gift Options -->
+      <section class="bg-white border border-cream-300 rounded-brand p-6">
+        <h2 class="font-display text-xl text-charcoal-900 mb-4">Gift Options</h2>
+        <label class="flex items-center gap-3 cursor-pointer mb-4">
+          <input type="checkbox" name="gift_wrap" id="gift-wrap" data-cost="5.00" class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
+          <span class="text-charcoal-600 text-sm">This order is a gift — add premium gift wrapping (+{{ currency.symbol }}5.00)</span>
+        </label>
+        <div>
+          <label for="giftMessage" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gift Message <span class="text-charcoal-400 normal-case">(optional)</span></label>
+          <textarea id="giftMessage" name="gift_message" rows="3" placeholder="Write a personal message..."
+            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors resize-none"></textarea>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div>
+      <div class="bg-cream-200 border border-cream-300 rounded-brand p-6 sticky top-24">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Order Summary</h2>
+
+        <!-- Cart Items -->
+        {% if items %}
+        <div class="space-y-4 mb-6">
+          {% for item in items %}
+          <div class="flex gap-3">
+            <div class="w-14 h-18 bg-charcoal-100 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
+              {% if item.image %}
+                <img src="data:image/png;base64,{{ item.image.image }}" alt="{{ item.product.product_name }}" class="w-full h-full object-cover">
+              {% else %}
+                <span class="text-charcoal-400 text-[8px] uppercase tracking-wide text-center px-1">{{ item.product.product_name|truncatewords:2 }}</span>
+              {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-charcoal-900 text-sm font-medium truncate">{{ item.product.brand }} — {{ item.product.product_name }}</p>
+              <div class="flex justify-between mt-1">
+                <span class="text-charcoal-400 text-xs">×{{ item.quantity }}</span>
+                <span class="text-charcoal-900 text-sm">{{ currency.symbol }}{{ item.product.price }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Promo Code -->
+        <div class="mb-6">
+          <label for="promo" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Promo Code</label>
+          <div class="flex gap-2">
+            <input type="text" id="promo" name="promo_code" value="{{ promo_code|default:'' }}" placeholder="Enter code"
+              class="flex-1 px-4 py-2.5 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500">
+            <button type="button" id="apply-promo-btn" class="px-4 py-2.5 bg-charcoal-900 text-cream-100 text-sm font-medium rounded-brand hover:bg-charcoal-800 transition-colors">Apply</button>
+          </div>
+          <div id="promo-msg" class="mt-2 text-xs hidden"></div>
+        </div>
+
+        <!-- Totals -->
+        <div class="border-t border-cream-300 pt-4 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Subtotal</span>
+            <span class="text-charcoal-900" id="summary-subtotal">{{ currency.symbol }}{{ subtotal }}</span>
+          </div>
+          {% if discount > 0 %}
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Discount ({{ discount_rate }}%)</span>
+            <span class="text-burgundy-700" id="summary-discount">−{{ currency.symbol }}{{ discount }}</span>
+          </div>
+          {% endif %}
+          <div class="flex justify-between">
+            <span class="text-charcoal-500">Shipping</span>
+            <span class="text-charcoal-900" id="summary-shipping">Free</span>
+          </div>
+          <div class="flex justify-between" id="gift-row" style="display: none;">
+            <span class="text-charcoal-500">Gift Wrapping</span>
+            <span class="text-charcoal-900" id="summary-gift">{{ currency.symbol }}5.00</span>
+          </div>
+          <div class="flex justify-between" id="promo-row" {% if not promo_discount %}style="display: none;"{% endif %}>
+            <span class="text-charcoal-500">Promo Code{% if promo_code %} ({{ promo_code }}){% endif %}</span>
+            <span class="text-burgundy-700" id="summary-promo">−{{ currency.symbol }}{{ promo_discount|default:"0.00" }}</span>
+          </div>
+          <div class="border-t border-cream-300 pt-3 mt-3">
+            <div class="flex justify-between items-baseline">
+              <span class="text-charcoal-900 font-semibold">Total</span>
+              <span class="font-display text-2xl text-charcoal-900" id="summary-total">{{ currency.symbol }}{{ total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <form method="POST" action="{% url 'checkout' %}" id="checkout-form">
+          {% csrf_token %}
+          <input type="hidden" name="fulfilment" id="form-fulfilment" value="Delivery">
+          <input type="hidden" name="shipping_cost" id="form-shipping-cost" value="0">
+          <input type="hidden" name="gift_wrap_cost" id="form-gift-cost" value="0">
+          <input type="hidden" name="computed_total" id="form-computed-total" value="{{ total }}">
+          <input type="hidden" name="payment_method" id="form-payment-method" value="{{ payment_method|default:'Card' }}">
+          <input type="hidden" name="promo_code" id="form-promo-code" value="{{ promo_code|default:'' }}">
+
+          <!-- Payment Method -->
+          <div class="mt-6">
+            <h5 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-3">Payment Method</h5>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <button type="button" id="pay-card"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 border-gold-500 bg-gold-50 rounded-brand text-center transition-all hover:border-gold-400 {% if payment_method == 'Card' or not payment_method %}selected{% endif %}"
+                data-value="Card">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-charcoal-700">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9.75V18A2.25 2.25 0 004.5 20.25h15A2.25 2.25 0 0021.75 18V9.75m-9-3.75h9.75m-9 0V5.25A2.25 2.25 0 0112 3H6.75A2.25 2.25 0 004.5 5.25v.75" />
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">Card</span>
+              </button>
+              <button type="button" id="pay-paypal"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'PayPal' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'PayPal' %}selected{% endif %}"
+                data-value="PayPal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-blue-600">
+                  <path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.093 3.12a.77.77 0 01.76-.65h5.38c3.68 0 5.56 1.88 5.02 4.72-.64 3.36-3.28 4.96-6.38 4.96H7.15l-1.08 5.7a.64.64 0 01-.63.53h.01zm1.34-7.44h1.48c1.9 0 3.16-.92 3.5-2.68.3-1.56-.54-2.48-2.24-2.48H9.64l-1.22 5.16zm10.6 8.4h-4.46a.64.64 0 01-.63-.74l1.7-8.9a.77.77 0 01.76-.65h2.2c1.76 0 2.88.42 3.36 1.26.24.42.28.94.12 1.54l-.04.2c-.3 1.56-1.26 2.6-2.82 3.02.58.32.82.9.62 1.92l-.38 2c-.08.4-.02.66.2.82.2.14.5.17.86.09h-.01z"/>
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">PayPal</span>
+              </button>
+              <button type="button" id="pay-cash"
+                class="payment-option flex flex-col items-center gap-2 p-4 border-2 {% if payment_method == 'Cash' %}border-gold-500 bg-gold-50{% else %}border-charcoal-200{% endif %} rounded-brand text-center transition-all hover:border-charcoal-400 {% if payment_method == 'Cash' %}selected{% endif %}"
+                data-value="Cash">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.104 1.454.17 2.18.17h.002a.776.776 0 00.613-.326.78.78 0 00.088-.746 9.72 9.72 0 00-2.938-4.018M2.25 18.75a60.07 60.07 0 00-1.313-3.746m13.313 3.746a60.07 60.07 0 01-1.313-3.746M6.75 7.364c-3.048 0-5.523 2.096-5.523 4.682 0 2.587 2.475 4.682 5.523 4.682 3.047 0 5.523-2.095 5.523-4.682 0-2.586-2.476-4.682-5.523-4.682zm0 0c1.668 0 3.018 1.066 3.018 2.382 0 1.316-1.35 2.382-3.018 2.382S3.732 11.062 3.732 9.746c0-1.316 1.35-2.382 3.018-2.382z" />
+                </svg>
+                <span class="text-charcoal-700 text-xs font-medium">Cash</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full mt-4 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+            Proceed to Payment
+          </button>
+        </form>
+
+        <!-- Trust Badges -->
+        <div class="mt-6 pt-4 border-t border-cream-300 flex items-center justify-center gap-4">
+          <div class="text-charcoal-400" title="Secure payment">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+            </svg>
+          </div>
+          <p class="text-charcoal-400 text-xs">Secure checkout</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Base values from Django
+  const baseSubtotal = parseFloat("{{ subtotal }}");
+  const baseDiscount = parseFloat("{{ discount }}");
+  const baseTotal = parseFloat("{{ total }}"); // subtotal - discount
+
+  // Store data from Django
+  const stores = [
+    {% for store in stores %}
+    {
+      id: {{ store.store_id }},
+      name: "{{ store.name|escapejs }}",
+      address: "{{ store.address|escapejs }}",
+      lat: {{ store.latitude }},
+      lng: {{ store.longitude }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const selectedStoreId = "{{ selected_store_id }}";
+
+  // --- Fulfilment toggle (button-based) ---
+  const btnDelivery = document.getElementById('btn-delivery');
+  const btnPickup = document.getElementById('btn-pickup');
+  const fulfilmentInput = document.getElementById('fulfilment-input');
+  const formFulfilment = document.getElementById('form-fulfilment');
+  const deliverySection = document.getElementById('delivery-section');
+  const shippingSection = document.getElementById('shipping-section');
+  const pickupSection = document.getElementById('pickup-section');
+  const summaryShipping = document.getElementById('summary-shipping');
+
+  let map = null;
+  let markers = [];
+  let selectedStore = null;
+
+  function updateTotal() {
+    const shippingCost = parseFloat(document.querySelector('input[name="shipping"]:checked')?.dataset.cost || 0);
+    const giftWrapCost = document.getElementById('gift-wrap').checked ? parseFloat(document.getElementById('gift-wrap').dataset.cost) : 0;
+
+    const total = baseTotal + shippingCost + giftWrapCost;
+
+    // Update shipping label
+    if (summaryShipping) {
+      summaryShipping.textContent = shippingCost === 0 ? 'Free' : '\u00A3' + shippingCost.toFixed(2);
+    }
+
+    // Update gift row
+    const giftRow = document.getElementById('gift-row');
+    if (giftRow) {
+      giftRow.style.display = giftWrapCost > 0 ? 'flex' : 'none';
+    }
+
+    // Update total display
+    const summaryTotal = document.getElementById('summary-total');
+    if (summaryTotal) {
+      summaryTotal.textContent = '{{ currency.symbol }}' + total.toFixed(2);
+    }
+
+    // Update hidden form fields for backend
+    document.getElementById('form-shipping-cost').value = shippingCost.toFixed(2);
+    document.getElementById('form-gift-cost').value = giftWrapCost.toFixed(2);
+    document.getElementById('form-computed-total').value = total.toFixed(2);
+  }
+
+  function setDelivery() {
+    fulfilmentInput.value = 'Delivery';
+    formFulfilment.value = 'Delivery';
+
+    btnDelivery.classList.add('border-gold-500', 'bg-gold-50');
+    btnDelivery.classList.remove('border-charcoal-200');
+    btnPickup.classList.remove('border-gold-500', 'bg-gold-50');
+    btnPickup.classList.add('border-charcoal-200');
+
+    deliverySection.classList.remove('hidden');
+    shippingSection.classList.remove('hidden');
+    pickupSection.classList.add('hidden');
+
+    updateTotal();
+  }
+
+  function setPickup() {
+    fulfilmentInput.value = 'Pickup';
+    formFulfilment.value = 'Pickup';
+
+    btnPickup.classList.add('border-gold-500', 'bg-gold-50');
+    btnPickup.classList.remove('border-charcoal-200');
+    btnDelivery.classList.remove('border-gold-500', 'bg-gold-50');
+    btnDelivery.classList.add('border-charcoal-200');
+
+    deliverySection.classList.add('hidden');
+    shippingSection.classList.add('hidden');
+    pickupSection.classList.remove('hidden');
+
+    // Init map after section is visible
+    setTimeout(initMap, 100);
+
+    updateTotal();
+  }
+
+  btnDelivery.addEventListener('click', setDelivery);
+  btnPickup.addEventListener('click', setPickup);
+
+  // --- Shipping method change ---
+  document.querySelectorAll('input[name="shipping"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      // Update visual selection styling
+      document.querySelectorAll('#shipping-section label').forEach(function(lbl) {
+        lbl.classList.remove('border-gold-500', 'bg-gold-50');
+        lbl.classList.add('border-charcoal-200');
+      });
+      this.closest('label').classList.remove('border-charcoal-200');
+      this.closest('label').classList.add('border-gold-500', 'bg-gold-50');
+
+      updateTotal();
+    });
+  });
+
+  // --- Gift wrap change ---
+  document.getElementById('gift-wrap').addEventListener('change', updateTotal);
+
+  // --- Map functions ---
+  function initMap() {
+    if (map) return;
+
+    if (stores.length === 0) {
+      document.getElementById('store-map').innerHTML =
+        '<div class="flex items-center justify-center h-full text-charcoal-400 text-sm">No stores available.</div>';
+      return;
+    }
+
+    const center = stores.length > 0 ? [stores[0].lat, stores[0].lng] : [51.5074, -0.1278];
+
+    map = L.map('store-map').setView(center, 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    stores.forEach(function(store) {
+      const marker = L.marker([store.lat, store.lng]).addTo(map);
+      marker.bindPopup('<strong>' + store.name + '</strong><br>' + store.address +
+        '<br><button type="button" class="select-store-btn mt-2 px-3 py-1 bg-gold-500 text-charcoal-950 text-xs font-semibold rounded" ' +
+        'data-store-id="' + store.id + '" data-store-name="' + store.name + '" data-store-address="' + store.address + '">' +
+        'Select this store</button>');
+
+      marker.on('popupopen', function() {
+        const btn = document.querySelector('.select-store-btn[data-store-id="' + store.id + '"]');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            selectStore(store.id, store.name, store.address);
+          });
+        }
+      });
+
+      markers.push(marker);
+    });
+
+    if (stores.length > 1) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    if (selectedStoreId) {
+      const store = stores.find(s => s.id == selectedStoreId);
+      if (store) {
+        selectStore(store.id, store.name, store.address);
+      }
+    }
+  }
+
+  function selectStore(id, name, address) {
+    selectedStore = { id, name, address };
+    document.getElementById('selected_store_id').value = id;
+    document.getElementById('selected-store-name').textContent = name;
+    document.getElementById('selected-store-address').textContent = address;
+    document.getElementById('selected-store-info').classList.remove('hidden');
+
+    markers.forEach(function(m) {
+      const latlng = m.getLatLng();
+      const store = stores.find(s => s.lat === latlng.lat && s.lng === latlng.lng);
+      if (store && store.id === id) {
+        m.setZIndexOffset(1000);
+        m.openPopup();
+      } else {
+        m.setZIndexOffset(0);
+      }
+    });
+  }
+
+  // --- Payment method selection (button-based) ---
+  const paymentOptions = document.querySelectorAll('.payment-option');
+  const formPaymentMethod = document.getElementById('form-payment-method');
+
+  // Set active state based on current value
+  function setActivePayment(value) {
+    paymentOptions.forEach(function(btn) {
+      if (btn.dataset.value === value) {
+        btn.classList.add('border-gold-500', 'bg-gold-50');
+        btn.classList.remove('border-charcoal-200');
+      } else {
+        btn.classList.remove('border-gold-500', 'bg-gold-50');
+        btn.classList.add('border-charcoal-200');
+      }
+    });
+    if (formPaymentMethod) formPaymentMethod.value = value;
+  }
+
+  paymentOptions.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setActivePayment(this.dataset.value);
+    });
+  });
+
+  // --- Promo code Apply button ---
+  // Apply reloads the page with the promo code as a GET param so the server
+  // validates it server-side without triggering payment.
+  const applyPromoBtn = document.getElementById('apply-promo-btn');
+  const promoInput = document.getElementById('promo');
+  const promoMsg = document.getElementById('promo-msg');
+
+  if (applyPromoBtn && promoInput) {
+    applyPromoBtn.addEventListener('click', function() {
+      const code = promoInput.value.trim();
+      if (!code) {
+        if (promoMsg) {
+          promoMsg.textContent = 'Please enter a promo code.';
+          promoMsg.className = 'mt-2 text-xs text-burgundy-600';
+        }
+        return;
+      }
+      const params = new URLSearchParams(window.location.search);
+      params.set('promo_code', code);
+      window.location.search = params.toString();
+    });
+  }
+
+  // Initialize total on page load
+  updateTotal();
+</script>
+{% endblock content %}
