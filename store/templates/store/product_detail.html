@@ -1,5 +1,6 @@
 {% extends "store/base.html" %}
 {% load static %}
+{% load currency_tags %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
@@ -67,7 +68,7 @@
     <div class="flex flex-col">
       <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-2 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
       <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display mb-4">{{ product.product_name }}</h1>
-      <p class="text-charcoal-900 font-semibold text-2xl mb-6">£{{ product.price }}</p>
+      <p class="text-charcoal-900 font-semibold text-2xl mb-6">{{ product.price|currency:currency }}</p>
 
       {% if product.description %}
       <p class="text-charcoal-600 leading-relaxed mb-8">{{ product.description }}</p>

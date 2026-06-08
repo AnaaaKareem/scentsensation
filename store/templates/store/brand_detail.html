@@ -1,5 +1,6 @@
 {% extends "store/base.html" %}
 {% load static %}
+{% load currency_tags %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
@@ -85,7 +86,7 @@
         <h3 class="font-display text-lg text-charcoal-900 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
       </a>
       <p class="text-charcoal-500 text-sm mb-2">{{ product.description|truncatewords:12 }}</p>
-      <p class="text-charcoal-900 font-medium mb-3">£{{ product.price }}</p>
+      <p class="text-charcoal-900 font-medium mb-3">{{ product.price|currency:currency }}</p>
 
       <!-- Add to Basket Form -->
       <form method="POST" action="{% url 'store' %}" class="mt-2">

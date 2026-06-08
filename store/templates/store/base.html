@@ -138,6 +138,20 @@
         <div class="hidden md:flex items-center gap-8">
           <a href="{% url 'homepage' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Home</a>
           <a href="{% url 'store' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Shop</a>
+          <a href="{% url 'basket' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
+            Basket
+            <span id="basket-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-gold-500 text-charcoal-950 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
+              {{ request.session.basket_count|default:'' }}
+            </span>
+          </a>
+          {% if request.session.customer_id %}
+          <a href="{% url 'wishlist' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
+            Wishlist
+            <span id="wishlist-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-burgundy-500 text-cream-100 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
+              {{ request.session.wishlist_count|default:'' }}
+            </span>
+          </a>
+          {% endif %}
           <!-- Region Selector -->
           <div class="relative" id="regionDropdown">
             <button type="button" onclick="toggleRegionDropdown()" class="flex items-center gap-2 text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
@@ -162,20 +176,6 @@
               </button>
             </div>
           </div>
-          <a href="{% url 'basket' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
-            Basket
-            <span id="basket-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-gold-500 text-charcoal-950 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
-              {{ request.session.basket_count|default:'' }}
-            </span>
-          </a>
-          {% if request.session.customer_id %}
-          <a href="{% url 'wishlist' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
-            Wishlist
-            <span id="wishlist-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-burgundy-500 text-cream-100 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
-              {{ request.session.wishlist_count|default:'' }}
-            </span>
-          </a>
-          {% endif %}
           {% if request.session.customer_id %}
             <!-- Logged in: show dropdown -->
             <div class="relative group">
@@ -406,15 +406,29 @@
       }
     });
 
-    // Detect user's region via timezone, fallback to US
+    // Detect user's region via timezone, fallback to nearest
+    // Only runs on first visit — manual selection is persisted in sessionStorage
     (function(){
       var saved = sessionStorage.getItem('region');
       if (saved) { updateRegionUI(saved); return; }
       try {
         var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         var region = 'US';
-        if (tz.startsWith('Europe/')) region = 'EU';
-        else if (tz === 'Europe/London' || tz === 'Europe/Belfast') region = 'UK';
+        if (tz === 'Europe/London' || tz === 'Europe/Belfast' || tz === 'Europe/Dublin') {
+          region = 'UK';
+        } else if (
+          tz.startsWith('Europe/') ||
+          tz.startsWith('Africa/') ||
+          tz.startsWith('Asia/Amman') ||
+          tz.startsWith('Asia/Beirut') ||
+          tz.startsWith('Asia/Jerusalem') ||
+          tz.startsWith('Asia/Gaza') ||
+          tz.startsWith('Asia/Hebron') ||
+          tz === 'Asia/Qatar' || tz === 'Asia/Riyadh' || tz === 'Asia/Dubai' ||
+          tz === 'Asia/Kuwait' || tz === 'Asia/Bahrain' || tz === 'Asia/Muscat'
+        ) {
+          region = 'EU';
+        }
         updateRegionUI(region);
         sessionStorage.setItem('region', region);
       } catch(e){

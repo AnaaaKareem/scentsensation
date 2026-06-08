@@ -22,6 +22,31 @@ from .forms import *
 import stripe
 import random
 import paypalrestsdk
+import json
+from pathlib import Path
+
+# Currency config: symbol and exchange rate (1 USD = X)
+CURRENCY_CONFIG = {
+    'US': {'symbol': '$', 'rate': 1.0, 'code': 'USD'},
+    'UK': {'symbol': '£', 'rate': 0.79, 'code': 'GBP'},
+    'EU': {'symbol': '€', 'rate': 0.92, 'code': 'EUR'},
+}
+
+def get_currency_config(region):
+    """Return currency config for a region, with live rates if available."""
+    config = CURRENCY_CONFIG.get(region, CURRENCY_CONFIG['US']).copy()
+    # Try to load cached live rates
+    cache_file = Path(__file__).resolve().parent / 'currency_cache.json'
+    if cache_file.exists():
+        try:
+            with open(cache_file) as f:
+                rates = json.load(f)
+            code = config['code']
+            if code in rates:
+                config['rate'] = rates[code]
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return config
 
 # Initialize Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -425,6 +450,8 @@ def store(request):
         ).values_list('product_id', flat=True))
         request.session['wishlist_count'] = len(wishlist_ids)
 
+    currency = get_currency_config(region_filter or 'US')
+
     context = {
         'products': page_obj,
         'page_obj': page_obj,
@@ -433,6 +460,7 @@ def store(request):
         'brand_slug_map': brand_slug_map,
         'wishlist_ids': wishlist_ids,
         'region_filter': region_filter,
+        'currency': currency,
     }
     return render(request, 'store/storepage.html', context)
 
@@ -471,11 +499,15 @@ def brand_detail(request, slug):
     if gender_filter in ('Male', 'Female'):
         products = products.filter(personal_fragrance__gender=gender_filter).distinct()
 
+    region = request.GET.get('region') or 'US'
+    currency = get_currency_config(region)
+
     context = {
         'brand': brand,
         'brand_name': brand_name,
         'products': products,
         'gender_filter': gender_filter,
+        'currency': currency,
     }
     return render(request, 'store/brand_detail.html', context)
 
@@ -495,6 +527,9 @@ def product_detail(request, product_id):
     if customer_id_pd:
         in_wishlist = Wishlist.objects.filter(customer_id=customer_id_pd, product_id=product_id).exists()
 
+    region = product.region or 'US'
+    currency = get_currency_config(region)
+
     context = {
         'product': product,
         'images': images,
@@ -502,6 +537,7 @@ def product_detail(request, product_id):
         'home': home,
         'brand_slug': brand_slug,
         'in_wishlist': in_wishlist,
+        'currency': currency,
     }
     return render(request, 'store/product_detail.html', context)
 
@@ -1522,12 +1558,16 @@ def wishlist(request):
         total=models.Sum('product__price')
     )['total'] or 0
 
+    region = request.GET.get('region') or 'US'
+    currency = get_currency_config(region)
+
     request.session['wishlist_count'] = len(products)
 
     return render(request, 'store/wishlist.html', {
         'products': products,
         'wishlist_count': len(products),
         'wishlist_subtotal': round(wishlist_subtotal, 2),
+        'currency': currency,
     })
 
 

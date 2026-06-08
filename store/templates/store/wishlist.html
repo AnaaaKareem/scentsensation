@@ -1,5 +1,6 @@
 {% extends "store/base.html" %}
 {% load static %}
+{% load currency_tags %}
 
 {% block content %}
 
@@ -91,7 +92,7 @@
         {% endif %}
 
         <div class="flex items-center gap-3 mt-4">
-          <span class="font-display text-xl text-charcoal-900">£{{ product.price }}</span>
+          <span class="font-display text-xl text-charcoal-900">{{ product.price|currency:currency }}</span>
         </div>
 
         <!-- Actions -->
