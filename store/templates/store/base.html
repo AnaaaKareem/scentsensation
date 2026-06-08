@@ -138,6 +138,30 @@
         <div class="hidden md:flex items-center gap-8">
           <a href="{% url 'homepage' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Home</a>
           <a href="{% url 'store' %}" class="text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">Shop</a>
+          <!-- Region Selector -->
+          <div class="relative" id="regionDropdown">
+            <button type="button" onclick="toggleRegionDropdown()" class="flex items-center gap-2 text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
+              <span id="regionFlag" class="w-5 h-4 rounded-sm overflow-hidden"></span>
+              <span id="regionLabel">US</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 transition-transform" id="regionArrow">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            <div id="regionMenu" class="hidden absolute top-full mt-2 right-0 bg-charcoal-900 border border-charcoal-700 rounded-brand shadow-xl py-2 min-w-[160px] z-50">
+              <button type="button" onclick="setRegion('US')" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">
+                <svg viewBox="0 0 640 480" class="w-5 h-4 rounded-sm"><rect width="640" height="480" fill="#fff"/><g fill="#bf0a30"><rect y="0" width="640" height="37"/><rect y="74" width="640" height="37"/><rect y="148" width="640" height="37"/><rect y="222" width="640" height="37"/><rect y="296" width="640" height="37"/><rect y="370" width="640" height="37"/><rect y="444" width="640" height="36"/></g><rect width="256" height="259" fill="#002868"/></svg>
+                <span>United States</span>
+              </button>
+              <button type="button" onclick="setRegion('UK')" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">
+                <svg viewBox="0 0 640 480" class="w-5 h-4 rounded-sm"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#FFF" d="M75 0l244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0z"/><path fill="#C8102E" d="M424 281l216 159v40L369 281h55zm-184 20l6 35L54 480H0l240-179zM640 0v3L391 191l2-44L590 0h50zM0 0l239 176h-60L0 42V0z"/><path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/><path fill="#C8102E" d="M0 193v96h640v-96H0zM273 0v480h96V0h-96z"/></svg>
+                <span>United Kingdom</span>
+              </button>
+              <button type="button" onclick="setRegion('EU')" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-cream-200 hover:bg-charcoal-800 hover:text-gold-400 transition-colors">
+                <svg viewBox="0 0 640 480" class="w-5 h-4 rounded-sm"><rect width="640" height="480" fill="#003399"/><g fill="#FFCC00"><circle cx="320" cy="70" r="25"/><circle cx="320" cy="410" r="25"/><circle cx="155" cy="155" r="25"/><circle cx="485" cy="155" r="25"/><circle cx="120" cy="280" r="25"/><circle cx="520" cy="280" r="25"/><circle cx="155" cy="405" r="25"/><circle cx="485" cy="405" r="25"/><circle cx="225" cy="100" r="25"/><circle cx="415" cy="100" r="25"/><circle cx="120" cy="200" r="25"/><circle cx="520" cy="200" r="25"/><circle cx="225" cy="460" r="25"/><circle cx="415" cy="460" r="25"/></g></svg>
+                <span>European Union</span>
+              </button>
+            </div>
+          </div>
           <a href="{% url 'basket' %}" class="relative text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium transition-colors">
             Basket
             <span id="basket-badge" class="absolute -top-2.5 -right-5 hidden w-5 h-5 bg-gold-500 text-charcoal-950 text-[10px] font-bold rounded-full flex items-center justify-center transition-transform duration-300">
@@ -340,6 +364,62 @@
 
       // Run on page load to initialize the badge state
       updateBadge(basketCount);
+    })();
+
+    /* ===== Region Selector ===== */
+    var REGION_FLAGS = {
+      'US': '<svg viewBox="0 0 640 480" class="w-full h-full"><rect width="640" height="480" fill="#fff"/><g fill="#bf0a30"><rect y="0" width="640" height="37"/><rect y="74" width="640" height="37"/><rect y="148" width="640" height="37"/><rect y="222" width="640" height="37"/><rect y="296" width="640" height="37"/><rect y="370" width="640" height="37"/><rect y="444" width="640" height="36"/></g><rect width="256" height="259" fill="#002868"/></svg>',
+      'UK': '<svg viewBox="0 0 640 480" class="w-full h-full"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#FFF" d="M75 0l244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0z"/><path fill="#C8102E" d="M424 281l216 159v40L369 281h55zm-184 20l6 35L54 480H0l240-179zM640 0v3L391 191l2-44L590 0h50zM0 0l239 176h-60L0 42V0z"/><path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/><path fill="#C8102E" d="M0 193v96h640v-96H0zM273 0v480h96V0h-96z"/></svg>',
+      'EU': '<svg viewBox="0 0 640 480" class="w-full h-full"><rect width="640" height="480" fill="#003399"/><g fill="#FFCC00"><circle cx="320" cy="70" r="25"/><circle cx="320" cy="410" r="25"/><circle cx="155" cy="155" r="25"/><circle cx="485" cy="155" r="25"/><circle cx="120" cy="280" r="25"/><circle cx="520" cy="280" r="25"/><circle cx="155" cy="405" r="25"/><circle cx="485" cy="405" r="25"/><circle cx="225" cy="100" r="25"/><circle cx="415" cy="100" r="25"/><circle cx="120" cy="200" r="25"/><circle cx="520" cy="200" r="25"/><circle cx="225" cy="460" r="25"/><circle cx="415" cy="460" r="25"/></g></svg>'
+    };
+
+    function updateRegionUI(region){
+      var flagEl = document.getElementById('regionFlag');
+      var labelEl = document.getElementById('regionLabel');
+      if (flagEl) flagEl.innerHTML = REGION_FLAGS[region] || '';
+      if (labelEl) labelEl.textContent = region;
+    }
+
+    function setRegion(region){
+      updateRegionUI(region);
+      document.getElementById('regionMenu').classList.add('hidden');
+      document.getElementById('regionArrow').style.transform = '';
+      // Reload store page with region filter, or just reload current page
+      var url = new URL(window.location);
+      url.searchParams.set('region', region);
+      window.location.href = url.toString();
+    }
+
+    function toggleRegionDropdown(){
+      var menu = document.getElementById('regionMenu');
+      var arrow = document.getElementById('regionArrow');
+      menu.classList.toggle('hidden');
+      arrow.style.transform = menu.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e){
+      var dd = document.getElementById('regionDropdown');
+      if (dd && !dd.contains(e.target)) {
+        document.getElementById('regionMenu').classList.add('hidden');
+        document.getElementById('regionArrow').style.transform = '';
+      }
+    });
+
+    // Detect user's region via timezone, fallback to US
+    (function(){
+      var saved = sessionStorage.getItem('region');
+      if (saved) { updateRegionUI(saved); return; }
+      try {
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        var region = 'US';
+        if (tz.startsWith('Europe/')) region = 'EU';
+        else if (tz === 'Europe/London' || tz === 'Europe/Belfast') region = 'UK';
+        updateRegionUI(region);
+        sessionStorage.setItem('region', region);
+      } catch(e){
+        updateRegionUI('US');
+      }
     })();
   </script>
 

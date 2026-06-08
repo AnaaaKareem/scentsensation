@@ -373,6 +373,10 @@ def store(request):
     if gender_filter:
         all_products = all_products.filter(personal_fragrance__gender__in=gender_filter)
 
+    region_filter = request.GET.get('region')
+    if region_filter in ('US', 'UK', 'EU'):
+        all_products = all_products.filter(region=region_filter)
+
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     if min_price:
@@ -428,6 +432,7 @@ def store(request):
         'sort': sort_param,
         'brand_slug_map': brand_slug_map,
         'wishlist_ids': wishlist_ids,
+        'region_filter': region_filter,
     }
     return render(request, 'store/storepage.html', context)
 

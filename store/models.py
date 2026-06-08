@@ -202,6 +202,12 @@ class Brand(models.Model):
 
 
 class Products(models.Model):
+    REGION_CHOICES = [
+        ('US', 'United States'),
+        ('UK', 'United Kingdom'),
+        ('EU', 'European Union'),
+    ]
+
     objects = models.Manager()
     product_id = models.AutoField(primary_key=True)
     brand = models.CharField(max_length=50)
@@ -209,6 +215,7 @@ class Products(models.Model):
     description = models.TextField()
     price = models.FloatField()
     gift = models.BooleanField(default=False)
+    region = models.CharField(max_length=2, choices=REGION_CHOICES, default='US')
 
     class Meta:
         managed = True
