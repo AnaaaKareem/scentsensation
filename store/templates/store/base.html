@@ -381,10 +381,9 @@
     }
 
     function setRegion(region){
-      updateRegionUI(region);
+      sessionStorage.setItem('region', region);
       document.getElementById('regionMenu').classList.add('hidden');
       document.getElementById('regionArrow').style.transform = '';
-      // Reload store page with region filter, or just reload current page
       var url = new URL(window.location);
       url.searchParams.set('region', region);
       window.location.href = url.toString();
@@ -406,11 +405,19 @@
       }
     });
 
-    // Detect user's region via timezone, fallback to nearest
-    // Only runs on first visit — manual selection is persisted in sessionStorage
+    // Region detection: URL param > sessionStorage > timezone detection
     (function(){
+      // 1. Check URL param first (most authoritative after navigation)
+      var urlRegion = new URL(window.location).searchParams.get('region');
+      if (urlRegion && ['US','UK','EU'].indexOf(urlRegion) >= 0) {
+        updateRegionUI(urlRegion);
+        sessionStorage.setItem('region', urlRegion);
+        return;
+      }
+      // 2. Check sessionStorage
       var saved = sessionStorage.getItem('region');
       if (saved) { updateRegionUI(saved); return; }
+      // 3. Detect from timezone
       try {
         var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         var region = 'US';

@@ -93,17 +93,8 @@
 
     <!-- Product Grid -->
     <div class="flex-1">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div class="flex items-center gap-3">
-          <p class="text-charcoal-500 text-sm">Showing <span class="text-charcoal-900 font-medium">{{ products.paginator.count }}</span> products</p>
-          <!-- Region filter pills -->
-          <div class="flex items-center gap-2 ml-2">
-            <a href="{% url 'store' %}" class="px-3 py-1 rounded-full text-xs font-medium transition-colors {% if not region_filter %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">All</a>
-            <a href="{% url 'store' %}?region=US" class="px-3 py-1 rounded-full text-xs font-medium transition-colors {% if region_filter == 'US' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">US</a>
-            <a href="{% url 'store' %}?region=UK" class="px-3 py-1 rounded-full text-xs font-medium transition-colors {% if region_filter == 'UK' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">UK</a>
-            <a href="{% url 'store' %}?region=EU" class="px-3 py-1 rounded-full text-xs font-medium transition-colors {% if region_filter == 'EU' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">EU</a>
-          </div>
-        </div>
+      <div class="flex items-center justify-between mb-8">
+        <p class="text-charcoal-500 text-sm">Showing <span class="text-charcoal-900 font-medium">{{ products.paginator.count }}</span> products</p>
         <label for="sort" class="sr-only">Sort by</label>
         <select id="sort" name="sort" class="border border-charcoal-200 rounded-brand px-4 py-2 text-sm text-charcoal-700 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
           <option value="featured" {% if sort == 'featured' or not sort %}selected{% endif %}>Featured</option>
