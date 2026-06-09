@@ -380,23 +380,12 @@ def account(request):
 
 def store(request):
     all_products = Products.objects.all()
-    images = ProductImages.objects.all()  # not used? template uses reverse relation
 
     # Build a mapping of brand name -> brand slug for linking
     brand_slug_map = {b.name: b.slug for b in Brand.objects.all()}
 
-    category_filter = request.GET.getlist('category')
-    if category_filter:
-        q_objects = Q()
-        if 'Personal Fragrances' in category_filter:
-            q_objects |= Q(personal_fragrance__isnull=False)
-        if 'Home Fragrances' in category_filter:
-            q_objects |= Q(home_fragrance__isnull=False)
-        all_products = all_products.filter(q_objects)
-
     gender_filter = request.GET.getlist('gender')
-    if gender_filter:
-        all_products = all_products.filter(personal_fragrance__gender__in=gender_filter)
+    # Gender filter removed — products no longer have a personal_fragrance.gender field
 
     region_filter = request.GET.get('region')
     if region_filter in ('US', 'UK', 'EU'):
@@ -499,10 +488,6 @@ def brand_detail(request, slug):
 
     products = Products.objects.filter(brand__iexact=brand.name if brand else brand_name)
 
-    gender_filter = request.GET.get('gender')
-    if gender_filter in ('Man', 'Woman', 'Unisex'):
-        products = products.filter(personal_fragrance__gender=gender_filter).distinct()
-
     region = request.GET.get('region') or 'US'
     currency = get_currency_config(region)
 
@@ -510,7 +495,6 @@ def brand_detail(request, slug):
         'brand': brand,
         'brand_name': brand_name,
         'products': products,
-        'gender_filter': gender_filter,
         'currency': currency,
     }
     return render(request, 'store/brand_detail.html', context)
@@ -519,8 +503,6 @@ def brand_detail(request, slug):
 def product_detail(request, product_id):
     product = get_object_or_404(Products, product_id=product_id)
     images = ProductImages.objects.filter(product=product)
-    personal = PersonalFragrances.objects.filter(product=product).first()
-    home = HomeFragrances.objects.filter(product=product).first()
     brand_slug = None
     try:
         brand_slug = Brand.objects.get(name=product.brand).slug
@@ -531,17 +513,25 @@ def product_detail(request, product_id):
     if customer_id_pd:
         in_wishlist = Wishlist.objects.filter(customer_id=customer_id_pd, product_id=product_id).exists()
 
+    # Load Fragrantica enrichment data
+    notes = ProductNote.objects.filter(product=product).select_related('note')
+    accords = ProductAccord.objects.filter(product=product).select_related('accord')
+    perfumers = ProductPerfumer.objects.filter(product=product).select_related('perfumer')
+    votes = ProductVote.objects.filter(product=product)
+
     region = product.region or 'US'
     currency = get_currency_config(region)
 
     context = {
         'product': product,
         'images': images,
-        'personal': personal,
-        'home': home,
         'brand_slug': brand_slug,
         'in_wishlist': in_wishlist,
         'currency': currency,
+        'notes': notes,
+        'accords': accords,
+        'perfumers': perfumers,
+        'votes': votes,
     }
     return render(request, 'store/product_detail.html', context)
 
@@ -585,8 +575,6 @@ def basket(request):
                 },
                 'quantity': item.quantity,
                 'image': image,
-                'personal': personal,
-                'home': home,
             })
 
         membership = getattr(customer, 'membership', None)
