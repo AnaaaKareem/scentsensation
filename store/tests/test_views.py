@@ -21,8 +21,9 @@ from store.models import (
 from store.views import (
     home, signup, signin, verify_2fa, signout, account,
     store, basket, delete_from_basket, add_quantity, remove_quantity,
-    checkout, payment_success, admin_dashboard
+    checkout, payment_success
 )
+from store.views_admin import admin_dashboard
 from django.contrib.auth.hashers import make_password
 
 
@@ -646,10 +647,16 @@ class PaymentSuccessViewTests(BaseViewTestCase):
 class AdminDashboardViewTests(TestCase):
     def test_admin_dashboard_access_without_auth(self):
         response = self.client.get(reverse('admin_dashboard'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'store/admin_dashboard.html')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('admin_login'))
 
     def test_admin_dashboard_context(self):
+        # Authenticate admin via session
+        session = self.client.session
+        session['admin_user_id'] = 'mock-admin-uuid-123456'
+        session['admin_email'] = 'admin@example.com'
+        session.save()
+
         # Create data for statistics
         product = Products.objects.create(brand='B', product_name='P', description='D', price=10.0, gift=False)
         order = Orders.objects.create(
@@ -662,6 +669,8 @@ class AdminDashboardViewTests(TestCase):
             email_address='c@example.com', password=make_password('pw')
         )
         response = self.client.get(reverse('admin_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'store/admin/admin_dashboard.html')
         ctx = response.context
         self.assertEqual(ctx['total_orders'], 1)
         self.assertEqual(ctx['total_products'], 1)
@@ -669,6 +678,7 @@ class AdminDashboardViewTests(TestCase):
         self.assertIsNotNone(ctx['total_revenue'])
         self.assertIsNotNone(ctx['top_product'])
         self.assertIsNotNone(ctx['membership_data'])
+
 
 
 # --- Edge cases ---

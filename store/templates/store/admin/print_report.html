@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScentSensation Business Report - {{ report_date }}</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      margin: 40px;
+      padding: 0;
+    }
+    .header {
+      border-b: 2px solid #333;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin: 0 0 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .header p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .summary-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      text-align: center;
+      background: #fafafa;
+    }
+    .summary-card p.label {
+      margin: 0 0 5px 0;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 1px;
+    }
+    .summary-card p.value {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #111;
+    }
+    .report-section {
+      margin-bottom: 40px;
+    }
+    .report-section h3 {
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #eee;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    
+    @media print {
+      body {
+        margin: 20px;
+        color: #000;
+      }
+      .summary-card {
+        background: transparent !important;
+        border: 1px solid #000 !important;
+      }
+      th {
+        background-color: #fafafa !important;
+        border: 1px solid #000 !important;
+      }
+      td, th {
+        border: 1px solid #ccc !important;
+      }
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Scent Sensation</h1>
+    <p>Business Summary Report — Generated on {{ report_date }}</p>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <p class="label">Total Revenue</p>
+      <p class="value">£{{ total_revenue }}</p>
+    </div>
+    <div class="summary-card">
+      <p class="label">Total Orders</p>
+      <p class="value">{{ total_orders }}</p>
+    </div>
+    <div class="summary-card">
+      <p class="label">Active Members</p>
+      <p class="value">{{ total_members }}</p>
+    </div>
+    <div class="summary-card">
+      <p class="label">Total Customers</p>
+      <p class="value">{{ total_customers }}</p>
+    </div>
+  </div>
+
+  <div class="report-section">
+    <h3>Daily Revenue Details</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="text-right">Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day, total in daily_sales %}
+        <tr>
+          <td>{{ day }}</td>
+          <td class="text-right">£{{ total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="2" class="text-center">No sales details found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="report-section">
+      <h3>Orders Status Breakdown</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th class="text-right">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in status_data %}
+          <tr>
+            <td>{{ item.order_status }}</td>
+            <td class="text-right">{{ item.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="report-section">
+      <h3>Payment Methods Breakdown</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th class="text-right">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in payment_data %}
+          <tr>
+            <td>{{ item.payment_method }}</td>
+            <td class="text-right">{{ item.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Auto-open print dialog
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

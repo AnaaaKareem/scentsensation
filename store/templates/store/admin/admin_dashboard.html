@@ -1,0 +1,370 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="bg-charcoal-950 py-12">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-2">Admin</p>
+        <h1 class="font-display text-3xl sm:text-4xl text-cream-50 tracking-display">Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-6">
+        <span class="text-cream-300 text-sm hidden sm:inline">Logged in as: {{ request.session.admin_email }}</span>
+        <a href="{% url 'homepage' %}" class="text-cream-300 hover:text-gold-400 text-sm transition-colors">Back to Store</a>
+        <a href="{% url 'admin_logout' %}" class="px-3 py-1.5 border border-gold-500 hover:bg-gold-500 hover:text-charcoal-950 text-gold-400 text-xs font-semibold rounded transition-all">Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+
+  {% if messages %}
+    <div class="mb-8 space-y-2">
+      {% for message in messages %}
+        <div class="p-4 text-sm rounded-brand border {% if message.tags == 'error' %}bg-burgundy-50 border-burgundy-200 text-burgundy-800{% else %}bg-green-50 border-green-200 text-green-800{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- KPI Cards -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Revenue</p>
+      <p class="font-display text-3xl text-charcoal-900">£{{ total_revenue }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Orders</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_orders }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Customers</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_customers }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Products</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_products }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Active Members</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_members }}</p>
+    </div>
+  </div>
+
+  <!-- Membership Tiers Management -->
+  <div class="bg-white border border-cream-300 rounded-brand p-6 mb-8 shadow-sm">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-display text-xl text-charcoal-900">Membership Tiers</h2>
+      <button type="button" id="add-tier-btn" class="px-4 py-2 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide uppercase font-medium rounded-brand transition-colors">+ Add Tier</button>
+    </div>
+
+    {% if membership_tiers %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-cream-200">
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Name</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Monthly</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Yearly</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Discount</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Subscribers</th>
+            <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Status</th>
+            <th class="text-right py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tier in membership_tiers %}
+          <tr class="border-b border-cream-100">
+            <td class="py-3 text-charcoal-900 font-medium">{{ tier.name }}</td>
+            <td class="py-3 text-charcoal-600">£{{ tier.monthly_price }}</td>
+            <td class="py-3 text-charcoal-600">£{{ tier.yearly_price }}</td>
+            <td class="py-3 text-charcoal-600">{{ tier.discount_rate }}%</td>
+            <td class="py-3 text-charcoal-600">
+              {% for m in membership_data %}
+                {% if m.tier__name == tier.name %}{{ m.count }}{% endif %}
+              {% empty %}
+                0
+              {% endfor %}
+            </td>
+            <td class="py-3">
+              {% if tier.is_active %}
+                <span class="bg-green-50 text-green-700 border border-green-200 text-xs font-medium px-2 py-0.5 rounded-brand">Active</span>
+              {% else %}
+                <span class="bg-charcoal-100 text-charcoal-500 text-xs font-medium px-2 py-0.5 rounded-brand">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="py-3 text-right">
+              <button type="button" class="edit-tier-btn text-gold-600 hover:text-gold-700 text-xs font-medium mr-3"
+                data-id="{{ tier.tier_id }}"
+                data-name="{{ tier.name }}"
+                data-monthly="{{ tier.monthly_price }}"
+                data-yearly="{{ tier.yearly_price }}"
+                data-discount="{{ tier.discount_rate }}"
+                data-description="{{ tier.description }}"
+                data-active="{{ tier.is_active|yesno:"true,false" }}">Edit</button>
+              <a href="{% url 'tier_toggle' tier.tier_id %}" class="text-xs font-medium {% if tier.is_active %}text-burgundy-600 hover:text-burgundy-800{% else %}text-green-600 hover:text-green-700{% endif %}">
+                {% if tier.is_active %}Disable{% else %}Enable{% endif %}
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-charcoal-500 text-sm text-center py-8">No membership tiers yet. Click "Add Tier" to create one.</p>
+    {% endif %}
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+
+    <!-- Recent Orders Table -->
+    <div class="lg:col-span-2 bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display text-xl text-charcoal-900">Recent Orders</h2>
+      </div>
+      <div class="overflow-x-auto">
+        {% if recent_orders %}
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-cream-200">
+              <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Order ID</th>
+              <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Date</th>
+              <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Status</th>
+              <th class="text-right py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in recent_orders %}
+            <tr class="border-b border-cream-100 hover:bg-cream-50 transition-colors">
+              <td class="py-3.5 text-charcoal-900 font-medium">#{{ order.order_id }}</td>
+              <td class="py-3.5 text-charcoal-500">{{ order.order_date|date:"d M Y" }}</td>
+              <td class="py-3.5">
+                {% if order.order_status == 'Paid' %}
+                  <span class="bg-green-50 text-green-700 border border-green-200 text-xs font-medium px-2 py-0.5 rounded-brand">{{ order.order_status }}</span>
+                {% elif order.order_status == 'Processing' %}
+                  <span class="bg-gold-50 text-gold-700 border border-gold-200 text-xs font-medium px-2 py-0.5 rounded-brand">{{ order.order_status }}</span>
+                {% else %}
+                  <span class="bg-charcoal-100 text-charcoal-600 text-xs font-medium px-2 py-0.5 rounded-brand">{{ order.order_status }}</span>
+                {% endif %}
+              </td>
+              <td class="py-3.5 text-right text-charcoal-900">£{{ order.total_payment }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-charcoal-500 text-sm text-center py-8">No orders yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-8">
+
+      <!-- Top Products -->
+      <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Top Products</h2>
+        {% if top_products %}
+        <div class="space-y-4">
+          {% for product in top_products %}
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-charcoal-100 rounded-brand shrink-0 flex items-center justify-center">
+              <span class="text-charcoal-400 text-[8px] uppercase font-semibold">{{ product.product__brand|slice:":2" }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-charcoal-900 text-sm font-medium truncate">{{ product.product__product_name }}</p>
+              <p class="text-charcoal-400 text-xs">{{ product.product__brand }}</p>
+            </div>
+            <p class="text-charcoal-900 text-sm font-medium">{{ product.total_sold }} sold</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-charcoal-500 text-sm text-center py-4">No sales data yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Membership Breakdown -->
+      <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+        <h2 class="font-display text-xl text-charcoal-900 mb-6">Memberships</h2>
+        {% if membership_data %}
+        <div class="space-y-4">
+          {% for m in membership_data %}
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-charcoal-600 font-medium">{{ m.tier__name }}</span>
+              <span class="text-charcoal-900 font-medium">{{ m.count }}</span>
+            </div>
+            <div class="w-full bg-cream-200 rounded-full h-2">
+              {% if m.tier__name == 'Classic' %}
+                <div class="bg-charcoal-400 h-2 rounded-full" style="width: {% widthratio m.count total_members 100 %}%"></div>
+              {% elif m.tier__name == 'Elite' %}
+                <div class="bg-gold-500 h-2 rounded-full" style="width: {% widthratio m.count total_members 100 %}%"></div>
+              {% elif m.tier__name == 'Scholar' %}
+                <div class="bg-burgundy-600 h-2 rounded-full" style="width: {% widthratio m.count total_members 100 %}%"></div>
+              {% else %}
+                <div class="bg-charcoal-600 h-2 rounded-full" style="width: {% widthratio m.count total_members 100 %}%"></div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-charcoal-500 text-sm text-center py-4">No membership data yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+        <h2 class="font-display text-xl text-charcoal-900 mb-4">Quick Actions</h2>
+        <div class="space-y-2">
+          <a href="{% url 'add_product' %}" class="block w-full text-left px-4 py-3 border border-charcoal-200 rounded-brand text-sm text-charcoal-700 hover:border-gold-500 hover:bg-gold-50 transition-colors">+ Add New Product</a>
+          <a href="{% url 'manage_inventory' %}" class="block w-full text-left px-4 py-3 border border-charcoal-200 rounded-brand text-sm text-charcoal-700 hover:border-gold-500 hover:bg-gold-50 transition-colors">Manage Inventory</a>
+          <a href="{% url 'view_customers' %}" class="block w-full text-left px-4 py-3 border border-charcoal-200 rounded-brand text-sm text-charcoal-700 hover:border-gold-500 hover:bg-gold-50 transition-colors">View All Customers</a>
+          <a href="{% url 'export_reports' %}" class="block w-full text-left px-4 py-3 border border-charcoal-200 rounded-brand text-sm text-charcoal-700 hover:border-gold-500 hover:bg-gold-50 transition-colors">Export Reports</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Tier Modal -->
+<div id="tier-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Overlay -->
+    <div id="modal-overlay" class="fixed inset-0 bg-charcoal-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+    <!-- Centering helper -->
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+    <!-- Modal Content -->
+    <div class="inline-block align-bottom bg-white rounded-brand border border-cream-300 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <form method="POST" action="{% url 'tier_save' %}" id="tier-form">
+        {% csrf_token %}
+        <input type="hidden" name="tier_id" id="modal-tier-id">
+        
+        <div class="bg-white px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+          <h3 class="font-display text-xl text-charcoal-900 mb-6" id="modal-title">Add Membership Tier</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="tier-name" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Name</label>
+              <input type="text" name="name" id="tier-name" required placeholder="e.g. Platinum"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="tier-monthly" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Monthly Price (£)</label>
+                <input type="number" name="monthly_price" id="tier-monthly" min="0" step="0.01" required placeholder="9.99"
+                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              </div>
+              <div>
+                <label for="tier-yearly" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Yearly Price (£)</label>
+                <input type="number" name="yearly_price" id="tier-yearly" min="0" step="0.01" required placeholder="99.99"
+                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              </div>
+            </div>
+
+            <div>
+              <label for="tier-discount" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Discount Rate (%)</label>
+              <input type="number" name="discount_rate" id="tier-discount" min="0" max="100" step="0.1" required placeholder="15"
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            </div>
+
+            <div>
+              <label for="tier-description" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Description</label>
+              <textarea name="description" id="tier-description" rows="3" placeholder="Enter tier details..."
+                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors resize-none"></textarea>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <input type="checkbox" name="is_active" id="tier-active" checked
+                class="w-4 h-4 text-gold-500 focus:ring-gold-500 border-charcoal-200 rounded">
+              <label for="tier-active" class="text-charcoal-700 text-sm">Active</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-cream-50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+          <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-xs tracking-wide uppercase font-semibold rounded-brand transition-colors">Save Tier</button>
+          <button type="button" id="close-modal-btn" class="mt-3 sm:mt-0 w-full sm:w-auto px-6 py-2.5 border border-charcoal-200 hover:bg-charcoal-50 text-charcoal-700 text-xs tracking-wide uppercase font-semibold rounded-brand transition-colors">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('tier-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const addBtn = document.getElementById('add-tier-btn');
+    const editBtns = document.querySelectorAll('.edit-tier-btn');
+    
+    const modalTitle = document.getElementById('modal-title');
+    const modalTierId = document.getElementById('modal-tier-id');
+    const modalName = document.getElementById('tier-name');
+    const modalMonthly = document.getElementById('tier-monthly');
+    const modalYearly = document.getElementById('tier-yearly');
+    const modalDiscount = document.getElementById('tier-discount');
+    const modalDesc = document.getElementById('tier-description');
+    const modalActive = document.getElementById('tier-active');
+
+    function openModal(isEdit = false, data = {}) {
+      if (isEdit) {
+        modalTitle.textContent = 'Edit Membership Tier';
+        modalTierId.value = data.id;
+        modalName.value = data.name;
+        modalMonthly.value = data.monthly;
+        modalYearly.value = data.yearly;
+        modalDiscount.value = data.discount;
+        modalDesc.value = data.description || '';
+        modalActive.checked = data.active === 'true';
+      } else {
+        modalTitle.textContent = 'Add Membership Tier';
+        modalTierId.value = '';
+        modalName.value = '';
+        modalMonthly.value = '';
+        modalYearly.value = '';
+        modalDiscount.value = '';
+        modalDesc.value = '';
+        modalActive.checked = true;
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    addBtn.addEventListener('click', () => openModal(false));
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const data = {
+          id: this.dataset.id,
+          name: this.dataset.name,
+          monthly: this.dataset.monthly,
+          yearly: this.dataset.yearly,
+          discount: this.dataset.discount,
+          description: this.dataset.description,
+          active: this.dataset.active
+        };
+        openModal(true, data);
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,130 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 lg:px-8 py-12">
+  <div class="flex items-center justify-between mb-8 pb-6 border-b border-cream-300">
+    <div>
+      <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-semibold mb-2">Admin Portal</p>
+      <h1 class="font-display text-3xl text-charcoal-900">Sales & Business Reports</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="?print=true" target="_blank" class="px-5 py-2.5 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-xs tracking-wide uppercase font-semibold rounded-brand transition-colors flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.821V21m0 0h10.56M6.72 21h10.56m-10.56 0v-7.18m10.56 7.18v-7.18m0 0a8.997 8.997 0 00-10.56 0m10.56 0V11.25M6.72 13.821V11.25m0 0a9 9 0 0110.56 0M6.72 11.25V6.75m10.56 4.5V6.75m-10.56 0h10.56m-10.56 0a9 9 0 0110.56 0m0 0v-3a.75.75 0 00-.75-.75h-9a.75.75 0 00-.75.75v3M16.5 9h.008v.008H16.5V9z" />
+        </svg>
+        Print / Save PDF
+      </a>
+      <a href="{% url 'admin_dashboard' %}" class="text-charcoal-500 hover:text-charcoal-900 text-sm transition-colors flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Sales</p>
+      <p class="font-display text-3xl text-charcoal-900">£{{ total_revenue }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Orders</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_orders }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Members</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_members }}</p>
+    </div>
+    <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <p class="text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-2">Total Customers</p>
+      <p class="font-display text-3xl text-charcoal-900">{{ total_customers }}</p>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    
+    <!-- Sales History -->
+    <div class="lg:col-span-2 bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+      <h3 class="font-display text-xl text-charcoal-900 mb-6">Daily Sales (Last 30 Days)</h3>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-cream-200">
+              <th class="text-left py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Date</th>
+              <th class="text-right py-3 text-charcoal-500 font-medium text-xs tracking-wide-plus uppercase">Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day, total in daily_sales %}
+            <tr class="border-b border-cream-100 last:border-0">
+              <td class="py-3 text-charcoal-900 font-medium">
+                {{ day }}
+              </td>
+              <td class="py-3 text-right text-charcoal-900 font-semibold">
+                £{{ total }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2" class="text-center py-8 text-charcoal-500 text-sm">No sales in this period.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right Side Metrics Breakdown -->
+    <div class="space-y-8">
+      
+      <!-- Order Statuses -->
+      <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+        <h3 class="font-display text-xl text-charcoal-900 mb-6">Order Statuses</h3>
+        
+        <div class="space-y-4">
+          {% for item in status_data %}
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-charcoal-600">{{ item.order_status }}</span>
+              <span class="text-charcoal-900 font-semibold">{{ item.count }} orders</span>
+            </div>
+            <div class="w-full bg-cream-200 rounded-full h-2">
+              <div class="bg-gold-500 h-2 rounded-full" style="width: {% widthratio item.count total_orders 100 %}%"></div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-charcoal-500 text-sm py-4 text-center">No orders record.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="bg-white border border-cream-300 rounded-brand p-6 shadow-sm">
+        <h3 class="font-display text-xl text-charcoal-900 mb-6">Payment Methods</h3>
+        
+        <div class="space-y-4">
+          {% for item in payment_data %}
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-charcoal-600">{{ item.payment_method }}</span>
+              <span class="text-charcoal-900 font-semibold">{{ item.count }} usage</span>
+            </div>
+            <div class="w-full bg-cream-200 rounded-full h-2">
+              <div class="bg-charcoal-900 h-2 rounded-full" style="width: {% widthratio item.count total_orders 100 %}%"></div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-charcoal-500 text-sm py-4 text-center">No orders record.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock content %}

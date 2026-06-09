@@ -1,0 +1,49 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-16rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cream-50">
+  <div class="max-w-md w-full space-y-8 bg-white p-8 border border-cream-300 rounded-brand shadow-sm">
+    <div>
+      <p class="text-center text-xs tracking-wide-plus uppercase font-semibold text-gold-600">Scent Sensation</p>
+      <h2 class="mt-2 text-center font-display text-3xl text-charcoal-900">Admin Portal</h2>
+      <p class="mt-2 text-center text-sm text-charcoal-500">
+        Sign in to manage inventory, customers, and tiers.
+      </p>
+    </div>
+
+    {% if messages %}
+      <div class="space-y-2">
+        {% for message in messages %}
+          <div class="p-4 text-sm rounded-brand border {% if message.tags == 'error' %}bg-burgundy-50 border-burgundy-200 text-burgundy-800{% else %}bg-green-50 border-green-200 text-green-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form class="mt-8 space-y-6" method="POST" action="{% url 'admin_login' %}">
+      {% csrf_token %}
+      <div class="rounded-md space-y-4">
+        <div>
+          <label for="email" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Admin Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="admin@scentsensation.com"
+            class="appearance-none relative block w-full px-4 py-3 border border-charcoal-200 rounded-brand text-charcoal-900 placeholder-charcoal-400 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors text-sm">
+        </div>
+        <div>
+          <label for="password" class="block text-charcoal-700 text-xs tracking-wide-plus uppercase font-medium mb-2">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••"
+            class="appearance-none relative block w-full px-4 py-3 border border-charcoal-200 rounded-brand text-charcoal-900 placeholder-charcoal-400 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors text-sm">
+        </div>
+      </div>
+
+      <div>
+        <button type="submit"
+          class="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm tracking-wide-plus uppercase font-semibold rounded-brand text-charcoal-950 bg-gold-500 hover:bg-gold-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 transition-colors">
+          Sign In
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

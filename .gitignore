@@ -69,3 +69,7 @@ designs/
 # Local agent/tooling directories
 .hermes/
 .od-skills/
+
+# Nested DevOps Microservices Repository
+services/
+
