@@ -9,8 +9,9 @@ import base64
 from datetime import datetime, timedelta
 
 from .models import (
-    Customer, Products, PersonalFragrances, HomeFragrances, ProductImages,
-    Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory
+    Customer, Products, ProductImages,
+    Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory,
+    PromoCode, GiftCards
 )
 from .supabase_client import get_supabase_client
 
@@ -21,6 +22,17 @@ def admin_required(view_func):
         if not request.session.get('admin_user_id'):
             messages.warning(request, "Please log in to access the Admin Portal.")
             return redirect('admin_login')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+# Decorator to restrict access to authenticated promo users
+def promo_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('promo_user_id'):
+            messages.warning(request, "Please log in to access the Promo Portal.")
+            return redirect('promo_login')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -204,37 +216,21 @@ def add_product(request):
                     region=region
                 )
 
-                # 2. Add Base64 Image if uploaded
+                # 2. Save Image file if uploaded
                 if image_file:
-                    image_data = image_file.read()
-                    base64_str = base64.b64encode(image_data).decode('utf-8')
+                    import os
+                    from django.conf import settings
+                    upload_dir = os.path.join(settings.BASE_DIR, 'store', 'static', 'store', 'Pictures', 'Uploads')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    file_path = os.path.join(upload_dir, image_file.name)
+                    with open(file_path, 'wb+') as destination:
+                        for chunk in image_file.chunks():
+                            destination.write(chunk)
+                    
                     ProductImages.objects.create(
                         product=product,
-                        image=base64_str
-                    )
-
-                # 3. Create specific sub-type details
-                if category == 'Personal':
-                    size = request.POST.get('personal_size', '100ml').strip()
-                    fragrance_family = request.POST.get('personal_family', 'Floral')
-                    gender = request.POST.get('personal_gender', 'Female')
-                    strength = request.POST.get('personal_strength', 'Eau de Parfum')
-                    
-                    PersonalFragrances.objects.create(
-                        product=product,
-                        size=size,
-                        fragrance_family=fragrance_family,
-                        gender=gender,
-                        strength=strength
-                    )
-                elif category == 'Home':
-                    product_type = request.POST.get('home_type', 'Scented Candles')
-                    bundle = request.POST.get('home_bundle') == 'on'
-
-                    HomeFragrances.objects.create(
-                        product=product,
-                        product_type=product_type,
-                        bundle=bundle
+                        image_url=f"/static/store/Pictures/Uploads/{image_file.name}",
+                        is_primary=True
                     )
 
                 messages.success(request, f"Product '{product_name}' added successfully!")
@@ -381,3 +377,142 @@ def export_reports(request):
         return render(request, 'store/admin/print_report.html', context)
         
     return render(request, 'store/admin/export_reports.html', context)
+
+
+# ===== Promo Portal (Stores) =====
+
+def promo_login(request):
+    """Sign in store manager/staff using Supabase Auth for the Promo Portal."""
+    if request.session.get('promo_user_id'):
+        return redirect('promo_generate')
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+
+        if not email or not password:
+            messages.error(request, "Please enter both email and password.")
+            return render(request, 'store/admin/promo_login.html')
+
+        supabase = get_supabase_client()
+        try:
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            user_data = response.user
+            # Allow store managers/staff whose email starts with 'store' or 'admin'
+            if email.lower().startswith('store') or email.lower().startswith('admin'):
+                request.session['promo_user_id'] = user_data.id
+                request.session['promo_email'] = user_data.email
+                messages.success(request, f"Welcome to the Promo Portal, {email}!")
+                return redirect('promo_generate')
+            else:
+                messages.error(request, "Access denied. You do not have store/promo privileges.")
+                supabase.auth.sign_out()
+        except Exception as e:
+            messages.error(request, f"Authentication failed: {str(e)}")
+
+    return render(request, 'store/admin/promo_login.html')
+
+
+def promo_logout(request):
+    """Log out promo user and clear session."""
+    supabase = get_supabase_client()
+    try:
+        supabase.auth.sign_out()
+    except Exception:
+        pass
+    request.session.pop('promo_user_id', None)
+    request.session.pop('promo_email', None)
+    messages.success(request, "You have been logged out of the Promo Portal.")
+    return redirect('promo_login')
+
+
+@promo_required
+def promo_generate(request):
+    """Generate a new promo code with a specified cash amount."""
+    if request.method == 'POST':
+        amount_str = request.POST.get('amount', '').strip()
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                messages.error(request, "Amount must be greater than zero.")
+                return redirect('promo_generate')
+        except (ValueError, TypeError):
+            messages.error(request, "Please enter a valid number.")
+            return redirect('promo_generate')
+
+        # Generate a unique 8-char alphanumeric code
+        import string
+        import random
+        chars = string.ascii_uppercase + string.digits
+        while True:
+            code = 'PROMO-' + ''.join(random.choices(chars, k=8))
+            if not PromoCode.objects.filter(code=code).exists():
+                break
+
+        promo = PromoCode.objects.create(code=code, amount=amount)
+        messages.success(request, f"Promo code {promo.code} created for £{promo.amount:.2f}")
+        return redirect('promo_generate')
+
+    # GET — show the form + recently generated codes
+    recent_codes = PromoCode.objects.order_by('-created_at')[:10]
+    return render(request, 'store/admin/promo_generate.html', {'recent_codes': recent_codes})
+
+
+@promo_required
+def promo_list(request):
+    """List all promo codes with their status."""
+    all_codes = PromoCode.objects.order_by('-created_at')
+    return render(request, 'store/admin/promo_list.html', {'promo_codes': all_codes})
+
+
+# ===== Gift Card Management (Company) =====
+
+@admin_required
+def giftcard_list(request):
+    """List all gift cards and handle creation of new ones."""
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+        amount_str = request.POST.get('amount')
+        exp_date_str = request.POST.get('exp_date')
+
+        try:
+            customer = get_object_or_404(Customer, customer_id=customer_id)
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError("Amount must be positive.")
+            
+            exp_date = datetime.strptime(exp_date_str, '%Y-%m-%d').date()
+            if exp_date <= timezone.now().date():
+                raise ValueError("Expiration date must be in the future.")
+
+            GiftCards.objects.create(
+                customer=customer,
+                amount=amount,
+                issue_date=timezone.now().date(),
+                exp_date=exp_date,
+                redeemed_status=False
+            )
+            messages.success(request, f"Gift Card successfully issued to {customer.first_name} {customer.last_name}.")
+        except Exception as e:
+            messages.error(request, f"Failed to issue Gift Card: {str(e)}")
+        return redirect('giftcard_list')
+
+    all_cards = GiftCards.objects.all().select_related('customer').order_by('-issue_date')
+    all_customers = Customer.objects.all().order_by('first_name', 'last_name')
+    context = {
+        'gift_cards': all_cards,
+        'customers': all_customers,
+        'today': timezone.now().date().strftime('%Y-%m-%d'),
+        'default_exp': (timezone.now().date() + timedelta(days=365)).strftime('%Y-%m-%d')
+    }
+    return render(request, 'store/admin/giftcard_list.html', context)
+
+
+@admin_required
+def giftcard_delete(request, card_id):
+    """Delete a gift card from the system."""
+    card = get_object_or_404(GiftCards, gift_card_num=card_id)
+    card_num = card.gift_card_num
+    card.delete()
+    messages.success(request, f"Gift Card #{card_num} was successfully deleted.")
+    return redirect('giftcard_list')

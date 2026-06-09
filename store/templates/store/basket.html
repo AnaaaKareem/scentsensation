@@ -28,16 +28,9 @@
             <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">{{ item.product.product_name }}</h3>
 
             <!-- Fragrance details -->
-            {% if item.personal %}
+            {% if item.product.main_photo_url %}
             <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 mt-1">
-              <span>Family: {{ item.personal.fragrance_family }}</span>
-              <span>Strength: {{ item.personal.strength }}</span>
-              <span>Size: {{ item.personal.size }}</span>
-            </div>
-            {% elif item.home %}
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 mt-1">
-              <span>Type: {{ item.home.product_type }}</span>
-              <span>Bundle: {% if item.home.bundle %}Yes{% else %}No{% endif %}</span>
+              <span>{% if item.product.release_year %}{{ product.release_year }} · {% endif %}{{ item.product.brand }}</span>
             </div>
             {% endif %}
 

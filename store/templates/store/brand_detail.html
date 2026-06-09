@@ -22,36 +22,7 @@
     </div>
   </div>
 
-  <!-- Gender Filter -->
-  <div class="flex items-center gap-3 mb-8">
-    <span class="text-charcoal-500 text-sm">Filter:</span>
-    {% if brand %}
-    <a href="{% url 'brand_detail' brand.slug %}"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if not gender_filter %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      All
-    </a>
-    <a href="{% url 'brand_detail' brand.slug %}?gender=Man"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if gender_filter == 'Man' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      Man
-    </a>
-    <a href="{% url 'brand_detail' brand.slug %}?gender=Woman"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if gender_filter == 'Woman' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      Woman
-    </a>
-    {% else %}
-    <a href="{% url 'brand_detail' brand_name|slugify %}"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if not gender_filter %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      All
-    </a>
-    <a href="{% url 'brand_detail' brand_name|slugify %}?gender=Man"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if gender_filter == 'Man' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      Man
-    </a>
-    <a href="{% url 'brand_detail' brand_name|slugify %}?gender=Woman"
-       class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors {% if gender_filter == 'Woman' %}bg-charcoal-900 text-cream-100{% else %}bg-charcoal-100 text-charcoal-600 hover:bg-charcoal-200{% endif %}">
-      Woman
-    </a>
-    {% endif %}
+  <!-- Gender Filter removed — no longer a filterable field -->
   </div>
 
   <!-- Product Grid -->

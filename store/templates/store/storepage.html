@@ -20,25 +20,6 @@
           {% if request.GET.page %}<input type="hidden" name="page" value="1">{% endif %}
           <input type="hidden" name="sort" value="{{ sort|default:'featured' }}">
 
-          <!-- Category -->
-          <div class="mb-8">
-            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Category</h3>
-            <div class="space-y-3">
-              <label class="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" name="category" value="Personal Fragrances"
-                  {% if "Personal Fragrances" in request.GET.getlist %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Personal Fragrances</span>
-              </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" name="category" value="Home Fragrances"
-                  {% if "Home Fragrances" in request.GET.getlist %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Home Fragrances</span>
-              </label>
-            </div>
-          </div>
-
           <!-- Gender -->
           <div class="mb-8">
             <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>

@@ -217,6 +217,15 @@ class Products(models.Model):
     gift = models.BooleanField(default=False)
     region = models.CharField(max_length=2, choices=REGION_CHOICES, default='US')
 
+    # Fragrantica enrichment fields
+    fragrantica_id = models.IntegerField(blank=True, null=True, unique=True, help_text="Fragrantica PID")
+    fragrantica_url = models.CharField(max_length=500, blank=True)
+    release_year = models.IntegerField(blank=True, null=True)
+    main_photo_url = models.CharField(max_length=500, blank=True)
+    rating_avg = models.FloatField(blank=True, null=True)
+    rating_count = models.IntegerField(blank=True, null=True)
+    reviews_count = models.IntegerField(blank=True, null=True)
+
     class Meta:
         managed = True
         db_table = 'PRODUCTS'
@@ -224,93 +233,6 @@ class Products(models.Model):
     def __str__(self):
         return f"{self.brand} - {self.product_name}"
 
-
-class PersonalFragrances(models.Model):
-    objects = models.Manager()
-    product = models.OneToOneField(Products, models.CASCADE, primary_key=True, related_name='personal_fragrance', db_column='product_id')
-    size = models.CharField(max_length=20)
-    fragrance_family = models.CharField(
-        max_length=50,
-        blank=True,
-        choices=[
-            ('Floral', 'Floral'),
-            ('Oriental', 'Oriental'),
-            ('Woody', 'Woody'),
-            ('Fresh', 'Fresh'),
-            ('Citrus', 'Citrus'),
-            ('Chypre', 'Chypre'),
-            ('Fougère', 'Fougère'),
-            ('Leather', 'Leather'),
-            ('Aromatic', 'Aromatic'),
-            ('Gourmand', 'Gourmand'),
-        ]
-    )
-    gender = models.CharField(
-        max_length=20,
-        choices=[
-            ('Man', 'Man'),
-            ('Woman', 'Woman'),
-            ('Unisex', 'Unisex'),
-        ],
-        default='Unisex',
-    )
-    strength = models.CharField(
-        max_length=20,
-        blank=True,
-        choices=[
-            ('Eau de Parfum', 'Eau de Parfum'),
-            ('Eau de Toilette', 'Eau de Toilette'),
-            ('Parfum', 'Parfum'),
-            ('Eau de Cologne', 'Eau de Cologne'),
-            ('Perfume Oil', 'Perfume Oil'),
-            ('Body Mist', 'Body Mist'),
-            ('Hair Mist', 'Hair Mist'),
-        ]
-    )
-    engraving = models.CharField(max_length=100, blank=True, null=True)
-
-    # Fragrantica enrichment fields
-    fragrance_url = models.CharField(max_length=500, blank=True, help_text="Fragrantica page URL")
-    release_year = models.IntegerField(blank=True, null=True)
-    description = models.TextField(blank=True, help_text="HTML description from Fragrantica")
-    rating_avg = models.FloatField(blank=True, null=True, help_text="Average rating (0-5)")
-    rating_count = models.IntegerField(blank=True, null=True, help_text="Total number of ratings")
-    reviews_count = models.IntegerField(blank=True, null=True, help_text="Total number of written reviews")
-    main_photo_url = models.CharField(max_length=500, blank=True, help_text="Primary bottle image URL")
-
-    class Meta:
-        managed = True
-        db_table = 'PERSONAL_FRAGRANCES'
-        unique_together = (('product', 'size'),)
-
-    def __str__(self):
-        return f"{self.product} - {self.size}"
-
-
-class HomeFragrances(models.Model):
-    objects = models.Manager()
-    product = models.OneToOneField(Products, models.CASCADE, primary_key=True, related_name='home_fragrance', db_column='product_id')
-    product_type = models.CharField(
-        max_length=50,
-        choices=[
-            ('Scent Diffuser', 'Scent Diffuser'),
-            ('Air Freshener', 'Air Freshener'),
-            ('Scented Candles', 'Scented Candles'),
-            ('Room Sprays', 'Room Sprays'),
-            ('Reed Diffusers', 'Reed Diffusers')
-        ]
-    )
-    bundle = models.BooleanField()
-
-    class Meta:
-        managed = True
-        db_table = 'HOME_FRAGRANCES'
-
-    def __str__(self):
-        return f"{self.product} - {self.product_type}"
-
-
-# ─── Fragrantica Enrichment Models ───────────────────────────────────────────
 
 class FragranceNote(models.Model):
     """Master list of fragrance notes from Fragrantica."""
@@ -456,7 +378,8 @@ class ProductImages(models.Model):
     objects = models.Manager()
     image_id = models.AutoField(primary_key=True)
     product = models.ForeignKey(Products, models.CASCADE, related_name='product_images', db_column='product_id')
-    image = models.TextField()  # base64 encoded image data
+    image_url = models.CharField(max_length=500, blank=True)  # URL to image
+    is_primary = models.BooleanField(default=False)
 
     class Meta:
         managed = True

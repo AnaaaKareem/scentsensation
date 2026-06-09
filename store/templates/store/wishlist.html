@@ -78,16 +78,9 @@
           <h3 class="font-display text-xl text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">{{ product.product_name }}</h3>
         </a>
 
-        {% if personal %}
+        {% if product.release_year %}
         <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 mt-1">
-          <span>Family: {{ personal.fragrance_family }}</span>
-          <span>Strength: {{ personal.strength }}</span>
-          <span>Size: {{ personal.size }}</span>
-        </div>
-        {% elif home %}
-        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 mt-1">
-          <span>Type: {{ home.product_type }}</span>
-          <span>Bundle: {% if home.bundle %}Yes{% else %}No{% endif %}</span>
+          <span>{{ product.release_year }} · {{ product.brand }}</span>
         </div>
         {% endif %}
 

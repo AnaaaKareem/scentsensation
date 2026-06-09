@@ -562,8 +562,6 @@ def basket(request):
         for item in basket_items:
             product = item.product
             image = ProductImages.objects.filter(product=product).first()
-            personal = PersonalFragrances.objects.filter(product=product).first()
-            home = HomeFragrances.objects.filter(product=product).first()
             total_price = product.price * item.quantity
             subtotal += total_price
             items.append({
@@ -1485,43 +1483,6 @@ def paypal_cancel(request):
     return redirect('checkout')
 
 
-# ===== Promo Code Management =====
-
-def promo_generate(request):
-    """Generate a new promo code with a specified cash amount."""
-    if request.method == 'POST':
-        amount_str = request.POST.get('amount', '').strip()
-        try:
-            amount = float(amount_str)
-            if amount <= 0:
-                messages.error(request, "Amount must be greater than zero.")
-                return redirect('promo_generate')
-        except (ValueError, TypeError):
-            messages.error(request, "Please enter a valid number.")
-            return redirect('promo_generate')
-
-        # Generate a unique 8-char alphanumeric code
-        import string
-        chars = string.ascii_uppercase + string.digits
-        while True:
-            code = 'PROMO-' + ''.join(random.choices(chars, k=8))
-            if not PromoCode.objects.filter(code=code).exists():
-                break
-
-        promo = PromoCode.objects.create(code=code, amount=amount)
-        messages.success(request, f"Promo code {promo.code} created for £{promo.amount:.2f}")
-        return redirect('promo_generate')
-
-    # GET — show the form + recently generated codes
-    recent_codes = PromoCode.objects.order_by('-created_at')[:10]
-    return render(request, 'store/promo_generate.html', {'recent_codes': recent_codes})
-
-
-def promo_list(request):
-    """List all promo codes with their status."""
-    all_codes = PromoCode.objects.order_by('-created_at')
-    return render(request, 'store/promo_list.html', {'promo_codes': all_codes})
-
 
 def wishlist(request):
     customer_id = request.session.get('customer_id')
@@ -1535,13 +1496,9 @@ def wishlist(request):
     for item in wishlist_items:
         product = item.product
         image = ProductImages.objects.filter(product=product).first()
-        personal = PersonalFragrances.objects.filter(product=product).first()
-        home = HomeFragrances.objects.filter(product=product).first()
         products.append({
             'product': product,
             'image': image,
-            'personal': personal,
-            'home': home,
         })
 
     from django.db.models import Sum
