@@ -24,13 +24,8 @@
 
           <!-- Product Info -->
           <div class="flex-1 min-w-0">
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium">{{ item.product.brand }}</p>
-                <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">{{ item.product.product_name }}</h3>
-              </div>
-              <span class="font-display text-lg text-charcoal-900 shrink-0">{{ item.product.price|currency:currency }}</span>
-            </div>
+            <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium">{{ item.product.brand }}</p>
+            <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">{{ item.product.product_name }}</h3>
 
             <!-- Fragrance details -->
             {% if item.personal %}
@@ -46,8 +41,9 @@
             </div>
             {% endif %}
 
-            <!-- Quantity + Remove -->
+            <!-- Price + Quantity + Remove -->
             <div class="flex items-center justify-between mt-3">
+              <span class="font-display text-lg text-charcoal-900">{{ item.product.price|currency:currency }}</span>
               <div class="flex items-center gap-3">
                 <form action="{% url 'remove_quantity' item.product.product_id %}" method="POST" class="m-0" onclick="event.preventDefault(); event.stopPropagation(); this.submit();">
                   {% csrf_token %}
