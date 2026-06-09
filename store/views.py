@@ -500,7 +500,7 @@ def brand_detail(request, slug):
     products = Products.objects.filter(brand__iexact=brand.name if brand else brand_name)
 
     gender_filter = request.GET.get('gender')
-    if gender_filter in ('Male', 'Female'):
+    if gender_filter in ('Man', 'Woman', 'Unisex'):
         products = products.filter(personal_fragrance__gender=gender_filter).distinct()
 
     region = request.GET.get('region') or 'US'
@@ -1123,38 +1123,6 @@ def payment_success(request):
         'total': round(total, 2)
     })
 
-
-def admin_dashboard(request):
-    total_orders = Orders.objects.count()
-    total_products = Products.objects.count()
-    total_customers = Customer.objects.count()
-    total_revenue = OrderItems.objects.aggregate(total=Sum(F('quantity') * F('price')))['total'] or 0
-    top_product = OrderItems.objects.values('product__product_name').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
-    membership_data = Membership.objects.filter(is_active=True, tier__isnull=False).values('tier__name').annotate(count=Count('member_id')).order_by('tier__name')
-    membership_tiers = MembershipTier.objects.filter(is_active=True).order_by('monthly_price')
-    total_members = Membership.objects.filter(is_active=True).count()
-
-    # Recent orders with customer info
-    recent_orders = Orders.objects.select_related().prefetch_related('items').order_by('-order_date')[:10]
-
-    # Top products by sales
-    top_products = OrderItems.objects.values(
-        'product__product_name', 'product__brand'
-    ).annotate(
-        total_sold=Sum('quantity')
-    ).order_by('-total_sold')[:5]
-
-    context = {
-        'total_orders': total_orders,
-        'total_products': total_products,
-        'total_customers': total_customers,
-        'total_revenue': round(total_revenue, 2),
-        'top_product': top_product,
-        'membership_data': membership_data,
-        'recent_orders': recent_orders,
-        'top_products': top_products,
-    }
-    return render(request, 'store/admin_dashboard.html', context)
 
 
 def about(request):

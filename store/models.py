@@ -231,25 +231,52 @@ class PersonalFragrances(models.Model):
     size = models.CharField(max_length=20)
     fragrance_family = models.CharField(
         max_length=50,
+        blank=True,
         choices=[
             ('Floral', 'Floral'),
             ('Oriental', 'Oriental'),
             ('Woody', 'Woody'),
             ('Fresh', 'Fresh'),
             ('Citrus', 'Citrus'),
-            ('Chypre', 'Chypre')
+            ('Chypre', 'Chypre'),
+            ('Fougère', 'Fougère'),
+            ('Leather', 'Leather'),
+            ('Aromatic', 'Aromatic'),
+            ('Gourmand', 'Gourmand'),
         ]
     )
-    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female')])
+    gender = models.CharField(
+        max_length=20,
+        choices=[
+            ('Man', 'Man'),
+            ('Woman', 'Woman'),
+            ('Unisex', 'Unisex'),
+        ],
+        default='Unisex',
+    )
     strength = models.CharField(
         max_length=20,
+        blank=True,
         choices=[
             ('Eau de Parfum', 'Eau de Parfum'),
             ('Eau de Toilette', 'Eau de Toilette'),
-            ('Parfum', 'Parfum')
+            ('Parfum', 'Parfum'),
+            ('Eau de Cologne', 'Eau de Cologne'),
+            ('Perfume Oil', 'Perfume Oil'),
+            ('Body Mist', 'Body Mist'),
+            ('Hair Mist', 'Hair Mist'),
         ]
     )
     engraving = models.CharField(max_length=100, blank=True, null=True)
+
+    # Fragrantica enrichment fields
+    fragrance_url = models.CharField(max_length=500, blank=True, help_text="Fragrantica page URL")
+    release_year = models.IntegerField(blank=True, null=True)
+    description = models.TextField(blank=True, help_text="HTML description from Fragrantica")
+    rating_avg = models.FloatField(blank=True, null=True, help_text="Average rating (0-5)")
+    rating_count = models.IntegerField(blank=True, null=True, help_text="Total number of ratings")
+    reviews_count = models.IntegerField(blank=True, null=True, help_text="Total number of written reviews")
+    main_photo_url = models.CharField(max_length=500, blank=True, help_text="Primary bottle image URL")
 
     class Meta:
         managed = True
@@ -281,6 +308,148 @@ class HomeFragrances(models.Model):
 
     def __str__(self):
         return f"{self.product} - {self.product_type}"
+
+
+# ─── Fragrantica Enrichment Models ───────────────────────────────────────────
+
+class FragranceNote(models.Model):
+    """Master list of fragrance notes from Fragrantica."""
+    objects = models.Manager()
+    note_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    latin_name = models.CharField(max_length=100, blank=True)
+    group = models.CharField(max_length=50, blank=True, help_text="e.g. Woods and mosses, Flowers, Citrus")
+    odor_profile = models.TextField(blank=True)
+    icon_url = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'FRAGRANCE_NOTE'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class FragranceAccord(models.Model):
+    """Master list of scent accords from Fragrantica."""
+    objects = models.Manager()
+    accord_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    bar_color = models.CharField(max_length=7, blank=True, help_text="Hex color for display")
+    font_color = models.CharField(max_length=7, blank=True, default="#FFFFFF")
+
+    class Meta:
+        managed = True
+        db_table = 'FRAGRANCE_ACCORD'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class ProductNote(models.Model):
+    """Notes pyramid for a product — links products to their fragrance notes by layer."""
+    LAYER_CHOICES = [
+        ('top', 'Top'),
+        ('middle', 'Middle / Heart'),
+        ('base', 'Base'),
+    ]
+
+    objects = models.Manager()
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='product_notes', db_column='product_id')
+    note = models.ForeignKey(FragranceNote, models.CASCADE, related_name='product_usages')
+    layer = models.CharField(max_length=10, choices=LAYER_CHOICES)
+    opacity = models.FloatField(default=1.0, help_text="Visual prominence 0.0-1.0")
+    weight = models.FloatField(default=1.0, help_text="Visual size on pyramid chart")
+
+    class Meta:
+        managed = True
+        db_table = 'PRODUCT_NOTE'
+        ordering = ['layer', '-opacity']
+
+    def __str__(self):
+        return f"{self.product} — {self.note} ({self.layer})"
+
+
+class ProductAccord(models.Model):
+    """Scent accords breakdown for a product with percentages."""
+    objects = models.Manager()
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='product_accords', db_column='product_id')
+    accord = models.ForeignKey(FragranceAccord, models.CASCADE, related_name='product_usages')
+    percentage = models.FloatField(default=0, help_text="0-100 percentage")
+
+    class Meta:
+        managed = True
+        db_table = 'PRODUCT_ACCORD'
+        ordering = ['-percentage']
+
+    def __str__(self):
+        return f"{self.product} — {self.accord} ({self.percentage}%)"
+
+
+class Perfumer(models.Model):
+    """Perfumer (nose) profiles from Fragrantica."""
+    objects = models.Manager()
+    perfumer_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    photo_url = models.CharField(max_length=500, blank=True)
+    company = models.CharField(max_length=200, blank=True)
+    bio = models.TextField(blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'PERFUMER'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class ProductPerfumer(models.Model):
+    """Links products to their perfumers."""
+    objects = models.Manager()
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='product_perfumers', db_column='product_id')
+    perfumer = models.ForeignKey(Perfumer, models.CASCADE, related_name='perfumer_products')
+
+    class Meta:
+        managed = True
+        db_table = 'PRODUCT_PERFUMER'
+
+    def __str__(self):
+        return f"{self.product} by {self.perfumer}"
+
+
+class ProductVote(models.Model):
+    """Community voting data from Fragrantica (appreciation, longevity, sillage, season, etc.)."""
+    VOTE_TYPE_CHOICES = [
+        ('appreciation', 'Appreciation'),
+        ('longevity', 'Longevity'),
+        ('sillage', 'Sillage / Projection'),
+        ('season', 'Season'),
+        ('time_of_day', 'Time of Day'),
+        ('price_value', 'Price Value'),
+        ('gender_votes', 'Gender Votes'),
+    ]
+
+    objects = models.Manager()
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='product_votes', db_column='product_id')
+    vote_type = models.CharField(max_length=20, choices=VOTE_TYPE_CHOICES)
+    vote_label = models.CharField(max_length=50, help_text="e.g. love, like, moderate, strong, winter")
+    votes_count = models.IntegerField(default=0)
+    percentage = models.FloatField(default=0)
+
+    class Meta:
+        managed = True
+        db_table = 'PRODUCT_VOTE'
+        ordering = ['vote_type', '-votes_count']
+
+    def __str__(self):
+        return f"{self.product} — {self.vote_type}: {self.vote_label} ({self.votes_count})"
 
 
 class ProductImages(models.Model):

@@ -44,16 +44,16 @@
             <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>
             <div class="space-y-3">
               <label class="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" name="gender" value="Male"
-                  {% if "Male" in request.GET.gender_list %}checked{% endif %}
+                <input type="checkbox" name="gender" value="Man"
+                  {% if "Man" in request.GET.gender_list %}checked{% endif %}
                   class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Male</span>
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Man</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" name="gender" value="Female"
-                  {% if "Female" in request.GET.gender_list %}checked{% endif %}
+                <input type="checkbox" name="gender" value="Woman"
+                  {% if "Woman" in request.GET.gender_list %}checked{% endif %}
                   class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Female</span>
+                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Woman</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer group">
                 <input type="checkbox" name="gender" value="Unisex"
