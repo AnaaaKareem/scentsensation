@@ -24,6 +24,7 @@ urlpatterns = [
     path('payment_success/', views.payment_success, name='payment_success'),
     
     # Admin Portal prefixed with /admin-portal/
+    path('admin-portal/', views_admin.admin_login, name='admin_portal'),
     path('admin-portal/login/', views_admin.admin_login, name='admin_login'),
     path('admin-portal/logout/', views_admin.admin_logout, name='admin_logout'),
     path('admin-portal/dashboard/', views_admin.admin_dashboard, name='admin_dashboard'),
@@ -51,4 +52,4 @@ urlpatterns = [
     path('wishlist/add/<int:product_id>/', views.wishlist_add, name='wishlist_add'),
     path('wishlist/remove/<int:product_id>/', views.wishlist_remove, name='wishlist_remove'),
     path('wishlist/check/<int:product_id>/', views.wishlist_check, name='wishlist_check'),
-]
+]
