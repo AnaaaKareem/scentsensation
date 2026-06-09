@@ -95,7 +95,7 @@
           {% if product_images %}
           <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] rounded-brand overflow-hidden mb-4 relative store-card-imgs img-skeleton">
             {% for image in product_images %}
-            <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" loading="lazy"
+            <img src="{{ image.image_url }}" alt="{{ product.product_name }}" loading="lazy"
                  class="store-card-img absolute inset-0 w-full h-full object-cover {% if forloop.first %}{% else %} sc-hidden{% endif %}"
                  onload="this.closest('.img-skeleton').classList.add('loaded')">
             {% endfor %}
@@ -115,7 +115,7 @@
           <a href="{% url 'product_detail' product.product_id %}">
             <h3 class="font-display text-lg text-charcoal-900 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
           </a>
-          <p class="text-charcoal-500 text-sm mb-2">{{ product.description|truncatewords:12 }}</p>
+          <p class="text-charcoal-500 text-sm mb-2">{{ product.description|striptags|truncatewords:12 }}</p>
           <p class="text-charcoal-900 font-medium">{{ product.price|currency:currency }}</p>
 
           <!-- Add to Basket Form -->
@@ -272,10 +272,15 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s linear infinite;
     border-radius: inherit;
-    z-index: 1;
+    z-index: 2;
+    pointer-events: none;
   }
   .img-skeleton.loaded::before {
     display: none;
+  }
+  .img-skeleton img {
+    position: relative;
+    z-index: 3;
   }
   @keyframes shimmer {
     0%   { background-position: 200% 0; }

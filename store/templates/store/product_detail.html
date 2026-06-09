@@ -351,9 +351,14 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s linear infinite;
     border-radius: inherit;
-    z-index: 1;
+    z-index: 2;
+    pointer-events: none;
   }
   .img-skeleton.loaded::before { display: none; }
+  .img-skeleton img {
+    position: relative;
+    z-index: 3;
+  }
   @keyframes shimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }

@@ -270,7 +270,7 @@ class Command(BaseCommand):
                 brand=brand_name,
                 product_name=row.get('name', ''),
                 description=row.get('description', ''),
-                price=0,  # Will be updated from Mazaya/Faces data later
+                price=0,
                 region='US',
                 fragrantica_id=pid,
                 fragrantica_url=row.get('url', ''),
