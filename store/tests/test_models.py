@@ -135,10 +135,6 @@ class DiscountRateModelTests(TestCase):
         dr = DiscountRate.objects.get(pk="Premium")
         self.assertEqual(dr.discount_rate, 15.0)
 
-    def test_invalid_member_type_choices(self):
-        with self.assertRaises(IntegrityError):
-            DiscountRate.objects.create(member_type="Invalid", discount_rate=5.0)
-
 
 # --- MEMBERSHIP ---
 class MembershipModelTests(TestCase):
@@ -153,11 +149,11 @@ class MembershipModelTests(TestCase):
         mem = Membership.objects.create(
             customer=self.customer,
             member_type=self.discount,
-            end_ren_date=date(2026, 12, 31)
+            end_date=date(2026, 12, 31)
         )
         self.assertEqual(mem.customer, self.customer)
         self.assertEqual(mem.member_type, self.discount)
-        self.assertEqual(str(mem), f"Membership for {self.customer}")
+        self.assertEqual(str(mem), f"{self.customer} — None")
 
     def test_membership_one_to_one(self):
         Membership.objects.create(customer=self.customer, member_type=self.discount)

@@ -10,7 +10,7 @@ from django.core import mail
 from datetime import date, timedelta, datetime
 
 from store.models import (
-    Customer, PhoneNumbers, Addresses, DiscountRate, Membership,
+    Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
     Products, PersonalFragrances, HomeFragrances, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
     ProductInventory, Instalments, OrderRef
@@ -87,7 +87,8 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         response = self.client.get(reverse('payment_success') + '?session_id=test_session_123')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'store/payment_success.html')
-        self.assertContains(response, 'Order #')
+        self.assertContains(response, 'Order Number')
+        self.assertContains(response, '#1')
         # Verify order created
         order = Orders.objects.filter(places__customer=self.customer).first()
         self.assertIsNotNone(order)
@@ -115,8 +116,8 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         mock_session.url = 'https://stripe.test'
         mock_session_create.return_value = mock_session
 
-        discount = DiscountRate.objects.get(member_type='Standard')
-        Membership.objects.create(customer=self.customer, member_type=discount)
+        tier = MembershipTier.objects.get(slug='Standard')
+        Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
         product = Products.objects.create(
             brand='Brand', product_name='Item', description='Desc', price=100.00, gift=False
         )
@@ -125,7 +126,7 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         session['customer_id'] = self.customer.customer_id
         session.save()
 
-        response = self.client.post(reverse('checkout'), {'fulfilment': 'Pickup'})
+        response = self.client.post(reverse('checkout'), {'fulfilment': 'Delivery', 'payment_method': 'Card'})
         self.assertRedirects(response, 'https://stripe.test', fetch_redirect_response=False)
         call_kwargs = mock_session_create.call_args[1]
         # Stripe line_items should reflect discount via coupon

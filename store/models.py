@@ -622,6 +622,7 @@ class Inventory(models.Model):
     class Meta:
         managed = True
         db_table = 'INVENTORY'
+        unique_together = (('store', 'product'),)
 
     def __str__(self):
         return f"Inventory: {self.product} at {self.store}"

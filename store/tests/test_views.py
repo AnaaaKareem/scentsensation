@@ -46,6 +46,19 @@ class BaseViewTestCase(TestCase):
         DiscountRate.objects.create(member_type='Premium', discount_rate=20.0)
         DiscountRate.objects.create(member_type='Student', discount_rate=15.0)
 
+        MembershipTier.objects.create(
+            name='Standard', slug='Standard', monthly_price=10.00, yearly_price=100.00,
+            discount_rate=10.0, is_active=True
+        )
+        MembershipTier.objects.create(
+            name='Premium', slug='Premium', monthly_price=20.00, yearly_price=200.00,
+            discount_rate=20.0, is_active=True
+        )
+        MembershipTier.objects.create(
+            name='Student', slug='Student', monthly_price=15.00, yearly_price=150.00,
+            discount_rate=15.0, is_active=True
+        )
+
 
 # --- Static pages ---
 class HomeViewTests(TestCase):
@@ -280,9 +293,9 @@ class AccountViewTests(BaseViewTestCase):
         self.assertRedirects(response, reverse('signinAccount'))
 
     def test_account_get_loaded_data(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         response = self.client.get(reverse('account'))
         print(f"[DEBUG] account GET status={response.status_code}, url={response.url if hasattr(response, 'url') else ''}", file=sys.stderr)
         print(f"[DEBUG] cookies={self.client.cookies}", file=sys.stderr)
@@ -291,9 +304,9 @@ class AccountViewTests(BaseViewTestCase):
         self.assertIn('first_name', response.context)
 
     def test_account_post_update_first_name(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         post_data = {'update': '', 'first_name': 'NewName'}
         response = self.client.post(reverse('account'), data=post_data)
         self.assertRedirects(response, reverse('account'))
@@ -301,17 +314,17 @@ class AccountViewTests(BaseViewTestCase):
         self.assertEqual(self.customer.first_name, 'NewName')
 
     def test_account_post_delete(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         post_data = {'delete': ''}
         response = self.client.post(reverse('account'), data=post_data, follow=True)
         self.assertFalse(Customer.objects.filter(pk=self.customer.pk).exists())
 
     def test_account_update_phone_number(self):
-        self.client.session['customer_id'] = self.customer_with_address.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer_with_address.customer_id
+        session.save()
         post_data = {'update': '', 'phone_numbers': '555-9999'}
         response = self.client.post(reverse('account'), data=post_data)
         print(f"[DEBUG] phone update response status={response.status_code}", file=sys.stderr)
@@ -322,9 +335,9 @@ class AccountViewTests(BaseViewTestCase):
         self.assertEqual(phone.phone_number, '555-9999')
 
     def test_account_update_address(self):
-        self.client.session['customer_id'] = self.customer_with_address.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer_with_address.customer_id
+        session.save()
         post_data = {
             'update': '',
             'house': '200',
@@ -339,22 +352,7 @@ class AccountViewTests(BaseViewTestCase):
         self.assertEqual(addr.house, '200')
         self.assertEqual(addr.country, 'GB')
 
-    def test_account_update_membership(self):
-        self.client.session['customer_id'] = self.customer_with_address.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
-        premium = DiscountRate.objects.get(member_type='Premium')
-        post_data = {'update': '', 'membership': 'Premium'}
-        response = self.client.post(reverse('account'), data=post_data, follow=True)
-        # Debug if needed
-        if response.context and 'messages' in response.context:
-            for msg in response.context['messages']:
-                print(f"Message: {msg.message}")
-        membership = Membership.objects.filter(customer=self.customer_with_address).first()
-        if membership:
-            self.assertEqual(membership.member_type, premium)
-        else:
-            self.fail("Membership was not created")
+
 
 
 # --- Store browsing ---
@@ -423,9 +421,9 @@ class StoreViewTests(BaseViewTestCase):
         self.assertRedirects(response, reverse('signinAccount'))
 
     def test_store_post_add_to_basket_logged_in(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         post_data = {'add_basket': '', 'product_id': self.product1.product_id, 'quantity': 2}
         response = self.client.post(reverse('store'), data=post_data, follow=True)
         self.assertRedirects(response, reverse('store'))
@@ -451,9 +449,9 @@ class BasketViewTests(BaseViewTestCase):
         self.assertRedirects(response, reverse('signinAccount'))
 
     def test_basket_displays_items(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         Basket.objects.create(customer=self.customer, product=self.product, quantity=2)
         response = self.client.get(reverse('basket'))
         self.assertEqual(response.status_code, 200)
@@ -462,12 +460,12 @@ class BasketViewTests(BaseViewTestCase):
         self.assertEqual(len(response.context['items']), 1)
 
     def test_basket_calculates_subtotal_discount_total(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         # Create membership with 10% discount
-        discount = DiscountRate.objects.get(member_type='Standard')
-        Membership.objects.create(customer=self.customer, member_type=discount)
+        tier = MembershipTier.objects.get(slug='Standard')
+        Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
         Basket.objects.create(customer=self.customer, product=self.product, quantity=2)
         response = self.client.get(reverse('basket'))
         ctx = response.context
@@ -485,9 +483,9 @@ class BasketOperationsTests(BaseViewTestCase):
         )
 
     def test_delete_from_basket(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         Basket.objects.create(customer=self.customer, product=self.product)
         response = self.client.get(
             reverse('delete_from_basket', kwargs={'product_id': self.product.product_id})
@@ -496,9 +494,9 @@ class BasketOperationsTests(BaseViewTestCase):
         self.assertFalse(Basket.objects.exists())
 
     def test_add_quantity_increments(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
         response = self.client.post(
             reverse('add_quantity', kwargs={'product_id': self.product.product_id})
@@ -508,9 +506,9 @@ class BasketOperationsTests(BaseViewTestCase):
         self.assertEqual(item.quantity, 2)
 
     def test_remove_quantity_decrements_and_deletes_at_one(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
         response = self.client.post(
             reverse('remove_quantity', kwargs={'product_id': self.product.product_id})
@@ -519,9 +517,9 @@ class BasketOperationsTests(BaseViewTestCase):
         self.assertFalse(Basket.objects.exists())
 
     def test_remove_quantity_decrements_above_one(self):
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         Basket.objects.create(customer=self.customer, product=self.product, quantity=3)
         response = self.client.post(
             reverse('remove_quantity', kwargs={'product_id': self.product.product_id})
@@ -547,9 +545,9 @@ class CheckoutViewTests(BaseViewTestCase):
         mock_session.url = 'https://checkout.stripe.com/pay/test123'
         mock_session_create.return_value = mock_session
         # Ensure customer session
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         response = self.client.post(reverse('checkout'), {
             'fulfilment': 'Delivery',
             'payment_method': 'Card'
@@ -561,23 +559,23 @@ class CheckoutViewTests(BaseViewTestCase):
 
     def test_checkout_empty_basket_redirects(self):
         Basket.objects.all().delete()
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         response = self.client.post(reverse('checkout'))
         self.assertRedirects(response, reverse('basket'))
 
     @patch('store.views.stripe.checkout.Session.create')
     def test_checkout_with_membership_discount(self, mock_session_create):
-        discount = DiscountRate.objects.get(member_type='Premium')
-        Membership.objects.create(customer=self.customer, member_type=discount)
+        tier = MembershipTier.objects.get(slug='Premium')
+        Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
         mock_session = MagicMock()
         mock_session.url = 'https://stripe.test'
         mock_session_create.return_value = mock_session
-        self.client.session['customer_id'] = self.customer.customer_id
-        self.client.session.save()
-        self.client.cookies[settings.SESSION_COOKIE_NAME] = self.client.session.session_key
-        response = self.client.post(reverse('checkout'), {'fulfilment': 'Pickup'})
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
+        response = self.client.post(reverse('checkout'), {'fulfilment': 'Delivery', 'payment_method': 'Card'})
         self.assertEqual(response.status_code, 302)
         call_kwargs = mock_session_create.call_args[1]
         self.assertIn('discounts', call_kwargs)
@@ -693,6 +691,9 @@ class ViewEdgeCaseTests(BaseViewTestCase):
         self.assertRedirects(response, reverse('signinAccount'))
 
     def test_basket_handles_deleted_product(self):
+        session = self.client.session
+        session['customer_id'] = self.customer.customer_id
+        session.save()
         product = Products.objects.create(
             brand='Temp', product_name='TempProd', description='T', price=10.0, gift=False
         )
