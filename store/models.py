@@ -241,6 +241,7 @@ class FragranceNote(models.Model):
     name = models.CharField(max_length=100)
     latin_name = models.CharField(max_length=100, blank=True)
     group = models.CharField(max_length=50, blank=True, help_text="e.g. Woods and mosses, Flowers, Citrus")
+    group_color = models.CharField(max_length=7, blank=True, default="#8B7355", help_text="Hex color for note group display")
     odor_profile = models.TextField(blank=True)
     icon_url = models.CharField(max_length=500, blank=True)
 
@@ -372,6 +373,24 @@ class ProductVote(models.Model):
 
     def __str__(self):
         return f"{self.product} — {self.vote_type}: {self.vote_label} ({self.votes_count})"
+
+
+class SimilarProduct(models.Model):
+    """Similar/related products from Fragrantica (reminds_of field)."""
+    objects = objects = models.Manager()
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='similar_products', db_column='product_id')
+    similar_product = models.ForeignKey(Products, models.CASCADE, related_name='similar_to', db_column='similar_product_id')
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
+
+    class Meta:
+        managed = True
+        db_table = 'SIMILAR_PRODUCT'
+        unique_together = ('product', 'similar_product')
+
+    def __str__(self):
+        return f"{self.product.product_name} → {self.similar_product.product_name} ({self.likes} likes)"
 
 
 class ProductImages(models.Model):

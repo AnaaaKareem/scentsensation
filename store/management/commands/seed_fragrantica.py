@@ -24,7 +24,7 @@ from django.db import transaction
 from store.models import (
     Products, Brand, FragranceNote, FragranceAccord,
     ProductNote, ProductAccord, Perfumer, ProductPerfumer,
-    ProductVote, ProductImages,
+    ProductVote, ProductImages, SimilarProduct,
 )
 
 # Fragrantica gender mapping: dataset value -> our display value
@@ -149,6 +149,23 @@ def parse_votes(vote_str):
     return result
 
 
+def parse_similar(reminds_str):
+    """Parse '12345:1200:648;67890:906:290' -> [(similar_fid, likes, dislikes), ...]."""
+    result = []
+    for part in reminds_str.split(';'):
+        if ':' in part:
+            segments = part.split(':')
+            if len(segments) >= 3:
+                try:
+                    similar_fid = int(segments[0])
+                    likes = int(segments[1])
+                    dislikes = int(segments[2])
+                    result.append((similar_fid, likes, dislikes))
+                except (ValueError, IndexError):
+                    continue
+    return result
+
+
 class Command(BaseCommand):
     help = 'Seed the database with Fragrantica fragrance data'
 
@@ -177,15 +194,67 @@ class Command(BaseCommand):
         self.stdout.write('\n[2/7] Loading fragrance notes...')
         notes_data = download_csv('notes.csv')
         note_map = {}  # fragrantica_note_id -> FragranceNote
+
+        # Color map for note groups
+        GROUP_COLORS = {
+            'Citrus smells': '#FFD700',
+            'Flowers': '#FF69B4',
+            'Woods and mosses': '#8B4513',
+            'Spices': '#CD853F',
+            'Sweets and gourmand smells': '#DDA0DD',
+            'Fruits, vegetables and nuts': '#FF6347',
+            'Resins and balsams': '#8B0000',
+            'Mosses and': '#556B2F',
+            'Aromatic herbs': '#228B22',
+            'Leather': '#8B4513',
+            'Tobacco': '#654321',
+            'Musks and animalic': '#C0C0C0',
+            'Marine and aquatic': '#4682B4',
+            'Vanilla and sweet': '#F5DEB3',
+            'Fresh and clean': '#87CEEB',
+            'Green and herbal': '#6B8E23',
+            'Powdery and soft': '#F0E68C',
+            'Smoky and leathery': '#696969',
+            'Floral notes': '#FF69B4',
+            'Woody notes': '#8B4513',
+            'Oriental and spicy': '#B22222',
+            'Fresh citrus': '#FFD700',
+            'Sweet gourmand': '#DDA0DD',
+        }
+
         for row in notes_data:
             nid = int(row['id'].replace('n', '')) if row['id'].replace('n', '').isdigit() else None
             if nid:
+                group = row.get('group', '')
+                # Find matching color based on keywords in group name
+                color = '#888888'
+                group_lower = group.lower()
+                if 'citrus' in group_lower: color = '#FFD700'
+                elif 'flower' in group_lower: color = '#FF69B4'
+                elif 'wood' in group_lower or 'moss' in group_lower: color = '#8B4513'
+                elif 'spice' in group_lower: color = '#CD853F'
+                elif 'sweet' in group_lower or 'gourmand' in group_lower or 'vanilla' in group_lower: color = '#DDA0DD'
+                elif 'fruit' in group_lower or 'vegetable' in group_lower or 'nut' in group_lower: color = '#FF6347'
+                elif 'resin' in group_lower or 'balsam' in group_lower: color = '#8B0000'
+                elif 'leather' in group_lower: color = '#654321'
+                elif 'tobacco' in group_lower: color = '#8B4513'
+                elif 'musk' in group_lower or 'animal' in group_lower: color = '#A0A0A0'
+                elif 'marine' in group_lower or 'aquatic' in group_lower: color = '#4682B4'
+                elif 'fresh' in group_lower or 'clean' in group_lower: color = '#87CEEB'
+                elif 'green' in group_lower or 'herb' in group_lower or 'fougere' in group_lower: color = '#6B8E23'
+                elif 'powder' in group_lower: color = '#F0E68C'
+                elif 'smok' in group_lower: color = '#696969'
+                elif 'oriental' in group_lower: color = '#B22222'
+                elif 'aromatic' in group_lower: color = '#228B22'
+                elif 'amber' in group_lower: color = '#DAA520'
+                elif 'musk' in group_lower: color = '#C0C0C0'
                 note, _ = FragranceNote.objects.get_or_create(
                     note_id=nid,
                     defaults={
                         'name': row.get('name', ''),
                         'latin_name': row.get('latin_name', ''),
-                        'group': row.get('group', ''),
+                        'group': group,
+                        'group_color': color,
                         'odor_profile': row.get('odor_profile', ''),
                         'icon_url': row.get('main_icon', ''),
                     }
@@ -253,6 +322,12 @@ class Command(BaseCommand):
         fragrances_data = download_csv('fragrances.csv')
         product_map = {}  # fragrantica_pid -> Products
 
+        # Price map (in USD) for known fragrances
+        PRICE_MAP = {
+            704: 120.0, 1825: 185.0, 16657: 95.0, 33519: 325.0, 17: 110.0,
+            31623: 145.0, 430: 85.0, 3747: 75.0, 253: 65.0, 276: 55.0,
+        }
+
         for row in fragrances_data:
             pid = int(row['pid']) if row['pid'].isdigit() else None
             if not pid:
@@ -260,8 +335,6 @@ class Command(BaseCommand):
 
             brand_name, bf_id = parse_brand(row.get('brand', ''))
             rating_avg, rating_count = parse_rating(row.get('rating', ''))
-            gender_raw = row.get('gender', '')
-            gender = GENDER_MAP.get(gender_raw, 'Unisex')
 
             # Get or create brand
             brand_obj = brand_map.get(bf_id) if bf_id else None
@@ -270,7 +343,7 @@ class Command(BaseCommand):
                 brand=brand_name,
                 product_name=row.get('name', ''),
                 description=row.get('description', ''),
-                price=0,
+                price=PRICE_MAP.get(pid, 99.0),
                 region='US',
                 fragrantica_id=pid,
                 fragrantica_url=row.get('url', ''),
@@ -350,14 +423,36 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f'  Loaded {len(product_map)} fragrances'))
 
-        # Step 6: Summary
-        self.stdout.write('\n[7/7] Summary:')
+        # Step 6: Create similar product relationships
+        self.stdout.write('\n[7/7] Creating similar product relationships...')
+        similar_count = 0
+        for row in fragrances_data:
+            pid = int(row['pid']) if row['pid'].isdigit() else None
+            if not pid or pid not in product_map:
+                continue
+            product = product_map[pid]
+            reminds_str = row.get('reminds_of', '')
+            if reminds_str:
+                for similar_fid, likes, dislikes in parse_similar(reminds_str):
+                    if similar_fid in product_map:
+                        similar_product = product_map[similar_fid]
+                        SimilarProduct.objects.get_or_create(
+                            product=product,
+                            similar_product=similar_product,
+                            defaults={'likes': likes, 'dislikes': dislikes},
+                        )
+                        similar_count += 1
+        self.stdout.write(self.style.SUCCESS(f'  Created {similar_count} similar product links'))
+
+        # Step 7: Summary
+        self.stdout.write('\n[8/8] Summary:')
         self.stdout.write(f'  Products: {Products.objects.count()}')
         self.stdout.write(f'  ProductNotes: {ProductNote.objects.count()}')
         self.stdout.write(f'  ProductAccords: {ProductAccord.objects.count()}')
         self.stdout.write(f'  ProductPerfumers: {ProductPerfumer.objects.count()}')
         self.stdout.write(f'  ProductVotes: {ProductVote.objects.count()}')
         self.stdout.write(f'  ProductImages: {ProductImages.objects.count()}')
+        self.stdout.write(f'  SimilarProducts: {SimilarProduct.objects.count()}')
         self.stdout.write(f'  Brands: {Brand.objects.count()}')
         self.stdout.write(f'  FragranceNotes: {FragranceNote.objects.count()}')
         self.stdout.write(f'  FragranceAccords: {FragranceAccord.objects.count()}')

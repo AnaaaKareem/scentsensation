@@ -22,50 +22,50 @@
 
           <!-- Gender -->
           <div class="mb-8">
-            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>
+            <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>
             <div class="space-y-3">
               <label class="flex items-center gap-3 cursor-pointer group">
                 <input type="checkbox" name="gender" value="Man"
                   {% if "Man" in request.GET.gender_list %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Man</span>
+                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Man</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer group">
                 <input type="checkbox" name="gender" value="Woman"
                   {% if "Woman" in request.GET.gender_list %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Woman</span>
+                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Woman</span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer group">
                 <input type="checkbox" name="gender" value="Unisex"
                   {% if "Unisex" in request.GET.gender_list %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 group-hover:text-charcoal-900 text-sm transition-colors">Unisex</span>
+                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
+                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Unisex</span>
               </label>
             </div>
           </div>
 
           <!-- Price Range -->
           <div class="mb-8">
-            <h3 class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Price Range</h3>
+            <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Price Range</h3>
             <div class="flex items-center gap-3">
               <div class="relative flex-1">
                 <label for="min_price" class="sr-only">Min price</label>
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">£</span>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 dark:text-charcoal-500 text-sm">£</span>
                 <input type="number" id="min_price" name="min_price" value="{{ request.GET.min_price|default:'' }}" min="0" placeholder="0"
-                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
               </div>
-              <span class="text-charcoal-400">—</span>
+              <span class="text-charcoal-400 dark:text-charcoal-500">—</span>
               <div class="relative flex-1">
                 <label for="max_price" class="sr-only">Max price</label>
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 text-sm">£</span>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 dark:text-charcoal-500 text-sm">£</span>
                 <input type="number" id="max_price" name="max_price" value="{{ request.GET.max_price|default:'' }}" min="0" placeholder="500"
-                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
               </div>
             </div>
           </div>
 
-          <button type="submit" class="w-full py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+          <button type="submit" class="w-full py-3 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
             Apply Filters
           </button>
         </form>
@@ -75,9 +75,9 @@
     <!-- Product Grid -->
     <div class="flex-1">
       <div class="flex items-center justify-between mb-8">
-        <p class="text-charcoal-500 text-sm">Showing <span class="text-charcoal-900 font-medium">{{ products.paginator.count }}</span> products</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Showing <span class="text-charcoal-900 dark:text-cream-100 font-medium">{{ products.paginator.count }}</span> products</p>
         <label for="sort" class="sr-only">Sort by</label>
-        <select id="sort" name="sort" class="border border-charcoal-200 rounded-brand px-4 py-2 text-sm text-charcoal-700 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
+        <select id="sort" name="sort" class="border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand px-4 py-2 text-sm text-charcoal-700 dark:text-charcoal-300 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
           <option value="featured" {% if sort == 'featured' or not sort %}selected{% endif %}>Featured</option>
           <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
           <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
@@ -113,23 +113,42 @@
 
           <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
           <a href="{% url 'product_detail' product.product_id %}">
-            <h3 class="font-display text-lg text-charcoal-900 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
+            <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
           </a>
-          <p class="text-charcoal-500 text-sm mb-2">{{ product.description|striptags|truncatewords:12 }}</p>
-          <p class="text-charcoal-900 font-medium">{{ product.price|currency:currency }}</p>
+
+          <!-- Rating + Reviews -->
+          {% if product.rating_avg %}
+          <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-0.5">
+              {% for i in "12345" %}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="{% if forloop.counter <= product.rating_avg %}currentColor{% else %}none{% endif %}" stroke="currentColor" class="w-3.5 h-3.5 {% if forloop.counter <= product.rating_avg %}text-gold-500{% else %}text-charcoal-300 dark:text-charcoal-600{% endif %}">
+                <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/>
+              </svg>
+              {% endfor %}
+            </div>
+            <span class="text-charcoal-500 dark:text-charcoal-400 text-xs">{{ product.rating_avg|floatformat:1 }} ({{ product.reviews_count|default:0 }})</span>
+          </div>
+          {% endif %}
+
+          <!-- Release Year -->
+          {% if product.release_year %}
+          <p class="text-charcoal-400 dark:text-charcoal-500 text-xs mb-1">{{ product.release_year }}</p>
+          {% endif %}
+
+          <p class="text-charcoal-900 dark:text-cream-100 font-medium">{{ product.price|currency:currency }}</p>
 
           <!-- Add to Basket Form -->
           <form method="POST" action="{% url 'store' %}" class="mt-3">
             {% csrf_token %}
             <input type="hidden" name="product_id" value="{{ product.product_id }}">
             <div class="flex items-center gap-3">
-              <div class="flex items-center border border-charcoal-200 rounded-brand">
-                <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 hover:text-charcoal-900 transition-colors text-lg font-medium">−</button>
+              <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
+                <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
                 <input type="number" name="quantity" value="1" min="1"
-                  class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 focus:outline-none appearance-none m-0 p-0" readonly>
-                <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 hover:text-charcoal-900 transition-colors text-lg font-medium">+</button>
+                  class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 focus:outline-none appearance-none m-0 p-0" readonly>
+                <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
               </div>
-              <button type="submit" name="add_basket" class="px-4 py-2 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+              <button type="submit" name="add_basket" class="px-4 py-2 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
                 Add to Basket
               </button>
             </div>
@@ -139,7 +158,7 @@
       </div>
       {% else %}
       <div class="text-center py-20">
-        <p class="text-charcoal-500 text-lg">No products found matching your criteria.</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-lg">No products found matching your criteria.</p>
         <a href="{% url 'store' %}" class="mt-4 inline-block text-gold-600 hover:text-gold-700 text-sm font-medium underline">Clear filters</a>
       </div>
       {% endif %}
@@ -150,25 +169,25 @@
         <div class="flex items-center gap-2">
           {% if page_obj.has_previous %}
             <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
-              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-400 text-sm hover:border-charcoal-400 transition-colors">First</a>
+              class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-400 dark:text-charcoal-500 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors">First</a>
             <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
-              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-400 text-sm hover:border-charcoal-400 transition-colors">Previous</a>
+              class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-400 dark:text-charcoal-500 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors">Previous</a>
           {% endif %}
 
           {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-              <span class="w-10 h-10 flex items-center justify-center bg-charcoal-900 text-cream-100 rounded-brand text-sm font-medium">{{ num }}</span>
+              <span class="w-10 h-10 flex items-center justify-center bg-charcoal-900 dark:bg-charcoal-700 text-cream-100 rounded-brand text-sm font-medium">{{ num }}</span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
               <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
-                class="w-10 h-10 flex items-center justify-center border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">{{ num }}</a>
+                class="w-10 h-10 flex items-center justify-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors">{{ num }}</a>
             {% endif %}
           {% endfor %}
 
           {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
-              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">Next</a>
+              class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors">Next</a>
             <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}{% if value != '' %}={{ value }}{% endif %}{% endif %}{% endfor %}"
-              class="px-4 py-2 border border-charcoal-200 rounded-brand text-charcoal-600 text-sm hover:border-charcoal-400 transition-colors">Last</a>
+              class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors">Last</a>
           {% endif %}
         </div>
       </nav>
