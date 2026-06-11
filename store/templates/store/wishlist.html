@@ -61,13 +61,13 @@
   <div class="flex-1 space-y-6">
     {% for item in products %}
     {% with product=item.product image=item.image personal=item.personal home=item.home %}
-    <div class="wish-card flex gap-6 p-6 bg-white border border-cream-300 rounded-brand hover:border-gold-400 hover:shadow-md transition-all group" data-product-id="{{ product.product_id }}">
+    <div class="wish-card flex gap-6 p-6 bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand hover:border-gold-400 hover:shadow-md transition-all group" data-product-id="{{ product.product_id }}">
       <!-- Product Image -->
-      <a href="{% url 'product_detail' product.product_id %}" class="w-32 h-44 bg-charcoal-100 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
+      <a href="{% url 'product_detail' product.product_id %}" class="w-32 h-44 bg-charcoal-100 dark:bg-charcoal-800 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
         {% if image %}
           <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
         {% else %}
-          <span class="text-charcoal-400 text-[10px] uppercase tracking-wide text-center px-1">{{ product.product_name }}</span>
+          <span class="text-charcoal-400 dark:text-charcoal-500 text-[10px] uppercase tracking-wide text-center px-1">{{ product.product_name }}</span>
         {% endif %}
       </a>
 
@@ -75,17 +75,17 @@
       <div class="flex-1 min-w-0">
         <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium hover:text-gold-600 transition-colors">{{ product.brand }}</a>
         <a href="{% url 'product_detail' product.product_id %}">
-          <h3 class="font-display text-xl text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">{{ product.product_name }}</h3>
+          <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 transition-colors">{{ product.product_name }}</h3>
         </a>
 
         {% if product.release_year %}
-        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 mt-1">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 dark:text-charcoal-400 mt-1">
           <span>{{ product.release_year }} · {{ product.brand }}</span>
         </div>
         {% endif %}
 
         <div class="flex items-center gap-3 mt-4">
-          <span class="font-display text-xl text-charcoal-900">{{ product.price|currency:currency }}</span>
+          <span class="font-display text-xl text-charcoal-900 dark:text-cream-100">{{ product.price|currency:currency }}</span>
         </div>
 
         <!-- Actions -->
@@ -93,7 +93,7 @@
           <form method="POST" action="{% url 'store' %}" class="m-0">
             {% csrf_token %}
             <input type="hidden" name="product_id" value="{{ product.product_id }}">
-            <button type="submit" name="add_basket" class="px-6 py-2.5 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+            <button type="submit" name="add_basket" class="px-6 py-2.5 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
               Add to Basket
             </button>
           </form>
@@ -110,7 +110,7 @@
     {% endwith %}
     {% endfor %}
 
-    <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-charcoal-500 hover:text-charcoal-900 text-sm transition-colors">
+    <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
@@ -121,13 +121,13 @@
   {% else %}
   <!-- Empty wishlist -->
   <div class="flex-1 flex flex-col items-center justify-center text-center py-20">
-    <div class="w-20 h-20 bg-cream-200 rounded-full flex items-center justify-center mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-10 h-10 text-charcoal-400">
+    <div class="w-20 h-20 bg-cream-200 dark:bg-charcoal-800 rounded-full flex items-center justify-center mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-10 h-10 text-charcoal-400 dark:text-charcoal-500">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
       </svg>
     </div>
-    <p class="text-charcoal-500 text-lg mb-2">Your wishlist is empty</p>
-    <p class="text-charcoal-400 text-sm mb-6">Save your favorite fragrances to find them easily later.</p>
+    <p class="text-charcoal-500 dark:text-charcoal-400 text-lg mb-2">Your wishlist is empty</p>
+    <p class="text-charcoal-400 dark:text-charcoal-500 text-sm mb-6">Save your favorite fragrances to find them easily later.</p>
     <a href="{% url 'store' %}" class="inline-flex items-center justify-center px-8 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
       Browse Fragrances
     </a>

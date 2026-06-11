@@ -13,6 +13,11 @@
   border-radius: 2px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+.dark .code-input {
+  background-color: #1a1a1a;
+  border-color: #454545;
+  color: #faf3e2;
+}
 .code-input:focus {
   outline: none;
   border-color: #d4a824;
@@ -47,6 +52,9 @@
 .table-row-hover:hover {
   background-color: #fdf9f0;
 }
+.dark .table-row-hover:hover {
+  background-color: #2a2a2a;
+}
 
 /* Scrollbar styling for dark sections */
 .dark-scroll::-webkit-scrollbar {
@@ -79,10 +87,26 @@ input:focus, select:focus, textarea:focus {
   background-color: #1a1a1a;
   color: #fdf9f0;
 }
+.dark .page-active {
+  background-color: #454545;
+  color: #faf3e2;
+}
+
+/* Smooth fade-in for messages */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.message-flash {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+/* Form input focus ring */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
 
 /* ===== Scroll-triggered animations (About page) ===== */
-
-/* Base state: hidden + offset */
 .reveal {
   opacity: 0;
   transform: translateY(60px);
@@ -255,4 +279,40 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* Brand description — rich text from admin HTML */
+.brand-description p {
+  margin-bottom: 0.75rem;
+}
+.brand-description p:last-child {
+  margin-bottom: 0;
+}
+.brand-description strong,
+.brand-description b {
+  font-weight: 600;
+  color: #4f4f4f;
+}
+.dark .brand-description strong,
+.dark .brand-description b {
+  color: #b0b0b0;
+}
+.brand-description a {
+  color: #96651a;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.brand-description a:hover {
+  color: #b8861d;
+}
+.brand-description ul,
+.brand-description ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.brand-description ul {
+  list-style-type: disc;
+}
+.brand-description ol {
+  list-style-type: decimal;
 }
