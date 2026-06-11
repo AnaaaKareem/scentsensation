@@ -3,21 +3,21 @@
 {% load currency_tags %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+<div class="max-w-7xl mx-auto px-4 lg:px-6 py-16">
 
-  <!-- Brand Header -->
-  <div class="flex flex-col sm:flex-row items-center gap-6 mb-12">
+  <!-- Brand Header — tighter horizontal padding -->
+  <div class="flex flex-col sm:flex-row items-center gap-6 mb-12 px-0 lg:-mx-4">
     {% if brand and brand.logo %}
-    <img src="{{ brand.logo.url }}" alt="{{ brand_name }}" class="h-20 w-auto object-contain">
+    <img src="{{ brand.logo.url }}" alt="{{ brand_name }}" class="h-16 w-auto object-contain">
     {% else %}
-    <div class="w-20 h-20 rounded-full bg-charcoal-100 dark:bg-charcoal-800 flex items-center justify-center">
-      <span class="font-display text-3xl text-charcoal-400">{{ brand_name|first }}</span>
+    <div class="w-16 h-16 rounded-full bg-charcoal-100 dark:bg-charcoal-800 flex items-center justify-center">
+      <span class="font-display text-2xl text-charcoal-400">{{ brand_name|first }}</span>
     </div>
     {% endif %}
     <div class="text-center sm:text-left max-w-3xl">
       <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display">{{ brand_name }}</h1>
       {% if brand and brand.description %}
-      <div class="brand-description text-charcoal-500 dark:text-charcoal-400 mt-4 leading-relaxed space-y-3">{{ brand.description|safe }}</div>
+      <div class="brand-description text-charcoal-500 dark:text-charcoal-400 mt-2 leading-relaxed space-y-2 text-sm">{{ brand.description|safe }}</div>
       {% endif %}
     </div>
   </div>
@@ -25,14 +25,14 @@
   <!-- Gender Filter removed — no longer a filterable field -->
   </div>
 
-  <!-- Product Grid -->
+  <!-- Product Grid — more columns, tighter gaps -->
   {% if products %}
-  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
     {% for product in products %}
     <div class="group">
       {% with product_images=product.product_images.all %}
       {% if product_images %}
-      <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden mb-4 relative">
+      <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden mb-3 relative">
         {% for image in product_images %}
         {% if forloop.first %}
         <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover absolute inset-0">
@@ -40,7 +40,7 @@
         {% endfor %}
       </a>
       {% else %}
-      <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
+      <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden mb-3">
         <div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center">
           <span class="text-charcoal-400 text-xs uppercase tracking-wide">{{ product.product_name }}</span>
         </div>
