@@ -1,6 +1,7 @@
 {% extends "store/base.html" %}
 {% load static %}
 {% load currency_tags %}
+{% load vote_tags %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
@@ -17,29 +18,19 @@
   </nav>
 
   <!-- Product Section -->
-  <div class="grid lg:grid-cols-2 gap-12 mb-16">
+  <div class="grid lg:grid-cols-2 gap-12 mb-16 items-start">
 
     <!-- Left: Image Gallery -->
     <div>
       {% if images %}
-      <div class="flex gap-3" id="gallery-wrap">
-        {% if images|length > 1 %}
-        <div class="flex flex-col gap-2 w-16 shrink-0 max-h-full overflow-y-auto scrollbar-hide"
-             id="thumb-scroll">
-          {% for image in images %}
-          <button type="button" onclick="galleryGo({{ forloop.counter0 }})"
-            class="gallery-thumb aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0">
-            <img src="{{ image.image_url }}" alt="" class="w-full h-full object-cover" loading="lazy">
-          </button>
-          {% endfor %}
-        </div>
-        {% endif %}
-        <div class="flex-1 aspect-[4/5] bg-charcoal-100 rounded-brand overflow-hidden relative img-skeleton" id="gallery-main">
+      <div class="flex flex-col gap-4" id="gallery-wrap">
+        <div class="w-full aspect-square bg-charcoal-100 dark:bg-charcoal-900 rounded-brand overflow-hidden relative img-skeleton" id="gallery-main">
           {% for image in images %}
           <img src="{{ image.image_url }}" alt="{{ product.product_name }}"
                class="gallery-img absolute inset-0 w-full h-full object-contain transition-opacity duration-500 {% if not forloop.first %}opacity-0{% endif %}"
                data-idx="{{ forloop.counter0 }}"
                onload="this.closest('.img-skeleton').classList.add('loaded')"
+               onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');"
                loading="lazy">
           {% endfor %}
           {% if images|length > 1 %}
@@ -56,9 +47,21 @@
           </div>
           {% endif %}
         </div>
+
+        {% if images|length > 1 %}
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-1 w-full" id="thumb-scroll">
+          {% for image in images %}
+          <button type="button" onclick="galleryGo({{ forloop.counter0 }})"
+            class="gallery-thumb w-16 h-16 aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0">
+            <img src="{{ image.image_url }}" alt="" class="w-full h-full object-cover" loading="lazy"
+                 onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80') this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80';">
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
       {% else %}
-      <div class="aspect-[4/5] bg-gradient-to-b from-cream-200 to-charcoal-100 dark:from-charcoal-900 dark:to-charcoal-950 rounded-brand flex items-center justify-center">
+      <div class="aspect-square bg-gradient-to-b from-cream-200 to-charcoal-100 dark:from-charcoal-900 dark:to-charcoal-950 rounded-brand flex items-center justify-center">
         <span class="text-charcoal-400 dark:text-charcoal-500 text-sm uppercase tracking-wide">{{ product.product_name }}</span>
       </div>
       {% endif %}
@@ -130,6 +133,52 @@
       </div>
       {% endif %}
 
+      <!-- Fragrance Characteristics -->
+      {% if top_longevity or top_sillage or top_season or top_time_of_day %}
+      <div class="mb-8 grid grid-cols-2 gap-x-6 gap-y-4">
+        {% if top_longevity %}
+        <div>
+          <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-1.5">Longevity</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ top_longevity }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if top_sillage %}
+        <div>
+          <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-1.5">Sillage</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-sky-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/></svg>
+            <span class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ top_sillage }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if top_season %}
+        <div>
+          <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-1.5">Season</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+            <span class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ top_season }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if top_time_of_day %}
+        <div>
+          <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-1.5">Time of Day</p>
+          <div class="flex items-center gap-2">
+            {% if top_time_of_day == 'Day' %}
+            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0z"/></svg>
+            {% else %}
+            <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/></svg>
+            {% endif %}
+            <span class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ top_time_of_day }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
       <!-- Add to Basket Form -->
       <form method="POST" action="{% url 'store' %}" class="mt-auto">
         {% csrf_token %}
@@ -166,102 +215,142 @@
     </div>
   </div>
 
-  <!-- ===== ACCORDS BAR CHART ===== -->
+  <!-- ===== ACCORDS SECTION ===== -->
   {% if accords %}
-  <div class="mb-10">
-    <h2 class="font-display text-xl text-charcoal-900 tracking-display mb-6 dark:text-cream-100">Accords</h2>
-    <div class="space-y-3">
-    {% for pa in accords %}
-      <div class="flex items-center gap-4">
-        <span class="text-charcoal-600 text-sm w-32 shrink-0 text-left dark:text-cream-300">{{ pa.accord.name|title }}</span>
-        <div class="flex-1 h-7 bg-charcoal-100 dark:bg-charcoal-700 rounded-full overflow-hidden">
-          <div class="h-full rounded-full transition-all duration-700" style="width: {{ pa.percentage }}%; background-color: {{ pa.accord.bar_color|default:'#888' }};"></div>
+  <div class="mb-16">
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-8 h-0.5 bg-gold-500"></div>
+      <h2 class="font-display text-2xl text-charcoal-900 dark:text-cream-100 tracking-display">Accords</h2>
+    </div>
+    <div class="grid grid-cols-3 gap-6 md:gap-8">
+      {% for pa in accords %}
+      <div class="accord-item group flex flex-col items-center text-center">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-gold-500 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pa.accord.bar_color|default:'#888888' }}20;">
+          <img src="{{ pa.accord.name|accord_image }}" alt="{{ pa.accord.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+               onload="this.closest('.img-skeleton').classList.add('loaded')"
+               onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
         </div>
-        <span class="text-charcoal-500 text-sm w-12 text-right font-medium dark:text-cream-400">{{ pa.percentage|floatformat:0 }}%</span>
+        <span class="text-charcoal-800 dark:text-cream-100 text-sm font-semibold tracking-wide group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors">{{ pa.accord.name|title }}</span>
+        <span class="inline-block mt-1.5 px-3 py-1 rounded-full text-[10px] font-semibold text-white shadow-sm" style="background-color: {{ pa.accord.bar_color|default:'#888' }};">
+          Accord
+        </span>
       </div>
-    {% endfor %}
+      {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- ===== VISUAL NOTES PYRAMID ===== -->
+  <!-- ===== FRAGRANCE NOTES SECTION ===== -->
   {% if notes %}
   <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">Fragrance Notes</h2>
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-8 h-0.5 bg-gold-500"></div>
+      <h2 class="font-display text-2xl text-charcoal-900 dark:text-cream-100 tracking-display">Fragrance Notes</h2>
+    </div>
 
     {% regroup notes by layer as notes_by_layer %}
-    <div class="flex flex-col items-center max-w-2xl mx-auto">
+    <div class="space-y-10">
 
-      <!-- Top Notes (widest) -->
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'top' %}
-      <div class="w-full text-center mb-2">
-        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Top Notes</span>
-        <div class="flex flex-wrap justify-center gap-2">
-        {% for pn in layer_group.list %}
-          <div class="group relative">
-            <span class="inline-block px-3 py-1.5 rounded-full text-sm font-medium text-white" style="background-color: {{ pn.note.group_color|default:'#8B7355' }};">
-              {{ pn.note.name }}
-            </span>
-            {% if pn.note.group %}
-            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-charcoal-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-              {{ pn.note.group }}
+      <div>
+        <div class="inline-flex items-center gap-2 mb-5">
+          <svg class="w-4 h-4 text-gold-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+          <span class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-widest font-semibold">Top Notes</span>
+        </div>
+        <div class="grid grid-cols-3 gap-6 md:gap-8">
+          {% for pn in layer_group.list %}
+          <div class="note-item group flex flex-col items-center text-center">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-gold-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#8B7355' }}20;">
+              {% if pn.note.icon_url %}
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+                   onload="this.closest('.img-skeleton').classList.add('loaded')"
+                   onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
+              <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🌿</span>
+              </div>
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🌿</span>
+              </div>
+              {% endif %}
             </div>
+            <span class="text-charcoal-800 dark:text-cream-100 text-sm font-semibold tracking-wide group-hover:text-gold-500 dark:group-hover:text-gold-400 transition-colors">{{ pn.note.name }}</span>
+            {% if pn.note.group %}
+            <span class="text-charcoal-400 dark:text-charcoal-500 text-xs mt-0.5">{{ pn.note.group }}</span>
             {% endif %}
           </div>
-        {% endfor %}
+          {% endfor %}
         </div>
       </div>
       {% endif %}
       {% endfor %}
 
-      <!-- Connector triangle -->
-      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 dark:border-t-charcoal-700 my-1"></div>
-
-      <!-- Middle / Heart Notes (medium) -->
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'middle' %}
-      <div class="w-4/5 text-center mb-2">
-        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Heart Notes</span>
-        <div class="flex flex-wrap justify-center gap-2">
-        {% for pn in layer_group.list %}
-          <div class="group relative">
-            <span class="inline-block px-3 py-1.5 rounded-full text-sm font-medium text-white" style="background-color: {{ pn.note.group_color|default:'#A0522D' }};">
-              {{ pn.note.name }}
-            </span>
-            {% if pn.note.group %}
-            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-charcoal-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-              {{ pn.note.group }}
+      <div>
+        <div class="inline-flex items-center gap-2 mb-5">
+          <svg class="w-4 h-4 text-burgundy-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+          <span class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-widest font-semibold">Heart Notes</span>
+        </div>
+        <div class="grid grid-cols-3 gap-6 md:gap-8">
+          {% for pn in layer_group.list %}
+          <div class="note-item group flex flex-col items-center text-center">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-burgundy-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#A0522D' }}20;">
+              {% if pn.note.icon_url %}
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+                   onload="this.closest('.img-skeleton').classList.add('loaded')"
+                   onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
+              <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🌸</span>
+              </div>
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🌸</span>
+              </div>
+              {% endif %}
             </div>
+            <span class="text-charcoal-800 dark:text-cream-100 text-sm font-semibold tracking-wide group-hover:text-burgundy-500 dark:group-hover:text-wine-400 transition-colors">{{ pn.note.name }}</span>
+            {% if pn.note.group %}
+            <span class="text-charcoal-400 dark:text-charcoal-500 text-xs mt-0.5">{{ pn.note.group }}</span>
             {% endif %}
           </div>
-        {% endfor %}
+          {% endfor %}
         </div>
       </div>
       {% endif %}
       {% endfor %}
 
-      <!-- Connector triangle -->
-      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 dark:border-t-charcoal-700 my-1"></div>
-
-      <!-- Base Notes (narrowest) -->
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'base' %}
-      <div class="w-3/5 text-center">
-        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Base Notes</span>
-        <div class="flex flex-wrap justify-center gap-2">
-        {% for pn in layer_group.list %}
-          <div class="group relative">
-            <span class="inline-block px-3 py-1.5 rounded-full text-sm font-medium text-white" style="background-color: {{ pn.note.group_color|default:'#5C4033' }};">
-              {{ pn.note.name }}
-            </span>
-            {% if pn.note.group %}
-            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-charcoal-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-              {{ pn.note.group }}
+      <div>
+        <div class="inline-flex items-center gap-2 mb-5">
+          <svg class="w-4 h-4 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+          <span class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-widest font-semibold">Base Notes</span>
+        </div>
+        <div class="grid grid-cols-3 gap-6 md:gap-8">
+          {% for pn in layer_group.list %}
+          <div class="note-item group flex flex-col items-center text-center">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-charcoal-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#5C4033' }}20;">
+              {% if pn.note.icon_url %}
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+                   onload="this.closest('.img-skeleton').classList.add('loaded')"
+                   onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
+              <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🪵</span>
+              </div>
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="text-2xl">🪵</span>
+              </div>
+              {% endif %}
             </div>
+            <span class="text-charcoal-800 dark:text-cream-100 text-sm font-semibold tracking-wide group-hover:text-charcoal-600 dark:group-hover:text-charcoal-400 transition-colors">{{ pn.note.name }}</span>
+            {% if pn.note.group %}
+            <span class="text-charcoal-400 dark:text-charcoal-500 text-xs mt-0.5">{{ pn.note.group }}</span>
             {% endif %}
           </div>
-        {% endfor %}
+          {% endfor %}
         </div>
       </div>
       {% endif %}
@@ -271,193 +360,31 @@
   </div>
   {% endif %}
 
-  <!-- ===== COMMUNITY VOTES WITH SVG ICONS + PERCENTAGE CIRCLES ===== -->
-  {% if votes %}
-  <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">Community Reviews</h2>
 
-    {% regroup votes by vote_type as votes_by_type %}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-
-      <!-- Longevity -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'longevity' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Longevity</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          <svg class="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Sillage -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'sillage' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Sillage</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          <svg class="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Season -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'season' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Season</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          {% if v.vote_label == 'season_winter' %}
-          <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
-          {% elif v.vote_label == 'season_spring' %}
-          <svg class="w-4 h-4 text-green-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
-          {% elif v.vote_label == 'season_summer' %}
-          <svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/></svg>
-          {% else %}
-          <svg class="w-4 h-4 text-orange-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4.755 10.059a9.42 9.42 0 012.812-2.207 5.42 5.42 0 014.864 0 9.42 9.42 0 012.812 2.207c.926.996 1.34 2.053 1.054 2.947-.286.894-1.188 1.5-2.304 1.5H8.548c-1.116 0-2.018-.606-2.304-1.5-.286-.894.128-1.951 1.054-2.947zM9.514 5.57a5.428 5.428 0 014.972 0c.558.295.793.96.508 1.518l-.037.073c-.568 1.126-2.314 1.126-3.72 0a5.428 5.428 0 01-4.972 0c-.558-.295-.793-.96-.508-1.518l.037-.073c.568-1.126 2.314-1.126 3.72 0z" clip-rule="evenodd"/></svg>
-          {% endif %}
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title|cut:"season_" }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Time of Day -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'time_of_day' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Time of Day</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          {% if v.vote_label == 'season_day' %}
-          <svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0z"/></svg>
-          {% else %}
-          <svg class="w-4 h-4 text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/></svg>
-          {% endif %}
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title|cut:"season_" }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Appreciation -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'appreciation' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Appreciation</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          {% if v.vote_label == 'like_love' %}
-          <svg class="w-4 h-4 text-red-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
-          {% elif v.vote_label == 'like_like' %}
-          <svg class="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm3.53 10.28a.75.75 0 000-1.06l-2.25-2.25a.75.75 0 00-1.06 1.06l.97.97H9a.75.75 0 000 1.5h4.19l-.97.97a.75.75 0 101.06 1.06l2.25-2.25z" clip-rule="evenodd"/></svg>
-          {% elif v.vote_label == 'like_ok' %}
-          <svg class="w-4 h-4 text-yellow-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 8.625a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM15.375 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zM7.5 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd"/></svg>
-          {% elif v.vote_label == 'like_dislike' %}
-          <svg class="w-4 h-4 text-orange-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-3.53 10.28a.75.75 0 000-1.06l2.25-2.25a.75.75 0 00-1.06-1.06l-.97.97V9a.75.75 0 00-1.5 0v4.19l-.97-.97a.75.75 0 00-1.06 1.06l2.25 2.25z" clip-rule="evenodd"/></svg>
-          {% else %}
-          <svg class="w-4 h-4 text-gray-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.5 5.25a.75.75 0 011.5 0v3.75a.75.75 0 01-1.5 0v-3.75zm0 6a.75.75 0 011.5 0v.75a.75.75 0 01-1.5 0v-.75z" clip-rule="evenodd"/></svg>
-          {% endif %}
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title|cut:"like_" }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Price Value -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'price_value' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Price Value</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          <svg class="w-4 h-4 text-charcoal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title|cut:"price_" }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-      <!-- Gender Votes -->
-      {% for vt in votes_by_type %}
-      {% if vt.list.0.vote_type == 'gender_votes' %}
-      <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-          <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Gender</h3>
-        </div>
-        {% for v in vt.list %}
-        <div class="flex items-center gap-3 mb-2 last:mb-0">
-          {% if 'female' in v.vote_label %}
-          <svg class="w-4 h-4 text-pink-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/></svg>
-          {% elif 'male' in v.vote_label %}
-          <svg class="w-4 h-4 text-blue-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/></svg>
-          {% else %}
-          <svg class="w-4 h-4 text-purple-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 8.25a.75.75 0 01.75.75v5.25a.75.75 0 01-1.5 0v-5.25a.75.75 0 01.75-.75zM12 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>
-          {% endif %}
-          <span class="text-charcoal-600 text-xs flex-1 dark:text-cream-300">{{ v.vote_label|title|cut:"gvotes_" }}</span>
-          <span class="text-charcoal-900 text-xs font-bold dark:text-cream-100">{{ v.percentage|floatformat:0 }}%</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endfor %}
-
-    </div>
-  </div>
-  {% endif %}
 
   <!-- ===== YOU MAY ALSO LIKE ===== -->
   {% if similar_products %}
   <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">You May Also Like</h2>
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-8 h-0.5 bg-gold-500"></div>
+      <h2 class="font-display text-2xl text-charcoal-900 dark:text-cream-100 tracking-display">You May Also Like</h2>
+    </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-    {% for sp in similar_products %}
+      {% for sp in similar_products %}
       <a href="{% url 'product_detail' sp.similar_product.product_id %}" class="group">
-        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-3 relative img-skeleton">
-          {% with sp.similar_product.product_images.first as sim_img %}
+        {% with sp.similar_product.product_images.first as sim_img %}
+        <div class="aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-3 relative {% if sim_img %}img-skeleton{% endif %}">
           {% if sim_img %}
-          <img src="{{ sim_img.image_url }}" alt="{{ sp.similar_product.product_name }}" class="w-full h-full object-cover" loading="lazy" onload="this.closest('.img-skeleton').classList.add('loaded')">
+          <img src="{{ sim_img.image_url }}" alt="{{ sp.similar_product.product_name }}" class="w-full h-full object-cover" loading="lazy" 
+               onload="this.closest('.img-skeleton').classList.add('loaded')"
+               onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
+          {% else %}
+          <div class="w-full h-full flex items-center justify-center bg-gradient-to-b from-cream-200 to-charcoal-100 dark:from-charcoal-900 dark:to-charcoal-950">
+            <span class="text-charcoal-400 dark:text-charcoal-500 text-xs font-semibold uppercase tracking-wide">No Image</span>
+          </div>
           {% endif %}
-          {% endwith %}
         </div>
+        {% endwith %}
         <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium">{{ sp.similar_product.brand }}</p>
         <h3 class="font-display text-sm text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ sp.similar_product.product_name }}</h3>
         {% if sp.similar_product.rating_avg %}
@@ -501,6 +428,14 @@
   /* Hide scrollbar but keep scroll functionality */
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Note and accord items hover */
+  .note-item, .accord-item {
+    transition: transform 0.2s ease;
+  }
+  .note-item:hover, .accord-item:hover {
+    transform: translateY(-3px);
+  }
 </style>
 
 <script>
@@ -518,7 +453,9 @@
     for (var i = 0; i < total; i++) {
       imgs[i].style.opacity = (i === idx) ? '1' : '0';
       if (dots[i]) dots[i].className = 'gallery-dot ' + (i === idx ? 'bg-white w-5' : 'bg-white/50');
-      if (thumbs[i]) thumbs[i].className = 'gallery-thumb aspect-square bg-charcoal-100 rounded-brand overflow-hidden border-2 ' + (i === idx ? 'border-gold-500' : 'border-transparent') + ' hover:border-gold-400 transition-colors';
+      if (thumbs[i]) {
+        thumbs[i].className = 'gallery-thumb w-16 h-16 aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 ' + (i === idx ? 'border-gold-500' : 'border-transparent') + ' hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0';
+      }
     }
   }
   window.galleryNext = function(){ show(current + 1); };

@@ -525,6 +525,21 @@ def product_detail(request, product_id):
     perfumers = ProductPerfumer.objects.filter(product=product).select_related('perfumer')
     votes = ProductVote.objects.filter(product=product)
 
+    # Compute top vote for key categories (highest percentage)
+    def _top_label(vote_type, prefix):
+        top = votes.filter(vote_type=vote_type).order_by('-percentage').first()
+        if top:
+            label = top.vote_label
+            if label.startswith(prefix):
+                label = label[len(prefix):]
+            return label.replace('_', ' ').title()
+        return None
+
+    top_longevity = _top_label('longevity', 'longevity_')
+    top_sillage = _top_label('sillage', 'sillage_')
+    top_season = _top_label('season', 'season_')
+    top_time_of_day = _top_label('time_of_day', 'season_')
+
     region = product.region or 'US'
     currency = get_currency_config(region)
 
@@ -538,6 +553,10 @@ def product_detail(request, product_id):
         'accords': accords,
         'perfumers': perfumers,
         'votes': votes,
+        'top_longevity': top_longevity,
+        'top_sillage': top_sillage,
+        'top_season': top_season,
+        'top_time_of_day': top_time_of_day,
     }
     return render(request, 'store/product_detail.html', context)
 
