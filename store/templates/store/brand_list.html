@@ -5,8 +5,8 @@
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
 
   <div class="text-center mb-16">
-    <h1 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display mb-4">Our Brands</h1>
-    <p class="text-charcoal-500 max-w-lg mx-auto">Discover the world's most prestigious fragrance houses, each with a unique story and signature scents.</p>
+    <h1 class="font-display text-4xl sm:text-5xl text-charcoal-900 dark:text-cream-100 tracking-display mb-4">Our Brands</h1>
+    <p class="text-charcoal-500 dark:text-charcoal-400 max-w-lg mx-auto">Discover the world's most prestigious fragrance houses, each with a unique story and signature scents.</p>
   </div>
 
   {% if brands %}
@@ -45,7 +45,7 @@
 
   {% if not brands and not product_brands %}
   <div class="text-center py-20">
-    <p class="text-charcoal-500 text-lg">No brands available yet.</p>
+    <p class="text-charcoal-500 dark:text-charcoal-400 text-lg">No brands available yet.</p>
   </div>
   {% endif %}
 
@@ -107,6 +107,10 @@
     animation: brand-shimmer 1.5s linear infinite;
     z-index: 1;
     border-radius: inherit;
+  }
+  .dark .bcard::before {
+    background: linear-gradient(110deg, #454545 8%, #5d5d5d 18%, #454545 33%);
+    background-size: 200% 100%;
   }
   .bcard.loaded::before { display: none; }
   @keyframes brand-shimmer {

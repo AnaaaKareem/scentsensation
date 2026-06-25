@@ -23,7 +23,6 @@
   </div>
 
   <!-- Gender Filter removed — no longer a filterable field -->
-  </div>
 
   <!-- Product Grid — more columns, tighter gaps -->
   {% if products %}
@@ -49,12 +48,12 @@
       {% endwith %}
 
       {% if brand %}
-      <a href="{% url 'brand_detail' brand.slug %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
+      <a href="{% url 'brand_detail' brand.slug %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ product.brand }}</a>
       {% else %}
-      <a href="{% url 'brand_detail' brand_name|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
+      <a href="{% url 'brand_detail' brand_name|slugify %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ product.brand }}</a>
       {% endif %}
       <a href="{% url 'product_detail' product.product_id %}">
-        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 mb-1 transition-colors">{{ product.product_name }}</h3>
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 mb-1 transition-colors">{{ product.product_name }}</h3>
       </a>
       <p class="text-charcoal-500 dark:text-charcoal-400 text-sm mb-2 leading-relaxed">{{ product.description|striptags|truncatewords:12 }}</p>
       <p class="text-charcoal-900 dark:text-cream-100 font-medium mb-3">{{ product.price|currency:currency }}</p>

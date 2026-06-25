@@ -4,10 +4,10 @@
 {% block content %}
 <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-24 px-6">
   <div class="w-full max-w-lg">
-    <div class="bg-white border border-cream-300 rounded-brand p-8 sm:p-10">
+    <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-8 sm:p-10">
       <div class="text-center mb-8">
         <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Join Us</p>
-        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display">Create Account</h1>
+        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display">Create Account</h1>
       </div>
 
       <form method="POST" action="{% url 'signupAccount' %}" class="space-y-5">
@@ -18,7 +18,7 @@
         <div class="px-4 py-3 rounded-brand text-sm font-medium
           {% if message.tags == 'error' %}bg-burgundy-100 text-burgundy-800
           {% elif message.tags == 'success' %}bg-green-100 text-green-800
-          {% else %}bg-cream-200 text-charcoal-800{% endif %}">
+          {% else %}bg-cream-200 dark:bg-charcoal-800 text-charcoal-800{% endif %}">
           {{ message }}
         </div>
         {% endfor %}
@@ -27,48 +27,48 @@
         <!-- Name Row -->
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
-            <label for="id_first_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
+            <label for="id_first_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
             <input type="text" id="id_first_name" name="first_name" placeholder="John" required
-              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
           </div>
           <div>
-            <label for="id_last_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
+            <label for="id_last_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
             <input type="text" id="id_last_name" name="last_name" placeholder="Smith" required
-              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
           </div>
         </div>
 
         <!-- Middle Name -->
         <div>
-          <label for="id_middle_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Middle Name <span class="text-charcoal-400 normal-case">(optional)</span></label>
+          <label for="id_middle_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Middle Name <span class="text-charcoal-400 dark:text-charcoal-400 normal-case">(optional)</span></label>
           <input type="text" id="id_middle_name" name="middle_name" placeholder="Middle name"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
         </div>
 
         <!-- Email -->
         <div>
-          <label for="id_email_address" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
+          <label for="id_email_address" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
           <input type="email" id="id_email_address" name="email_address" placeholder="you@example.com" required
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
         </div>
 
         <!-- DOB + Gender Row -->
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
-            <label for="id_DOB" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Date of Birth</label>
+            <label for="id_DOB" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Date of Birth</label>
             <input type="date" id="id_DOB" name="DOB" required
-              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
           </div>
           <div>
-            <label class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gender</label>
+            <label class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Gender</label>
             <div class="flex items-center gap-6 pt-3">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="gender" value="Male" checked class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-700 text-sm">Male</span>
+                <span class="text-charcoal-700 dark:text-charcoal-300 text-sm">Male</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="gender" value="Female" class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-700 text-sm">Female</span>
+                <span class="text-charcoal-700 dark:text-charcoal-300 text-sm">Female</span>
               </label>
             </div>
           </div>
@@ -76,47 +76,47 @@
 
         <!-- Phone -->
         <div>
-          <label for="id_phone_numbers" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone Number <span class="text-charcoal-400 normal-case">(optional)</span></label>
-          <input type="tel" id="id_phone_numbers" name="phone_numbers" placeholder="+44 7700 900000"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          <label for="id_phone_numbers" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone Number <span class="text-charcoal-400 dark:text-charcoal-400 normal-case">(optional)</span></label>
+          <input type="tel" id="id_phone_number" name="phone_numbers" placeholder="+44 7700 900000"
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
         </div>
 
         <!-- Address Section -->
         <div class="pt-2">
-          <p class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Address</p>
+          <p class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Address</p>
           <div class="space-y-4">
             <div>
-              <label for="id_house" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">House Number</label>
+              <label for="id_house" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">House Number</label>
               <input type="text" id="id_house" name="house" placeholder="e.g. 42" required
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
             </div>
             <div>
-              <label for="id_street_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Street Name</label>
+              <label for="id_street_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Street Name</label>
               <input type="text" id="id_street_name" name="street_name" placeholder="e.g. Mayfair Gardens" required
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
             </div>
             <div class="grid sm:grid-cols-2 gap-4">
               <div>
-                <label for="id_town_city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Town / City</label>
+                <label for="id_town_city" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Town / City</label>
                 <input type="text" id="id_town_city" name="town_city" placeholder="London" required
-                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                  class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
               </div>
               <div>
-                <label for="id_county" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">County <span class="text-charcoal-400 normal-case">(optional)</span></label>
+                <label for="id_county" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">County <span class="text-charcoal-400 dark:text-charcoal-400 normal-case">(optional)</span></label>
                 <input type="text" id="id_county" name="county" placeholder="Greater London"
-                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                  class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
               </div>
             </div>
             <div class="grid sm:grid-cols-2 gap-4">
               <div>
-                <label for="id_postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
+                <label for="id_postcode" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
                 <input type="text" id="id_postcode" name="postcode" placeholder="W1K 1AA"
-                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                  class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors dark:bg-charcoal-800 dark:text-cream-100">
               </div>
               <div>
-                <label for="id_country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
+                <label for="id_country" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
                 <select id="id_country" name="country" required
-                  class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white transition-colors">
+                  class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white dark:bg-charcoal-800 transition-colors dark:text-cream-100">
                   <option value="">Select country</option>
                   {% for code, name in countries %}
                   <option value="{{ code }}">{{ name }}</option>
@@ -125,9 +125,9 @@
               </div>
             </div>
             <div>
-              <label for="id_state" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">State <span class="text-charcoal-400 normal-case">(US only, optional)</span></label>
+              <label for="id_state" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">State <span class="text-charcoal-400 normal-case">(US only, optional)</span></label>
               <select id="id_state" name="state"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white dark:bg-charcoal-800 transition-colors dark:text-cream-100">
                 <option value="">Select state</option>
                 {% for code, name in us_states %}
                 <option value="{{ code }}">{{ name }}</option>
@@ -138,29 +138,29 @@
         </div>
 
         <!-- Divider -->
-        <div class="border-t border-cream-200 pt-5">
-          <p class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Account</p>
+        <div class="border-t border-cream-200 dark:border-charcoal-700 pt-5">
+          <p class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Account</p>
         </div>
 
         <!-- Passwords -->
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
-            <label for="id_password1" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Password</label>
+            <label for="id_password1" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Password</label>
             <input type="password" id="id_password1" name="password1" placeholder="Min. 8 characters" required
-              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
           </div>
           <div>
-            <label for="id_password2" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Confirm Password</label>
+            <label for="id_password2" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Confirm Password</label>
             <input type="password" id="id_password2" name="password2" placeholder="Re-enter password" required
-              class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+              class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
           </div>
         </div>
 
         <!-- Membership -->
         <div>
-          <label for="id_membership" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Membership Type</label>
+          <label for="id_membership" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Membership Type</label>
           <select id="id_membership" name="membership"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-sm focus:outline-none focus:border-gold-500 bg-white dark:bg-charcoal-800 transition-colors dark:text-cream-100">
             <option value="None">None</option>
             <option value="Standard">Standard</option>
             <option value="Premium">Premium</option>
@@ -171,7 +171,7 @@
         <!-- Terms -->
         <div class="flex items-start gap-3">
           <input type="checkbox" id="id_terms" name="terms" required class="w-4 h-4 mt-0.5 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-          <label for="id_terms" class="text-charcoal-600 text-sm leading-relaxed">I agree to the <a href="#" class="text-gold-600 hover:text-gold-700 underline">Terms of Service</a> and <a href="#" class="text-gold-600 hover:text-gold-700 underline">Privacy Policy</a></label>
+          <label for="id_terms" class="text-charcoal-600 dark:text-charcoal-300 text-sm leading-relaxed">I agree to the <a href="#" class="text-gold-600 hover:text-gold-700 underline">Terms of Service</a> and <a href="#" class="text-gold-600 hover:text-gold-700 underline">Privacy Policy</a></label>
         </div>
 
         <!-- non-field errors -->
@@ -188,7 +188,7 @@
         </button>
       </form>
 
-      <p class="text-center text-charcoal-500 text-sm mt-6">
+      <p class="text-center text-charcoal-500 dark:text-charcoal-400 text-sm mt-6">
         Already have an account? <a href="{% url 'signinAccount' %}" class="text-gold-600 hover:text-gold-700 font-medium transition-colors">Sign in</a>
       </p>
     </div>

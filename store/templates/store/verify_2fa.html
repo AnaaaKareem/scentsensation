@@ -6,18 +6,18 @@
   <div class="w-full max-w-md">
 
     <!-- Card -->
-    <div class="bg-white border border-cream-300 rounded-brand p-8 sm:p-10">
+    <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-8 sm:p-10">
 
       <!-- Icon -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold-100 mb-5">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold-100 dark:bg-gold-900/30 mb-5">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gold-600">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
           </svg>
         </div>
         <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Security Check</p>
-        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display">Verify Your Identity</h1>
-        <p class="text-charcoal-500 text-sm mt-3 leading-relaxed">
+        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display">Verify Your Identity</h1>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm mt-3 leading-relaxed">
           We sent a 6-digit code to your email. Enter it below to continue.
         </p>
       </div>
@@ -31,7 +31,7 @@
         <div class="px-4 py-3 rounded-brand text-sm font-medium
           {% if message.tags == 'error' %}bg-burgundy-100 text-burgundy-800
           {% elif message.tags == 'success' %}bg-green-100 text-green-800
-          {% else %}bg-cream-200 text-charcoal-800{% endif %}">
+          {% else %}bg-cream-200 text-charcoal-800 dark:bg-charcoal-800 dark:text-charcoal-200{% endif %}">
           {{ message }}
         </div>
         {% endfor %}
@@ -39,22 +39,22 @@
 
         <div class="flex justify-between gap-2 sm:gap-3">
           <input type="text" name="code1" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="0" autocomplete="off">
           <input type="text" name="code2" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="1" autocomplete="off">
           <input type="text" name="code3" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="2" autocomplete="off">
           <input type="text" name="code4" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="3" autocomplete="off">
           <input type="text" name="code5" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="4" autocomplete="off">
           <input type="text" name="code6" maxlength="1" inputmode="numeric" pattern="[0-9]" required
-            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
+            class="code-input w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors"
             data-index="5" autocomplete="off">
         </div>
 
@@ -67,19 +67,19 @@
 
       <!-- Resend -->
       <div class="mt-6 text-center">
-        <p class="text-charcoal-500 text-sm">Didn't receive the code?</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Didn't receive the code?</p>
         <form method="POST" action="{% url 'resend_2fa' %}" class="mt-2">
           {% csrf_token %}
           <button type="submit" id="resendBtn" class="text-gold-600 hover:text-gold-700 text-sm font-medium transition-colors underline underline-offset-2">
             Resend code
           </button>
         </form>
-        <p id="resendMsg" class="hidden mt-2 text-green-700 text-xs font-medium">A new code has been sent to your email.</p>
+        <p id="resendMsg" class="hidden mt-2 text-green-700 dark:text-green-400 text-xs font-medium">A new code has been sent to your email.</p>
       </div>
 
       <!-- Help -->
-      <div class="mt-6 pt-6 border-t border-cream-200 text-center">
-        <a href="{% url 'signinAccount' %}" class="text-charcoal-500 hover:text-charcoal-700 text-sm transition-colors">
+      <div class="mt-6 pt-6 border-t border-cream-200 dark:border-charcoal-700 text-center">
+        <a href="{% url 'signinAccount' %}" class="text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-700 dark:hover:text-charcoal-200 text-sm transition-colors">
           &larr; Back to sign in
         </a>
       </div>

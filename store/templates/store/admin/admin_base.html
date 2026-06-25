@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  {% if title %}
+    <title>SCENT SENSATION ADMIN — {{ title }}</title>
+  {% else %}
+    <title>SCENT SENSATION ADMIN</title>
+  {% endif %}
+  <link rel="icon" type="image/x-icon" href="{% static 'store/Pictures/Interaction-Icons/Logo-Black.png' %}">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wine: { 50:'#fdf2f4',100:'#fce7eb',200:'#f9d0d9',300:'#f4a9bb',400:'#ec7896',500:'#e04d76',600:'#cc2d5d',700:'#ab204a',800:'#8f1d41',900:'#6b1530',950:'#4a0a1e' },
+            burgundy: { 50:'#fbf4f4',100:'#f6e8e8',200:'#f0d4d4',300:'#e4b0b0',400:'#d48181',500:'#c05757',600:'#a83939',700:'#8c2c2c',800:'#742727',900:'#5f1e1e',950:'#3d0f0f' },
+            gold: { 50:'#fdfbed',100:'#f9f3cc',200:'#f4e69b',300:'#eed464',400:'#e8c43e',500:'#d4a824',600:'#b8861d',700:'#96651a',800:'#7c501c',900:'#69421c',950:'#3d230b' },
+            cream: { 50:'#fefdfb',100:'#fdf9f0',200:'#faf3e2',300:'#f5e8cc',400:'#edd9ad',500:'#e3c68a',600:'#d4a85e',700:'#c08a3e',800:'#a06f32',900:'#845b2c',950:'#493015' },
+            charcoal: { 50:'#f6f6f6',100:'#e7e7e7',200:'#d1d1d1',300:'#b0b0b0',400:'#888888',500:'#6d6d6d',600:'#5d5d6d',700:'#4f4f4f',800:'#454545',900:'#1a1a1a',950:'#0d0d0d' }
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif']
+          },
+          letterSpacing: { display: '-0.02em', 'wide-plus': '0.12em' },
+          borderRadius: { brand: '2px' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+
+  <!-- Shared custom styles -->
+  <link href="{% static 'store/tailwind.css' %}" rel="stylesheet">
+
+  <style>
+    [x-cloak] { display: none !important; }
+    html { scroll-behavior: smooth; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-cream-100 text-charcoal-900 font-body antialiased flex flex-col min-h-screen">
+
+  <!-- Messages -->
+  {% if messages %}
+  <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] w-full max-w-lg px-4">
+    {% for message in messages %}
+    <div class="mb-2 px-5 py-3 rounded-brand text-sm font-medium shadow-lg
+      {% if message.tags == 'error' %}bg-burgundy-700 text-cream-100
+      {% elif message.tags == 'success' %}bg-green-700 text-white
+      {% elif message.tags == 'warning' %}bg-gold-500 text-charcoal-950
+      {% else %}bg-charcoal-800 text-cream-100{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Admin Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-charcoal-950 border-b border-charcoal-800">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo / Brand -->
+        <a href="{% if request.session.admin_user_id %}{% url 'admin_dashboard' %}{% else %}{% url 'admin_login' %}{% endif %}" class="flex items-center gap-3">
+          <span class="font-display text-lg tracking-display text-cream-100 font-semibold">SCENT SENSATION <span class="text-gold-500 font-body text-xs font-medium tracking-normal ml-1">ADMIN</span></span>
+        </a>
+        
+        <!-- Navigation Links -->
+        {% if request.session.admin_user_id %}
+        <div class="hidden lg:flex items-center gap-6">
+          <a href="{% url 'admin_dashboard' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Dashboard</a>
+          <a href="{% url 'add_product' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Add Product</a>
+          <a href="{% url 'manage_inventory' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Inventory</a>
+          <a href="{% url 'view_customers' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Customers</a>
+          <a href="{% url 'export_reports' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Reports</a>
+          <a href="{% url 'giftcard_list' %}" class="text-cream-200 hover:text-gold-400 text-xs tracking-wide-plus uppercase font-medium transition-colors">Gift Cards</a>
+        </div>
+        <div class="hidden lg:flex items-center gap-4">
+          <span class="text-cream-400 text-xs">{{ request.session.admin_email }}</span>
+          <a href="{% url 'homepage' %}" class="text-cream-300 hover:text-gold-400 text-xs transition-colors border border-charcoal-700 px-3 py-1.5 rounded-brand hover:border-gold-500">View Store</a>
+          <a href="{% url 'admin_logout' %}" class="px-3 py-1.5 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-semibold rounded-brand transition-colors">Logout</a>
+        </div>
+        {% else %}
+        <div>
+          <a href="{% url 'homepage' %}" class="text-cream-300 hover:text-gold-400 text-xs transition-colors border border-charcoal-700 px-3 py-1.5 rounded-brand hover:border-gold-500">Back to Store</a>
+        </div>
+        {% endif %}
+
+        <!-- Mobile Menu Button -->
+        {% if request.session.admin_user_id %}
+        <button id="adminMobileMenuBtn" class="lg:hidden text-cream-200 hover:text-gold-400 transition-colors" aria-label="Toggle admin menu">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    {% if request.session.admin_user_id %}
+    <div id="adminMobileMenu" class="hidden lg:hidden bg-charcoal-900 border-t border-charcoal-800">
+      <div class="px-6 py-4 space-y-3">
+        <a href="{% url 'admin_dashboard' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Dashboard</a>
+        <a href="{% url 'add_product' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Add Product</a>
+        <a href="{% url 'manage_inventory' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Inventory</a>
+        <a href="{% url 'view_customers' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Customers</a>
+        <a href="{% url 'export_reports' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Reports</a>
+        <a href="{% url 'giftcard_list' %}" class="block text-cream-200 hover:text-gold-400 text-sm tracking-wide-plus uppercase font-medium">Gift Cards</a>
+        <hr class="border-charcoal-800">
+        <div class="flex items-center justify-between text-xs text-cream-400 py-1">
+          <span>{{ request.session.admin_email }}</span>
+          <a href="{% url 'homepage' %}" class="text-gold-400 hover:underline">View Store</a>
+        </div>
+        <a href="{% url 'admin_logout' %}" class="block text-center w-full py-2.5 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-semibold rounded-brand transition-colors">Logout</a>
+      </div>
+    </div>
+    {% endif %}
+  </nav>
+
+  <!-- Main Content -->
+  <main class="pt-16 flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Admin Footer -->
+  <footer class="bg-charcoal-950 border-t border-charcoal-800 py-8">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-charcoal-500 text-xs">&copy; 2026 Scent Sensation Admin Portal. All rights reserved.</p>
+      <div class="flex gap-4 text-xs">
+        <a href="{% url 'homepage' %}" class="text-charcoal-400 hover:text-gold-400 transition-colors">Go to Storefront</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const adminMobileMenuBtn = document.getElementById('adminMobileMenuBtn');
+    const adminMobileMenu = document.getElementById('adminMobileMenu');
+    if (adminMobileMenuBtn && adminMobileMenu) {
+      adminMobileMenuBtn.addEventListener('click', () => {
+        adminMobileMenu.classList.toggle('hidden');
+      });
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -48,6 +48,17 @@ def get_currency_config(region):
             pass
     return config
 
+
+def get_request_region(request):
+    """Retrieve resolved region from GET, session, or cookies, defaulting to 'US'."""
+    region = request.GET.get('region') or request.session.get('region') or request.COOKIES.get('region')
+    if region not in ('US', 'UK', 'EU'):
+        region = 'US'
+    if request.session.get('region') != region:
+        request.session['region'] = region
+    return region
+
+
 # Initialize Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -387,9 +398,8 @@ def store(request):
     gender_filter = request.GET.getlist('gender')
     # Gender filter removed — products no longer have a personal_fragrance.gender field
 
-    region_filter = request.GET.get('region')
-    if region_filter in ('US', 'UK', 'EU'):
-        all_products = all_products.filter(region=region_filter)
+    region_filter = get_request_region(request)
+    all_products = all_products.filter(region=region_filter)
 
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
@@ -439,11 +449,7 @@ def store(request):
         ).values_list('product_id', flat=True))
         request.session['wishlist_count'] = len(wishlist_ids)
 
-    # Save region to session for basket/checkout currency
-    if region_filter in ('US', 'UK', 'EU'):
-        request.session['region'] = region_filter
-
-    currency = get_currency_config(region_filter or 'US')
+    currency = get_currency_config(region_filter)
 
     context = {
         'products': page_obj,
@@ -488,7 +494,7 @@ def brand_detail(request, slug):
 
     products = Products.objects.filter(brand__iexact=brand.name if brand else brand_name)
 
-    region = request.GET.get('region') or 'US'
+    region = get_request_region(request)
     currency = get_currency_config(region)
 
     context = {
@@ -580,7 +586,7 @@ def basket(request):
         discount = subtotal * (discount_rate / 100)
         total = subtotal - discount
 
-        region = request.GET.get('region') or request.session.get('region') or 'US'
+        region = get_request_region(request)
         currency = get_currency_config(region)
 
         context = {
@@ -744,7 +750,7 @@ def checkout(request):
             if payment_method == 'PayPal':
                 # Build PayPal payment
                 # Get currency for PayPal
-                region_pp = request.GET.get('region') or request.session.get('region') or 'US'
+                region_pp = get_request_region(request)
                 pp_currency = get_currency_config(region_pp)
                 pp_currency_code = pp_currency['code']
                 pp_rate = pp_currency['rate']
@@ -849,7 +855,7 @@ def checkout(request):
             # --- Stripe / Card payment flow ---
             else:
                 # Get currency for Stripe
-                region = request.GET.get('region') or request.session.get('region') or 'US'
+                region = get_request_region(request)
                 stripe_currency = get_currency_config(region)
                 currency_code = stripe_currency['code'].lower()
                 fx_rate = stripe_currency['rate']
@@ -944,11 +950,8 @@ def checkout(request):
 
                 return redirect(session.url, code=303)
 
-        # GET: render checkout page
-        region = request.GET.get('region') or request.session.get('region') or 'US'
+        region = get_request_region(request)
         currency = get_currency_config(region)
-        if region in ('US', 'UK', 'EU'):
-            request.session['region'] = region
 
         context = {
             'items': items_data,
@@ -1508,7 +1511,7 @@ def wishlist(request):
         total=models.Sum('product__price')
     )['total'] or 0
 
-    region = request.GET.get('region') or 'US'
+    region = get_request_region(request)
     currency = get_currency_config(region)
 
     request.session['wishlist_count'] = len(products)

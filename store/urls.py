@@ -34,6 +34,15 @@ urlpatterns = [
     path('admin-portal/inventory/', views_admin.manage_inventory, name='manage_inventory'),
     path('admin-portal/customers/', views_admin.view_customers, name='view_customers'),
     path('admin-portal/reports/', views_admin.export_reports, name='export_reports'),
+    path('admin-portal/giftcards/', views_admin.giftcard_list, name='giftcard_list'),
+    path('admin-portal/giftcards/delete/<int:card_id>/', views_admin.giftcard_delete, name='giftcard_delete'),
+
+    # Promo Portal prefixed with /promo-portal/ (separate for stores)
+    path('promo-portal/', views_admin.promo_login, name='promo_portal'),
+    path('promo-portal/login/', views_admin.promo_login, name='promo_login'),
+    path('promo-portal/logout/', views_admin.promo_logout, name='promo_logout'),
+    path('promo-portal/generate/', views_admin.promo_generate, name='promo_generate'),
+    path('promo-portal/list/', views_admin.promo_list, name='promo_list'),
 
     path('verify_2fa/', views.verify_2fa, name='verify_2fa'),
     path('resend_2fa/', views.resend_2fa, name='resend_2fa'),
@@ -46,8 +55,6 @@ urlpatterns = [
     path('membership/cancel/', views.membership_cancel, name='membership_cancel'),
     path('paypal/success/', views.paypal_success, name='paypal_success'),
     path('paypal/cancel/', views.paypal_cancel, name='paypal_cancel'),
-    path('promo/', views.promo_generate, name='promo_generate'),
-    path('promo/list/', views.promo_list, name='promo_list'),
     path('wishlist/', views.wishlist, name='wishlist'),
     path('wishlist/add/<int:product_id>/', views.wishlist_add, name='wishlist_add'),
     path('wishlist/remove/<int:product_id>/', views.wishlist_remove, name='wishlist_remove'),

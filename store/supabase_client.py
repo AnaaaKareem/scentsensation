@@ -40,9 +40,10 @@ class MockAuth:
     def sign_in_with_password(self, credentials):
         email = credentials.get("email", "")
         password = credentials.get("password", "")
-        # Accept admin@scentsensation.com / admin123
-        if email.lower().startswith("admin") and password in ("admin123", "adminpass", "adminpassword"):
-            return MockAuthResponse(email, is_admin=True)
+        # Accept admin@scentsensation.com or store@scentsensation.com
+        is_allowed_user = email.lower().startswith("admin") or email.lower().startswith("store")
+        if is_allowed_user and password in ("admin123", "adminpass", "adminpassword"):
+            return MockAuthResponse(email, is_admin=email.lower().startswith("admin"))
         raise Exception("Invalid login credentials")
 
     def sign_out(self):

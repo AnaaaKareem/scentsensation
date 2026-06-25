@@ -11,7 +11,7 @@ from datetime import date, timedelta, datetime
 
 from store.models import (
     Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
-    Products, PersonalFragrances, HomeFragrances, ProductImages, Basket,
+    Products, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
     ProductInventory, Instalments, OrderRef
 )
@@ -48,14 +48,9 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         mock_paid_session.metadata.to_dict.return_value = metadata
         mock_retrieve.return_value = mock_paid_session
 
-        # Create test product
         product = Products.objects.create(
             brand='TestCo', product_name='FragranceX', description='Nice scent',
             price=50.00, gift=False
-        )
-        PersonalFragrances.objects.create(
-            product=product, size='100ml', fragrance_family='Citrus',
-            gender='Female', strength='Eau de Parfum'
         )
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
@@ -192,30 +187,6 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         self.assertFalse(Customer.objects.filter(pk=self.customer.pk).exists())
         self.assertNotIn('customer_id', self.client.session)
 
-
-class MixedDataTests(BaseViewTestCase):
-    """Test interactions with both Personal and Home fragrances in same flow."""
-
-    def test_basket_with_mixed_product_types(self):
-        personal_product = Products.objects.create(
-            brand='PBrand', product_name='PersonalScent', description='For body',
-            price=75.0, gift=False
-        )
-        HomeFragrances.objects.create(
-            product=personal_product, product_type='Scented Candles', bundle=False  # cross-type edge
-        )
-        # Conflict: product is both personal & home — different FK relationships
-        # This tests edge case where model constraints allow it but business logic may not
-
-        session = self.client.session
-        session['customer_id'] = self.customer.customer_id
-        session.save()
-        Basket.objects.create(customer=self.customer, product=personal_product, quantity=1)
-        response = self.client.get(reverse('basket'))
-        self.assertEqual(response.status_code, 200)
-        # Both personal and home data accessible
-        items = response.context['items']
-        self.assertEqual(len(items), 1)
 
 
 class OrderHistoryTests(BaseViewTestCase):

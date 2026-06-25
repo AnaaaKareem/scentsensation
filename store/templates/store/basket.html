@@ -3,7 +3,7 @@
 {% load currency_tags %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 lg:px-8 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
+<div class="max-w-[90rem] mx-auto px-6 lg:px-8 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
 
   {% if items %}
   <div class="flex-1">
@@ -24,8 +24,8 @@
 
           <!-- Product Info -->
           <div class="flex-1 min-w-0">
-            <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium">{{ item.product.brand }}</p>
-            <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 transition-colors">{{ item.product.product_name }}</h3>
+            <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium">{{ item.product.brand }}</p>
+            <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ item.product.product_name }}</h3>
 
             <!-- Fragrance details -->
             {% if item.product.release_year %}
@@ -51,7 +51,7 @@
               </div>
               <form action="{% url 'delete_from_basket' item.product.product_id %}" method="POST" class="m-0" onclick="event.preventDefault(); event.stopPropagation(); this.submit();">
                 {% csrf_token %}
-                <button type="submit" class="text-burgundy-600 hover:text-burgundy-800 text-xs font-medium transition-colors">Remove</button>
+                <button type="submit" class="text-burgundy-600 dark:text-burgundy-400 hover:text-burgundy-800 dark:hover:text-burgundy-300 text-xs font-medium transition-colors">Remove</button>
               </form>
             </div>
           </div>
@@ -79,7 +79,7 @@
             {% if discount > 0 %}
             <div class="flex justify-between items-baseline">
               <span class="text-charcoal-500 dark:text-charcoal-400">Discount ({{ discount_rate }}%)</span>
-              <span class="text-burgundy-700">−{{ discount|currency:currency }}</span>
+              <span class="text-burgundy-700 dark:text-burgundy-400">−{{ discount|currency:currency }}</span>
             </div>
             {% endif %}
             <div class="flex justify-between items-baseline">

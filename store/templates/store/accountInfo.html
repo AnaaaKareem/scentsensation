@@ -4,20 +4,20 @@
 {% block content %}
 <div class="max-w-4xl mx-auto px-6 lg:px-8 py-12">
 
-  <div class="bg-white border border-cream-300 rounded-brand p-8">
+  <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-8">
     <!-- Display messages -->
     {% if messages %}
     {% for message in messages %}
     <div class="mb-4 px-4 py-3 rounded-brand text-sm font-medium
       {% if message.tags == 'error' %}bg-burgundy-100 text-burgundy-800
       {% elif message.tags == 'success' %}bg-green-100 text-green-800
-      {% else %}bg-cream-200 text-charcoal-800{% endif %}">
+      {% else %}bg-cream-200 text-charcoal-800 dark:bg-charcoal-800 dark:text-charcoal-200{% endif %}">
       {{ message }}
     </div>
     {% endfor %}
     {% endif %}
 
-    <h1 class="font-display text-2xl text-charcoal-900 mb-8">Account Information</h1>
+    <h1 class="font-display text-2xl text-charcoal-900 dark:text-cream-100 mb-8">Account Information</h1>
 
     <form method="POST" action="{% url 'account' %}">
       {% csrf_token %}
@@ -25,183 +25,180 @@
       <!-- Full Name Section -->
       <div class="grid sm:grid-cols-3 gap-4 mb-6">
         <div>
-          <label for="id_first_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
+          <label for="id_first_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">First Name</label>
           <input type="text" id="id_first_name" name="first_name" value="{{ first_name|default:'' }}"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
         <div>
-          <label for="id_middle_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Middle Name</label>
+          <label for="id_middle_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Middle Name</label>
           <input type="text" id="id_middle_name" name="middle_name" value="{{ middle_name|default:'' }}"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
         <div>
-          <label for="id_last_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
+          <label for="id_last_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Last Name</label>
           <input type="text" id="id_last_name" name="last_name" value="{{ last_name|default:'' }}"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
       </div>
 
       <!-- Email Section -->
       <div class="mb-6">
-        <label for="id_email_address" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
+        <label for="id_email_address" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
         <input type="email" id="id_email_address" name="email_address" value="{{ email_address|default:'' }}"
-          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+          class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
       </div>
 
       <!-- DOB + Gender Row -->
       <div class="grid sm:grid-cols-2 gap-4 mb-6">
         <div>
-          <label for="id_DOB" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Date of Birth</label>
+          <label for="id_DOB" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Date of Birth</label>
           <input type="date" id="id_DOB" name="DOB" value="{{ DOB|default:'' }}"
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
         <div>
-          <label class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Gender</label>
-          <div class="flex items-center gap-6 pt-3">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="gender" value="Male" {% if gender == 'Male' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">Male</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="gender" value="Female" {% if gender == 'Female' %}checked{% endif %} class="w-4 h-4 text-gold-500 focus:ring-gold-500">
-              <span class="text-charcoal-700 text-sm">Female</span>
-            </label>
+          <label class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Gender</label>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="relative">
+              <input type="radio" id="gender_male" name="gender" value="Male" {% if gender == 'Male' %}checked{% endif %} class="sr-only peer">
+              <label for="gender_male" class="flex items-center justify-center gap-2 p-3 border-2 border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-750 dark:text-cream-100 hover:border-charcoal-400 dark:hover:border-charcoal-500 peer-checked:border-gold-500 peer-checked:bg-gold-50 dark:peer-checked:bg-gold-950/20 cursor-pointer transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-charcoal-600 dark:text-cream-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <span class="text-sm font-medium">Male</span>
+              </label>
+            </div>
+            <div class="relative">
+              <input type="radio" id="gender_female" name="gender" value="Female" {% if gender == 'Female' %}checked{% endif %} class="sr-only peer">
+              <label for="gender_female" class="flex items-center justify-center gap-2 p-3 border-2 border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-750 dark:text-cream-100 hover:border-charcoal-400 dark:hover:border-charcoal-500 peer-checked:border-gold-500 peer-checked:bg-gold-50 dark:peer-checked:bg-gold-950/20 cursor-pointer transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-charcoal-600 dark:text-cream-200">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 11.5a4.5 4.5 0 100-9 4.5 4.5 0 000 9zm-7 8a7 7 0 0114 0H5z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 15a4 4 0 008 0" />
+                </svg>
+                <span class="text-sm font-medium">Female</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Phone Numbers Section -->
       <div class="mb-6">
-        <label for="id_phone_numbers" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone Number</label>
+        <label for="id_phone_numbers" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Phone Number</label>
         <input type="text" id="id_phone_numbers" name="phone_numbers" value="{{ phone_numbers.0|default:'' }}"
-          class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-        <p class="text-charcoal-400 text-xs mt-1">Single phone number (updates existing)</p>
+          class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        <p class="text-charcoal-400 dark:text-charcoal-500 text-xs mt-1">Single phone number (updates existing)</p>
       </div>
 
       <!-- Address Section -->
-      <div class="border-t border-cream-200 pt-6 mb-6">
-        <p class="text-charcoal-900 text-xs tracking-wide-plus uppercase font-semibold mb-4">Address</p>
+      <div class="border-t border-cream-200 dark:border-charcoal-700 pt-6 mb-6">
+        <p class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Address</p>
         <div class="space-y-4">
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label for="id_house" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">House Number</label>
+              <label for="id_house" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">House Number</label>
               <input type="text" id="id_house" name="house" value="{{ house|default:'' }}" placeholder="e.g. 42"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
             <div>
-              <label for="id_street_name" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Street Name</label>
+              <label for="id_street_name" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Street Name</label>
               <input type="text" id="id_street_name" name="street_name" value="{{ street_name|default:'' }}" placeholder="e.g. Mayfair Gardens"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
           </div>
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label for="id_town_city" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Town / City</label>
+              <label for="id_town_city" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Town / City</label>
               <input type="text" id="id_town_city" name="town_city" value="{{ town_city|default:'' }}" placeholder="London"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
             <div>
-              <label for="id_county" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">County</label>
+              <label for="id_county" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">County</label>
               <input type="text" id="id_county" name="county" value="{{ county|default:'' }}" placeholder="Greater London"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
           </div>
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label for="id_postcode" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
+              <label for="id_postcode" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Postcode</label>
               <input type="text" id="id_postcode" name="postcode" value="{{ postcode|default:'' }}" placeholder="W1K 1AA"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
             <div>
-              <label for="id_country" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
+              <label for="id_country" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Country</label>
               <input type="text" id="id_country" name="country" value="{{ country|default:'' }}" placeholder="GB"
-                class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+                class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Membership -->
-      <div class="mb-10 max-w-md mx-auto bg-charcoal-950 border border-charcoal-800 rounded-brand overflow-hidden shadow-lg">
-        <!-- Header bar -->
-        <div class="px-6 py-3 bg-charcoal-900 border-b border-charcoal-800 flex items-center justify-between">
-          <p class="text-cream-300 text-xs tracking-wide-plus uppercase font-medium">Membership</p>
-          {% if current_membership and current_membership.is_active and current_membership.tier %}
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-green-500/15 border border-green-500/30 rounded-full">
-            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-            <span class="text-green-400 text-[10px] font-semibold uppercase tracking-wide">Active</span>
-          </span>
-          {% else %}
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-charcoal-700 border border-charcoal-600 rounded-full">
-            <span class="text-charcoal-400 text-[10px] font-medium uppercase tracking-wide">None</span>
-          </span>
-          {% endif %}
-        </div>
-
-        <div class="p-6">
-          {% if current_membership and current_membership.is_active and current_membership.tier %}
-          <!-- Active membership info -->
-          <div class="text-center mb-5">
-            <h3 class="font-display text-2xl text-cream-50 mb-1">{{ current_membership.tier.name }}</h3>
-            <p class="text-gold-400 text-sm font-medium">{{ current_membership.tier.discount_rate }}% store-wide discount</p>
-          </div>
-
-          <!-- Date details -->
-          <div class="space-y-2.5 mb-5">
-            {% if current_membership.start_date %}
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-charcoal-400">Member since</span>
-              <span class="text-cream-200 font-medium">{{ current_membership.start_date|date:"M d, Y" }}</span>
-            </div>
-            {% endif %}
-            {% if current_membership.end_date %}
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-charcoal-400">Current period ends</span>
-              <span class="text-cream-200 font-medium">{{ current_membership.end_date|date:"M d, Y" }}</span>
-            </div>
-            {% endif %}
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-charcoal-400">Auto-renew</span>
-              <span class="font-medium {% if current_membership.auto_renew %}text-green-400{% else %}text-charcoal-500{% endif %}">
-                {{ current_membership.auto_renew|yesno:"Enabled,Disabled" }}
+      <!-- Membership Section -->
+      <div class="border-t border-cream-200 dark:border-charcoal-700 pt-6 mb-10">
+        <p class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Membership</p>
+        <div class="p-6 bg-cream-50 dark:bg-charcoal-800/40 border border-cream-200 dark:border-charcoal-700 rounded-brand flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex-1">
+            {% if current_membership and current_membership.is_active and current_membership.tier %}
+            <!-- Active membership info -->
+            <div class="flex flex-wrap items-center gap-3 mb-2">
+              <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 font-semibold">{{ current_membership.tier.name }}</h3>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-green-500/15 border border-green-500/30 rounded-full">
+                <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                <span class="text-green-400 text-[10px] font-semibold uppercase tracking-wide">Active</span>
               </span>
             </div>
-          </div>
-          {% else %}
-          <!-- No membership -->
-          <div class="text-center py-4 mb-5">
-            <div class="w-14 h-14 bg-charcoal-800 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-charcoal-500">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-              </svg>
+            <p class="text-gold-600 dark:text-gold-400 text-sm font-medium mb-3">{{ current_membership.tier.discount_rate }}% store-wide discount active</p>
+            
+            <!-- Date details -->
+            <div class="grid grid-cols-2 gap-4 max-w-sm text-xs text-charcoal-500 dark:text-charcoal-400">
+              {% if current_membership.start_date %}
+              <div>
+                <span class="block text-charcoal-400">Member since</span>
+                <span class="font-medium text-charcoal-700 dark:text-cream-200">{{ current_membership.start_date|date:"M d, Y" }}</span>
+              </div>
+              {% endif %}
+              {% if current_membership.end_date %}
+              <div>
+                <span class="block text-charcoal-400">Next renewal</span>
+                <span class="font-medium text-charcoal-700 dark:text-cream-200">{{ current_membership.end_date|date:"M d, Y" }}</span>
+              </div>
+              {% endif %}
             </div>
-            <p class="text-cream-200 text-sm font-medium mb-1">No Active Membership</p>
-            <p class="text-charcoal-400 text-xs leading-relaxed">Subscribe to unlock exclusive discounts, free delivery, and early access to new fragrances.</p>
+            {% else %}
+            <!-- No membership -->
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 font-semibold">No Active Membership</h3>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-charcoal-100 dark:bg-charcoal-750 border border-charcoal-200 dark:border-charcoal-600 rounded-full">
+                <span class="text-charcoal-400 text-[10px] font-medium uppercase tracking-wide">None</span>
+              </span>
+            </div>
+            <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed max-w-md">Subscribe to unlock exclusive discounts, free delivery, and early access to new fragrances.</p>
+            {% endif %}
           </div>
-          {% endif %}
 
           <!-- CTA -->
-          <a href="{% url 'membership' %}" class="flex items-center justify-center gap-2 w-full py-2.5 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm font-semibold rounded-brand transition-colors">
-            {% if current_membership and current_membership.is_active and current_membership.tier %}
-            Manage Membership
-            {% else %}
-            Explore Plans
-            {% endif %}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-          </a>
+          <div class="shrink-0">
+            <a href="{% url 'membership' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm font-semibold rounded-brand transition-colors shadow-sm">
+              {% if current_membership and current_membership.is_active and current_membership.tier %}
+              Manage Membership
+              {% else %}
+              Explore Plans
+              {% endif %}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </a>
+          </div>
         </div>
       </div>
       <div class="flex justify-center">
-        <button type="submit" name="update" class="px-12 py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+        <button type="submit" name="update" class="px-12 py-3 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
           Save Changes
         </button>
       </div>
 
-      <hr class="border-cream-200 my-8">
+      <hr class="border-cream-200 dark:border-charcoal-700 my-8">
 
       <!-- Delete Account Button -->
       <div class="flex justify-center">
-        <button type="submit" name="delete" class="px-12 py-3 border border-burgundy-600 text-burgundy-700 hover:bg-burgundy-50 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors"
+        <button type="submit" name="delete" class="px-12 py-3 border border-burgundy-600 text-burgundy-700 hover:bg-burgundy-50 dark:hover:bg-burgundy-900/20 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors"
           onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
           Delete Account
         </button>

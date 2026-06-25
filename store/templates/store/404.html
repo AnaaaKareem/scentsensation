@@ -6,14 +6,14 @@
   <div class="text-center max-w-lg">
 
     <!-- 404 Number -->
-    <p class="font-display text-[120px] sm:text-[160px] leading-none text-charcoal-200 tracking-display font-bold">404</p>
+    <p class="font-display text-[120px] sm:text-[160px] leading-none text-charcoal-200 dark:text-charcoal-700 tracking-display font-bold">404</p>
 
     <!-- Divider -->
     <div class="w-16 h-px bg-gold-400 mx-auto my-8"></div>
 
     <!-- Message -->
-    <h1 class="font-display text-2xl sm:text-3xl text-charcoal-900 tracking-display mb-4">Page Not Found</h1>
-    <p class="text-charcoal-500 text-sm leading-relaxed mb-8">
+    <h1 class="font-display text-2xl sm:text-3xl text-charcoal-900 dark:text-cream-100 tracking-display mb-4">Page Not Found</h1>
+    <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed mb-8">
       The page you're looking for doesn't exist or has been moved. It might have been renamed, removed, or perhaps the link was mistyped.
     </p>
 
@@ -22,18 +22,18 @@
       <a href="{% url 'homepage' %}" class="w-full sm:w-auto text-center px-8 py-3 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
         Back to Homepage
       </a>
-      <a href="{% url 'store' %}" class="w-full sm:w-auto text-center px-8 py-3 border border-charcoal-300 hover:border-charcoal-400 text-charcoal-700 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
+      <a href="{% url 'store' %}" class="w-full sm:w-auto text-center px-8 py-3 border border-charcoal-300 dark:border-charcoal-600 hover:border-charcoal-400 dark:hover:border-charcoal-500 text-charcoal-700 dark:text-charcoal-300 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
         Browse Shop
       </a>
     </div>
 
     <!-- Search suggestion -->
-    <div class="mt-10 pt-8 border-t border-cream-200">
-      <p class="text-charcoal-400 text-xs tracking-wide-plus uppercase font-medium mb-3">Looking for something?</p>
+    <div class="mt-10 pt-8 border-t border-cream-200 dark:border-charcoal-700">
+      <p class="text-charcoal-400 dark:text-charcoal-500 text-xs tracking-wide-plus uppercase font-medium mb-3">Looking for something?</p>
       <div class="flex items-center max-w-sm mx-auto">
         <label for="search" class="sr-only">Search</label>
-        <input type="text" id="search" placeholder="Search fragrances..." class="flex-1 px-4 py-3 border border-charcoal-200 rounded-l-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-        <button type="button" class="px-5 py-3 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm rounded-r-brand transition-colors" aria-label="Search">
+        <input type="text" id="search" placeholder="Search fragrances..." class="flex-1 px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-l-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+        <button type="button" class="px-5 py-3 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-sm rounded-r-brand transition-colors" aria-label="Search">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>

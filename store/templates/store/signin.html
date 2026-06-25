@@ -6,10 +6,10 @@
   <div class="w-full max-w-md">
 
     <!-- Card -->
-    <div class="bg-white border border-cream-300 rounded-brand p-8 sm:p-10">
+    <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-8 sm:p-10">
       <div class="text-center mb-8">
         <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-3">Welcome Back</p>
-        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display">Sign In</h1>
+        <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display">Sign In</h1>
       </div>
 
       <form method="POST" action="{% url 'signinAccount' %}" class="space-y-5">
@@ -20,30 +20,30 @@
         <div class="px-4 py-3 rounded-brand text-sm font-medium
           {% if message.tags == 'error' %}bg-burgundy-100 text-burgundy-800
           {% elif message.tags == 'success' %}bg-green-100 text-green-800
-          {% else %}bg-cream-200 text-charcoal-800{% endif %}">
+          {% else %}bg-cream-200 text-charcoal-800 dark:bg-charcoal-800 dark:text-charcoal-200{% endif %}">
           {{ message }}
         </div>
         {% endfor %}
         {% endif %}
 
         <div>
-          <label for="username" class="block text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
+          <label for="username" class="block text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium mb-2">Email Address</label>
           <input type="email" id="username" name="username" placeholder="you@example.com" required
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-2">
-            <label for="password" class="text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium">Password</label>
+            <label for="password" class="text-charcoal-600 dark:text-charcoal-300 text-xs tracking-wide-plus uppercase font-medium">Password</label>
             <a href="#" class="text-gold-600 text-xs hover:text-gold-700 transition-colors">Forgot password?</a>
           </div>
           <input type="password" id="password" name="password" placeholder="Enter your password" required
-            class="w-full px-4 py-3 border border-charcoal-200 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
+            class="w-full px-4 py-3 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-800 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
         </div>
 
         <div class="flex items-center gap-3">
           <input type="checkbox" id="remember" name="remember" {% if remember_checked %}checked{% endif %} class="w-4 h-4 border-charcoal-300 rounded text-gold-500 focus:ring-gold-500">
-          <label for="remember" class="text-charcoal-600 text-sm">Remember me</label>
+          <label for="remember" class="text-charcoal-600 dark:text-charcoal-300 text-sm">Remember me</label>
         </div>
 
         <button type="submit" class="w-full py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
@@ -52,17 +52,17 @@
       </form>
 
       <div class="relative my-8">
-        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-cream-300"></div></div>
-        <div class="relative flex justify-center"><span class="bg-white px-4 text-charcoal-400 text-xs">or</span></div>
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-cream-300 dark:border-charcoal-700"></div></div>
+        <div class="relative flex justify-center"><span class="bg-white dark:bg-charcoal-900 px-4 text-charcoal-400 text-xs">or</span></div>
       </div>
 
-      <p class="text-center text-charcoal-500 text-sm">
+      <p class="text-center text-charcoal-500 dark:text-charcoal-400 text-sm">
         Don't have an account? <a href="{% url 'signupAccount' %}" class="text-gold-600 hover:text-gold-700 font-medium transition-colors">Create one</a>
       </p>
     </div>
 
-    <p class="text-center text-charcoal-400 text-xs mt-6">
-      By signing in you agree to our <a href="#" class="underline hover:text-charcoal-600">Terms</a> and <a href="#" class="underline hover:text-charcoal-600">Privacy Policy</a>
+    <p class="text-center text-charcoal-400 dark:text-charcoal-500 text-xs mt-6">
+      By signing in you agree to our <a href="#" class="underline hover:text-charcoal-600 dark:hover:text-charcoal-300">Terms</a> and <a href="#" class="underline hover:text-charcoal-600 dark:hover:text-charcoal-300">Privacy Policy</a>
     </p>
 
   </div>

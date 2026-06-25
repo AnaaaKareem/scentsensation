@@ -4,8 +4,9 @@ from django.contrib.auth.hashers import make_password
 from unittest.mock import patch, MagicMock
 from datetime import date
 from store.models import (
-    Customer, Products, PersonalFragrances, HomeFragrances, ProductImages,
-    Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory
+    Customer, Products, ProductImages,
+    Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory,
+    PromoCode, GiftCards
 )
 
 class AdminPortalTests(TestCase):
@@ -147,8 +148,6 @@ class AdminPortalTests(TestCase):
 
         self.assertRedirects(response, reverse('admin_dashboard'))
         self.assertTrue(Products.objects.filter(product_name='Bloom').exists())
-        prod = Products.objects.get(product_name='Bloom')
-        self.assertTrue(PersonalFragrances.objects.filter(product=prod).exists())
 
     def test_add_product_home(self):
         session = self.client.session
@@ -168,8 +167,6 @@ class AdminPortalTests(TestCase):
 
         self.assertRedirects(response, reverse('admin_dashboard'))
         self.assertTrue(Products.objects.filter(product_name='Home Sweet Home').exists())
-        prod = Products.objects.get(product_name='Home Sweet Home')
-        self.assertTrue(HomeFragrances.objects.filter(product=prod).exists())
 
     def test_manage_inventory_update(self):
         inv = Inventory.objects.create(store=self.store, product=self.product, quantity=5, restocking_threshold=2)
@@ -213,3 +210,47 @@ class AdminPortalTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'store/admin/export_reports.html')
         self.assertIn('daily_sales', response.context)
+
+    def test_promo_portal_access(self):
+        # Without session, should redirect to promo login
+        response = self.client.get(reverse('promo_generate'))
+        self.assertRedirects(response, reverse('promo_login'))
+        
+        response = self.client.get(reverse('promo_list'))
+        self.assertRedirects(response, reverse('promo_login'))
+
+    def test_promo_portal_login(self):
+        # Post valid store login
+        response = self.client.post(reverse('promo_login'), {
+            'email': 'store@example.com',
+            'password': 'adminpassword'
+        })
+        self.assertRedirects(response, reverse('promo_generate'))
+        self.assertEqual(self.client.session.get('promo_user_id'), "mock-admin-uuid-123456")
+
+    def test_giftcard_management(self):
+        # Log in as admin
+        session = self.client.session
+        session['admin_user_id'] = 'mock-admin-id'
+        session.save()
+
+        # Create customer
+        cust = Customer.objects.create(
+            first_name="Alice", last_name="Smith", DOB=date(1995, 5, 5),
+            gender="Female", email_address="alice@example.com", password="pw"
+        )
+
+        # Post to create gift card
+        response = self.client.post(reverse('giftcard_list'), {
+            'customer_id': cust.customer_id,
+            'amount': '50.00',
+            'exp_date': '2027-12-31'
+        })
+        self.assertRedirects(response, reverse('giftcard_list'))
+        self.assertTrue(GiftCards.objects.filter(customer=cust, amount=50.00).exists())
+
+        # Test delete gift card
+        card = GiftCards.objects.get(customer=cust, amount=50.00)
+        delete_response = self.client.post(reverse('giftcard_delete', args=[card.gift_card_num]))
+        self.assertRedirects(delete_response, reverse('giftcard_list'))
+        self.assertFalse(GiftCards.objects.filter(gift_card_num=card.gift_card_num).exists())

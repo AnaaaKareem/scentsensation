@@ -36,16 +36,16 @@
 </section>
 
 <!-- Pricing Cards -->
-<section class="py-24 bg-cream-100">
+<section class="py-24 bg-cream-100 dark:bg-charcoal-900 transition-colors duration-300">
   <div class="max-w-6xl mx-auto px-6 lg:px-8">
 
     <!-- Billing toggle -->
     <div class="flex justify-center mb-16">
-      <div class="inline-flex items-center bg-cream-200 rounded-brand p-1">
-        <button type="button" id="bill-monthly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all bg-charcoal-900 text-cream-100">
+      <div class="inline-flex items-center bg-cream-200 dark:bg-charcoal-800 rounded-brand p-1">
+        <button type="button" id="bill-monthly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all bg-charcoal-900 dark:bg-charcoal-700 text-cream-100">
           Monthly
         </button>
-        <button type="button" id="bill-yearly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all text-charcoal-500 hover:text-charcoal-700">
+        <button type="button" id="bill-yearly" class="billing-toggle px-6 py-2.5 rounded-brand text-sm font-medium transition-all text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100">
           Yearly <span class="text-gold-600 text-xs font-semibold ml-1">Save up to 20%</span>
         </button>
       </div>
@@ -54,7 +54,7 @@
     <!-- Tier cards -->
     <div class="grid md:grid-cols-3 gap-8">
       {% for tier in tiers %}
-      <div class="bg-white border {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}border-gold-500 ring-4 ring-gold-500/40 shadow-xl shadow-gold-500/20 z-10 scale-[1.02]{% elif tier == most_popular_tier %}border-gold-400 ring-2 ring-gold-400/20 shadow-lg shadow-gold-400/5{% else %}border-cream-300{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl hover:shadow-charcoal-900/5 hover:-translate-y-1">
+      <div class="bg-white dark:bg-charcoal-950 border {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}border-gold-500 ring-4 ring-gold-500/40 shadow-xl shadow-gold-500/20 z-10 scale-[1.02]{% elif tier == most_popular_tier %}border-gold-400 ring-2 ring-gold-400/20 shadow-lg shadow-gold-400/5{% else %}border-cream-300 dark:border-charcoal-800{% endif %} rounded-brand overflow-hidden flex flex-col relative transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/40 hover:-translate-y-1">
 
         {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
         <div class="absolute top-0 left-0 right-0 bg-gold-600 text-center py-1.5 z-10 shadow-sm">
@@ -72,64 +72,64 @@
         <div class="p-8 {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id or tier == most_popular_tier %}pt-14{% endif %} flex-1 flex flex-col">
           <!-- Tier name -->
           <div class="flex items-center justify-between mb-2">
-            <h3 class="font-display text-2xl text-charcoal-900">{{ tier.name }}</h3>
+            <h3 class="font-display text-2xl text-charcoal-900 dark:text-cream-100">{{ tier.name }}</h3>
             {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gold-100 border border-gold-300 rounded-full">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gold-100 dark:bg-gold-950/30 border border-gold-300 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-gold-600"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-              <span class="text-gold-700 text-xs font-semibold">Current</span>
+              <span class="text-gold-700 dark:text-gold-400 text-xs font-semibold">Current</span>
             </span>
             {% endif %}
           </div>
           {% if tier.description %}
-          <p class="text-charcoal-500 text-sm mb-6">{{ tier.description }}</p>
+          <p class="text-charcoal-500 dark:text-charcoal-400 text-sm mb-6">{{ tier.description }}</p>
           {% endif %}
 
           <!-- Price -->
           <div class="mb-6">
             <div class="flex items-baseline gap-1">
-              <span class="font-display text-4xl text-charcoal-900 font-semibold price-monthly" data-monthly="{{ tier.monthly_price }}">£{{ tier.monthly_price }}</span>
-              <span class="font-display text-4xl text-charcoal-900 font-semibold price-yearly hidden" data-yearly="{{ tier.yearly_price }}">£{{ tier.yearly_price }}</span>
-              <span class="text-charcoal-500 text-sm ml-1 period-label">/month</span>
+              <span class="font-display text-4xl text-charcoal-900 dark:text-cream-100 font-semibold price-monthly" data-monthly="{{ tier.monthly_price }}">£{{ tier.monthly_price }}</span>
+              <span class="font-display text-4xl text-charcoal-900 dark:text-cream-100 font-semibold price-yearly hidden" data-yearly="{{ tier.yearly_price }}">£{{ tier.yearly_price }}</span>
+              <span class="text-charcoal-500 dark:text-charcoal-400 text-sm ml-1 period-label">/month</span>
             </div>
-            <p class="text-charcoal-400 text-xs mt-1 yearly-saving hidden">
+            <p class="text-charcoal-400 dark:text-charcoal-500 text-xs mt-1 yearly-saving hidden">
               £{{ tier.yearly_monthly_equivalent }}/mo — save {{ tier.yearly_savings_percent }}%
             </p>
           </div>
 
           <!-- Discount badge -->
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-50 rounded-full w-fit mb-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-50 dark:bg-gold-950/20 rounded-full w-fit mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gold-600">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-gold-700 text-sm font-medium">{{ tier.discount_rate }}% off all products</span>
+            <span class="text-gold-700 dark:text-gold-400 text-sm font-medium">{{ tier.discount_rate }}% off all products</span>
           </div>
 
           <!-- Benefits -->
           <ul class="space-y-3 mb-8 flex-1">
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>{{ tier.discount_rate }}% discount on every order</span>
             </li>
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>Free standard delivery on all orders</span>
             </li>
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>Complimentary fragrance samples</span>
             </li>
             {% if tier.discount_rate >= 15 %}
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>Early access to new releases</span>
             </li>
             {% endif %}
             {% if tier.discount_rate >= 20 %}
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>Personal fragrance consultation</span>
             </li>
-            <li class="flex items-start gap-3 text-sm text-charcoal-600">
+            <li class="flex items-start gap-3 text-sm text-charcoal-600 dark:text-charcoal-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-gold-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
               <span>Exclusive member-only promotions</span>
             </li>
@@ -138,15 +138,15 @@
 
           <!-- CTA -->
           {% if current_membership and current_membership.is_active and current_membership.tier_id == tier.tier_id %}
-          <div class="text-center py-3.5 bg-gold-50 border-2 border-gold-400 rounded-brand shadow-sm">
+          <div class="text-center py-3.5 bg-gold-50 dark:bg-gold-950/10 border-2 border-gold-400 dark:border-gold-500/30 rounded-brand shadow-sm">
             <div class="flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-gold-600"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span class="text-gold-700 text-sm font-bold tracking-wide">Your Active Plan</span>
+              <span class="text-gold-700 dark:text-gold-400 text-sm font-bold tracking-wide">Your Active Plan</span>
             </div>
-            <p class="text-gold-600 text-xs mt-1">{{ current_membership.tier.discount_rate }}% discount active</p>
+            <p class="text-gold-600 dark:text-gold-400/80 text-xs mt-1">{{ current_membership.tier.discount_rate }}% discount active</p>
             {% if current_membership.end_date %}
-            <p class="text-charcoal-500 text-xs mt-1.5 border-t border-gold-200/60 pt-1.5 mx-4">
-              Expires on <span class="font-medium text-charcoal-800">{{ current_membership.end_date|date:"F d, Y" }}</span>
+            <p class="text-charcoal-500 dark:text-charcoal-400 text-xs mt-1.5 border-t border-gold-200/60 dark:border-gold-500/20 pt-1.5 mx-4">
+              Expires on <span class="font-medium text-charcoal-800 dark:text-cream-200">{{ current_membership.end_date|date:"F d, Y" }}</span>
             </p>
             {% endif %}
           </div>
@@ -155,7 +155,7 @@
             {% csrf_token %}
             <input type="hidden" name="tier_slug" value="{{ tier.slug }}">
             <input type="hidden" name="billing" value="monthly" class="billing-input">
-            <button type="submit" class="w-full py-3.5 {% if forloop.last %}bg-gold-500 hover:bg-gold-600 text-charcoal-950{% else %}bg-charcoal-900 hover:bg-charcoal-800 text-cream-100{% endif %} text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+            <button type="submit" class="w-full py-3.5 {% if forloop.last %}bg-gold-500 hover:bg-gold-600 text-charcoal-950{% else %}bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100{% endif %} text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
               {% if current_membership and current_membership.is_active %}
                 Switch to {{ tier.name }}
               {% else %}
@@ -168,7 +168,7 @@
       </div>
       {% empty %}
       <div class="col-span-3 text-center py-20">
-        <p class="text-charcoal-500 text-lg">No membership plans are currently available. Check back soon!</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-lg">No membership plans are currently available. Check back soon!</p>
       </div>
       {% endfor %}
     </div>
@@ -176,9 +176,9 @@
     <!-- Cancel membership -->
     {% if current_membership and current_membership.is_active %}
     <div class="mt-16 text-center">
-      <p class="text-charcoal-500 text-sm mb-3">Want to cancel your membership?</p>
+      <p class="text-charcoal-500 dark:text-charcoal-400 text-sm mb-3">Want to cancel your membership?</p>
       <button type="button" id="cancel-membership-btn"
-        class="text-burgundy-600 hover:text-burgundy-800 text-sm font-medium underline underline-offset-2 transition-colors">
+        class="text-burgundy-600 dark:text-burgundy-400 hover:text-burgundy-800 dark:hover:text-burgundy-300 text-sm font-medium underline underline-offset-2 transition-colors">
         Cancel Membership
       </button>
     </div>
@@ -188,26 +188,26 @@
 </section>
 
 <!-- FAQ / Trust section -->
-<section class="py-20 bg-cream-50">
+<section class="py-20 bg-cream-50 dark:bg-charcoal-950 transition-colors duration-300">
   <div class="max-w-4xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-12">
       <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">FAQ</p>
-      <h2 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display leading-tight">
+      <h2 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display leading-tight">
         Common Questions
       </h2>
     </div>
     <div class="space-y-6">
-      <div class="bg-white border border-cream-300 rounded-brand p-6">
-        <h3 class="font-display text-lg text-charcoal-900 mb-2">When does my membership start?</h3>
-        <p class="text-charcoal-500 text-sm leading-relaxed">Your membership activates immediately after payment. You'll receive a confirmation email and your discount will apply to your next order.</p>
+      <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-800 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-2">When does my membership start?</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed">Your membership activates immediately after payment. You'll receive a confirmation email and your discount will apply to your next order.</p>
       </div>
-      <div class="bg-white border border-cream-300 rounded-brand p-6">
-        <h3 class="font-display text-lg text-charcoal-900 mb-2">Can I switch plans?</h3>
-        <p class="text-charcoal-500 text-sm leading-relaxed">Yes! You can upgrade or downgrade at any time. Your new plan takes effect immediately and the price difference is prorated.</p>
+      <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-800 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-2">Can I switch plans?</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed">Yes! You can upgrade or downgrade at any time. Your new plan takes effect immediately and the price difference is prorated.</p>
       </div>
-      <div class="bg-white border border-cream-300 rounded-brand p-6">
-        <h3 class="font-display text-lg text-charcoal-900 mb-2">How do I cancel?</h3>
-        <p class="text-charcoal-500 text-sm leading-relaxed">You can cancel anytime from this page. Your membership remains active until the end of your current billing period — you won't be charged again.</p>
+      <div class="bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-800 rounded-brand p-6">
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-2">How do I cancel?</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed">You can cancel anytime from this page. Your membership remains active until the end of your current billing period — you won't be charged again.</p>
       </div>
     </div>
   </div>
@@ -219,21 +219,21 @@
   <!-- Backdrop -->
   <div id="cancel-modal-backdrop" class="absolute inset-0 bg-charcoal-950/60 backdrop-blur-sm"></div>
   <!-- Dialog -->
-  <div class="relative bg-white border border-cream-300 rounded-brand p-8 max-w-md w-full mx-6 shadow-2xl shadow-charcoal-950/20">
+  <div class="relative bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-800 rounded-brand p-8 max-w-md w-full mx-6 shadow-2xl dark:shadow-black/60">
     <div class="text-center">
-      <div class="w-14 h-14 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div class="w-14 h-14 bg-burgundy-100 dark:bg-burgundy-950/30 rounded-full flex items-center justify-center mx-auto mb-5">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-burgundy-600">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.553c.036.098.118.197.254.254A48.4 48.4 0 0112 21c2.828 0 5.566-.312 8.053-.897.136-.057.218-.156.254-.254M12 9.75c.036-.098.118-.197.254-.254A48.4 48.4 0 0112 3c2.828 0 5.566.312 8.053.897.136.057.218.156.254.254M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
         </svg>
       </div>
-      <h3 class="font-display text-xl text-charcoal-900 mb-2">Cancel Membership?</h3>
-      <p class="text-charcoal-500 text-sm leading-relaxed mb-1">You are about to cancel your <span class="font-semibold text-charcoal-700">{{ current_membership.tier.name }}</span> membership.</p>
-      <p class="text-burgundy-600 text-sm font-medium mb-6">You will lose your {{ current_membership.tier.discount_rate }}% discount.</p>
+      <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 mb-2">Cancel Membership?</h3>
+      <p class="text-charcoal-500 dark:text-charcoal-400 text-sm leading-relaxed mb-1">You are about to cancel your <span class="font-semibold text-charcoal-700 dark:text-cream-200">{{ current_membership.tier.name }}</span> membership.</p>
+      <p class="text-burgundy-600 dark:text-burgundy-400 text-sm font-medium mb-6">You will lose your {{ current_membership.tier.discount_rate }}% discount.</p>
       <form method="POST" action="{% url 'membership_cancel' %}" id="cancel-membership-form">
         {% csrf_token %}
         <div class="flex gap-3">
           <button type="button" id="cancel-modal-close"
-            class="flex-1 py-3 border border-charcoal-200 rounded-brand text-charcoal-700 text-sm font-medium hover:bg-cream-100 transition-colors">
+            class="flex-1 py-3 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-700 dark:text-cream-200 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors">
             Keep Membership
           </button>
           <button type="submit"
@@ -262,10 +262,10 @@
   const btnPrices = document.querySelectorAll('.btn-price');
 
   function showMonthly() {
-    monthlyBtn.classList.add('bg-charcoal-900', 'text-cream-100');
-    monthlyBtn.classList.remove('text-charcoal-500', 'hover:text-charcoal-700');
-    yearlyBtn.classList.remove('bg-charcoal-900', 'text-cream-100');
-    yearlyBtn.classList.add('text-charcoal-500', 'hover:text-charcoal-700');
+    monthlyBtn.classList.add('bg-charcoal-900', 'dark:bg-charcoal-700', 'text-cream-100');
+    monthlyBtn.classList.remove('text-charcoal-500', 'dark:text-charcoal-400', 'hover:text-charcoal-700', 'dark:hover:text-cream-100');
+    yearlyBtn.classList.remove('bg-charcoal-900', 'dark:bg-charcoal-700', 'text-cream-100');
+    yearlyBtn.classList.add('text-charcoal-500', 'dark:text-charcoal-400', 'hover:text-charcoal-700', 'dark:hover:text-cream-100');
     monthlyPrices.forEach(el => el.classList.remove('hidden'));
     yearlyPrices.forEach(el => el.classList.add('hidden'));
     periodLabels.forEach(el => el.textContent = '/month');
@@ -278,10 +278,10 @@
   }
 
   function showYearly() {
-    yearlyBtn.classList.add('bg-charcoal-900', 'text-cream-100');
-    yearlyBtn.classList.remove('text-charcoal-500', 'hover:text-charcoal-700');
-    monthlyBtn.classList.remove('bg-charcoal-900', 'text-cream-100');
-    monthlyBtn.classList.add('text-charcoal-500', 'hover:text-charcoal-700');
+    yearlyBtn.classList.add('bg-charcoal-900', 'dark:bg-charcoal-700', 'text-cream-100');
+    yearlyBtn.classList.remove('text-charcoal-500', 'dark:text-charcoal-400', 'hover:text-charcoal-700', 'dark:hover:text-cream-100');
+    monthlyBtn.classList.remove('bg-charcoal-900', 'dark:bg-charcoal-700', 'text-cream-100');
+    monthlyBtn.classList.add('text-charcoal-500', 'dark:text-charcoal-400', 'hover:text-charcoal-700', 'dark:hover:text-cream-100');
     yearlyPrices.forEach(el => el.classList.remove('hidden'));
     monthlyPrices.forEach(el => el.classList.add('hidden'));
     periodLabels.forEach(el => el.textContent = '/year');

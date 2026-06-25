@@ -7,12 +7,12 @@
 
   <!-- Breadcrumb -->
   <nav class="mb-8">
-    <ol class="flex items-center gap-2 text-sm text-charcoal-500">
-      <li><a href="{% url 'store' %}" class="hover:text-charcoal-900 transition-colors">Store</a></li>
+    <ol class="flex items-center gap-2 text-sm text-charcoal-500 dark:text-charcoal-400">
+      <li><a href="{% url 'store' %}" class="hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors">Store</a></li>
       <li><span>/</span></li>
-      <li><a href="{% url 'brand_detail' product.brand|slugify %}" class="hover:text-charcoal-900 transition-colors">{{ product.brand }}</a></li>
+      <li><a href="{% url 'brand_detail' product.brand|slugify %}" class="hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors">{{ product.brand }}</a></li>
       <li><span>/</span></li>
-      <li class="text-charcoal-900 font-medium truncate max-w-xs">{{ product.product_name }}</li>
+      <li class="text-charcoal-900 dark:text-cream-100 font-medium truncate max-w-xs">{{ product.product_name }}</li>
     </ol>
   </nav>
 
@@ -28,7 +28,7 @@
              id="thumb-scroll">
           {% for image in images %}
           <button type="button" onclick="galleryGo({{ forloop.counter0 }})"
-            class="gallery-thumb aspect-square bg-charcoal-100 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 transition-colors shrink-0">
+            class="gallery-thumb aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0">
             <img src="{{ image.image_url }}" alt="" class="w-full h-full object-cover" loading="lazy">
           </button>
           {% endfor %}
@@ -58,16 +58,16 @@
         </div>
       </div>
       {% else %}
-      <div class="aspect-[4/5] bg-gradient-to-b from-cream-200 to-charcoal-100 rounded-brand flex items-center justify-center">
-        <span class="text-charcoal-400 text-sm uppercase tracking-wide">{{ product.product_name }}</span>
+      <div class="aspect-[4/5] bg-gradient-to-b from-cream-200 to-charcoal-100 dark:from-charcoal-900 dark:to-charcoal-950 rounded-brand flex items-center justify-center">
+        <span class="text-charcoal-400 dark:text-charcoal-500 text-sm uppercase tracking-wide">{{ product.product_name }}</span>
       </div>
       {% endif %}
     </div>
 
     <!-- Right: Product Info -->
     <div class="flex flex-col">
-      <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-2 hover:text-gold-600 transition-colors">{{ product.brand }}</a>
-      <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 tracking-display mb-4">{{ product.product_name }}</h1>
+      <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-2 hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ product.brand }}</a>
+      <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display mb-4">{{ product.product_name }}</h1>
 
       <!-- Rating -->
       {% if product.rating_avg %}
@@ -81,17 +81,17 @@
           </svg>
           {% endfor %}
         </div>
-        <span class="text-charcoal-600 text-sm">{{ product.rating_avg|floatformat:1 }}</span>
-        <span class="text-charcoal-400 text-sm">({{ product.rating_count|default:0 }} ratings / {{ product.reviews_count|default:0 }} reviews)</span>
+        <span class="text-charcoal-600 dark:text-cream-200 text-sm">{{ product.rating_avg|floatformat:1 }}</span>
+        <span class="text-charcoal-400 dark:text-charcoal-500 text-sm">({{ product.rating_count|default:0 }} ratings / {{ product.reviews_count|default:0 }} reviews)</span>
       </div>
       {% endif %}
 
       <!-- Price -->
-      <p class="text-charcoal-900 font-semibold text-2xl mb-6">{{ product.price|currency:currency }}</p>
+      <p class="text-charcoal-900 dark:text-cream-100 font-semibold text-2xl mb-6">{{ product.price|currency:currency }}</p>
 
       <!-- Description -->
       {% if product.description %}
-      <div class="text-charcoal-600 leading-relaxed mb-8">
+      <div class="text-charcoal-600 dark:text-cream-200 leading-relaxed mb-8">
         {{ product.description|safe }}
       </div>
       {% endif %}
@@ -99,21 +99,21 @@
       <!-- Perfumers -->
       {% if perfumers %}
       <div class="mb-8">
-        <p class="text-charcoal-500 text-xs uppercase tracking-wide-plus mb-3">Perfumers</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-3">Perfumers</p>
         <div class="space-y-2">
         {% for pp in perfumers %}
           <div class="flex items-center gap-3">
             {% if pp.perfumer.photo_url %}
             <img src="{{ pp.perfumer.photo_url }}" alt="{{ pp.perfumer.name }}" class="w-10 h-10 rounded-full object-cover">
             {% else %}
-            <div class="w-10 h-10 rounded-full bg-charcoal-100 flex items-center justify-center">
-              <span class="text-charcoal-400 text-xs font-medium">{{ pp.perfumer.name|first }}</span>
+            <div class="w-10 h-10 rounded-full bg-charcoal-100 dark:bg-charcoal-800 flex items-center justify-center">
+              <span class="text-charcoal-400 dark:text-charcoal-500 text-xs font-medium">{{ pp.perfumer.name|first }}</span>
             </div>
             {% endif %}
             <div>
-              <p class="text-charcoal-900 text-sm font-medium">{{ pp.perfumer.name }}</p>
+              <p class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ pp.perfumer.name }}</p>
               {% if pp.perfumer.company %}
-              <p class="text-charcoal-400 text-xs">{{ pp.perfumer.company }}</p>
+              <p class="text-charcoal-400 dark:text-charcoal-500 text-xs">{{ pp.perfumer.company }}</p>
               {% endif %}
             </div>
           </div>
@@ -125,8 +125,8 @@
       <!-- Release Year -->
       {% if product.release_year %}
       <div class="mb-8">
-        <p class="text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2">Released</p>
-        <p class="text-charcoal-900 text-sm font-medium">{{ product.release_year }}</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-xs uppercase tracking-wide-plus mb-2">Released</p>
+        <p class="text-charcoal-900 dark:text-cream-100 text-sm font-medium">{{ product.release_year }}</p>
       </div>
       {% endif %}
 
@@ -135,20 +135,20 @@
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.product_id }}">
         <div class="flex items-center gap-3 mb-4">
-          <span class="text-charcoal-700 text-sm font-medium">Quantity</span>
-          <div class="flex items-center border border-charcoal-200 rounded-brand">
-            <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 hover:text-charcoal-900 transition-colors text-lg font-medium">−</button>
-            <input type="number" name="quantity" value="1" min="1" class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 focus:outline-none" readonly>
-            <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 hover:text-charcoal-900 transition-colors text-lg font-medium">+</button>
+          <span class="text-charcoal-700 dark:text-cream-100 text-sm font-medium">Quantity</span>
+          <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
+            <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
+            <input type="number" name="quantity" value="1" min="1" class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-950 text-charcoal-900 dark:text-cream-100 focus:outline-none" readonly>
+            <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
           </div>
         </div>
-        <button type="submit" name="add_basket" class="w-full py-4 bg-charcoal-900 hover:bg-charcoal-800 text-cream-100 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
+        <button type="submit" name="add_basket" class="w-full py-4 bg-charcoal-900 dark:bg-charcoal-800 hover:bg-charcoal-800 dark:hover:bg-charcoal-700 text-cream-100 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
           Add to Basket
         </button>
       </form>
 
       <!-- Wishlist Button -->
-      <button id="detailWishBtn" class="wish-btn{% if in_wishlist %} active{% endif %} mt-4"
+      <button id="detailWishBtn" class="wish-btn{% if in_wishlist %} active{% endif %} mt-4 inline-flex items-center justify-center gap-2 py-3.5 px-6 border border-charcoal-200 dark:border-charcoal-700 hover:border-burgundy-400 dark:hover:border-burgundy-500 rounded-brand text-charcoal-700 dark:text-cream-100 bg-transparent hover:bg-burgundy-500/5 dark:hover:bg-burgundy-500/10 cursor-pointer transition-all duration-300"
               data-product-id="{{ product.product_id }}"
               data-active="{% if in_wishlist %}true{% else %}false{% endif %}"
               onclick="toggleWishDetail(this)"
@@ -160,7 +160,7 @@
       </button>
 
       <!-- Back -->
-      <a href="{% url 'store' %}" class="mt-4 text-center text-charcoal-500 hover:text-charcoal-700 text-sm transition-colors">
+      <a href="{% url 'store' %}" class="mt-4 text-center text-charcoal-500 hover:text-charcoal-700 dark:text-charcoal-400 dark:hover:text-cream-100 text-sm transition-colors">
         &larr; Back to Store
       </a>
     </div>
@@ -187,7 +187,7 @@
   <!-- ===== VISUAL NOTES PYRAMID ===== -->
   {% if notes %}
   <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 tracking-display mb-6">Fragrance Notes</h2>
+    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">Fragrance Notes</h2>
 
     {% regroup notes by layer as notes_by_layer %}
     <div class="flex flex-col items-center max-w-2xl mx-auto">
@@ -196,7 +196,7 @@
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'top' %}
       <div class="w-full text-center mb-2">
-        <span class="text-charcoal-400 text-xs uppercase tracking-wide-plus mb-2 inline-block">Top Notes</span>
+        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Top Notes</span>
         <div class="flex flex-wrap justify-center gap-2">
         {% for pn in layer_group.list %}
           <div class="group relative">
@@ -216,13 +216,13 @@
       {% endfor %}
 
       <!-- Connector triangle -->
-      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 my-1"></div>
+      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 dark:border-t-charcoal-700 my-1"></div>
 
       <!-- Middle / Heart Notes (medium) -->
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'middle' %}
       <div class="w-4/5 text-center mb-2">
-        <span class="text-charcoal-400 text-xs uppercase tracking-wide-plus mb-2 inline-block">Heart Notes</span>
+        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Heart Notes</span>
         <div class="flex flex-wrap justify-center gap-2">
         {% for pn in layer_group.list %}
           <div class="group relative">
@@ -242,13 +242,13 @@
       {% endfor %}
 
       <!-- Connector triangle -->
-      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 my-1"></div>
+      <div class="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[16px] border-l-transparent border-r-transparent border-t-charcoal-200 dark:border-t-charcoal-700 my-1"></div>
 
       <!-- Base Notes (narrowest) -->
       {% for layer_group in notes_by_layer %}
       {% if layer_group.list.0.layer == 'base' %}
       <div class="w-3/5 text-center">
-        <span class="text-charcoal-400 text-xs uppercase tracking-wide-plus mb-2 inline-block">Base Notes</span>
+        <span class="text-charcoal-400 dark:text-charcoal-500 text-xs uppercase tracking-wide-plus mb-2 inline-block">Base Notes</span>
         <div class="flex flex-wrap justify-center gap-2">
         {% for pn in layer_group.list %}
           <div class="group relative">
@@ -274,7 +274,7 @@
   <!-- ===== COMMUNITY VOTES WITH SVG ICONS + PERCENTAGE CIRCLES ===== -->
   {% if votes %}
   <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 tracking-display mb-6">Community Reviews</h2>
+    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">Community Reviews</h2>
 
     {% regroup votes by vote_type as votes_by_type %}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -284,7 +284,7 @@
       {% if vt.list.0.vote_type == 'longevity' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Longevity</h3>
         </div>
         {% for v in vt.list %}
@@ -303,7 +303,7 @@
       {% if vt.list.0.vote_type == 'sillage' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Sillage</h3>
         </div>
         {% for v in vt.list %}
@@ -322,7 +322,7 @@
       {% if vt.list.0.vote_type == 'season' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Season</h3>
         </div>
         {% for v in vt.list %}
@@ -349,7 +349,7 @@
       {% if vt.list.0.vote_type == 'time_of_day' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Time of Day</h3>
         </div>
         {% for v in vt.list %}
@@ -372,7 +372,7 @@
       {% if vt.list.0.vote_type == 'appreciation' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Appreciation</h3>
         </div>
         {% for v in vt.list %}
@@ -401,7 +401,7 @@
       {% if vt.list.0.vote_type == 'price_value' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Price Value</h3>
         </div>
         {% for v in vt.list %}
@@ -420,7 +420,7 @@
       {% if vt.list.0.vote_type == 'gender_votes' %}
       <div class="bg-cream-50 border border-cream-200 rounded-xl p-5 dark:bg-charcoal-800 dark:border-charcoal-700">
         <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-charcoal-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          <svg class="w-5 h-5 text-charcoal-500 dark:text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
           <h3 class="text-charcoal-700 text-sm font-semibold dark:text-cream-200">Gender</h3>
         </div>
         {% for v in vt.list %}
@@ -447,23 +447,23 @@
   <!-- ===== YOU MAY ALSO LIKE ===== -->
   {% if similar_products %}
   <div class="mb-16">
-    <h2 class="font-display text-xl text-charcoal-900 tracking-display mb-6">You May Also Like</h2>
+    <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 tracking-display mb-6">You May Also Like</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
     {% for sp in similar_products %}
       <a href="{% url 'product_detail' sp.similar_product.product_id %}" class="group">
-        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-3 relative img-skeleton">
+        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-3 relative img-skeleton">
           {% with sp.similar_product.product_images.first as sim_img %}
           {% if sim_img %}
           <img src="{{ sim_img.image_url }}" alt="{{ sp.similar_product.product_name }}" class="w-full h-full object-cover" loading="lazy" onload="this.closest('.img-skeleton').classList.add('loaded')">
           {% endif %}
           {% endwith %}
         </div>
-        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium">{{ sp.similar_product.brand }}</p>
-        <h3 class="font-display text-sm text-charcoal-900 group-hover:text-burgundy-700 transition-colors">{{ sp.similar_product.product_name }}</h3>
+        <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium">{{ sp.similar_product.brand }}</p>
+        <h3 class="font-display text-sm text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ sp.similar_product.product_name }}</h3>
         {% if sp.similar_product.rating_avg %}
         <div class="flex items-center gap-1 mt-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-gold-500"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg>
-          <span class="text-charcoal-500 text-xs">{{ sp.similar_product.rating_avg|floatformat:1 }}</span>
+          <span class="text-charcoal-500 dark:text-charcoal-400 text-xs">{{ sp.similar_product.rating_avg|floatformat:1 }}</span>
         </div>
         {% endif %}
       </a>
@@ -493,16 +493,9 @@
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
-  #detailWishBtn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 10px 20px; border: 1.5px solid #d1d1d1; border-radius: 2px;
-    background: none; cursor: pointer;
-    transition: border-color 0.3s ease, background 0.3s ease;
-  }
-  #detailWishBtn:hover { border-color: #e04d76; background: rgba(224,77,118,0.04); }
-  #detailWishBtn .wish-heart { transition: fill 0.35s ease, stroke 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1); stroke: #888; stroke-width: 1.5; fill: none; }
-  #detailWishBtn.active .wish-heart { fill: #e04d76; stroke: #e04d76; animation: heart-beat 0.6s ease; }
-  #detailWishBtn.removing .wish-heart { fill: none; stroke: #888; }
+  .wish-heart { transition: fill 0.35s ease, stroke 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1); stroke: #888; stroke-width: 1.5; fill: none; }
+  .active .wish-heart { fill: #e04d76; stroke: #e04d76; animation: heart-beat 0.6s ease; }
+  .removing .wish-heart { fill: none; stroke: #888; }
   @keyframes heart-beat { 0%{transform:scale(1)} 20%{transform:scale(1.25)} 40%{transform:scale(.95)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
   /* Hide scrollbar but keep scroll functionality */

@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 from store.models import (
     Customer, PhoneNumbers, Addresses, DiscountRate, Membership,
-    Products, PersonalFragrances, HomeFragrances, ProductImages,
+    Products, ProductImages,
     Basket, Orders, OrderItems, Places, GiftCards, Favourite,
     Store, Inventory, ProductInventory, Instalments, OrderRef
 )
@@ -181,93 +181,7 @@ class ProductsModelTests(TestCase):
         self.assertFalse(p.gift)
 
 
-# --- PERSONAL_FRAGRANCES ---
-class PersonalFragrancesModelTests(TestCase):
-    def setUp(self):
-        self.product = Products.objects.create(
-            brand="Gucci", product_name="Guilty", description="Bold scent",
-            price=90.00, gift=False
-        )
 
-    def test_create_personal_fragrance(self):
-        pf = PersonalFragrances.objects.create(
-            product=self.product,
-            size="100ml",
-            fragrance_family="Floral",
-            gender="Female",
-            strength="Eau de Parfum",
-            engraving="For Her"
-        )
-        self.assertEqual(pf.size, "100ml")
-        self.assertEqual(pf.fragrance_family, "Floral")
-        self.assertEqual(str(pf), f"{self.product} - 100ml")
-
-    def test_personal_fragrance_one_to_one(self):
-        PersonalFragrances.objects.create(
-            product=self.product, size="50ml", fragrance_family="Woody",
-            gender="Male", strength="Eau de Toilette"
-        )
-        with self.assertRaises(IntegrityError):
-            PersonalFragrances.objects.create(
-                product=self.product, size="100ml", fragrance_family="Floral",
-                gender="Female", strength="Eau de Parfum"
-            )
-
-    def test_personal_fragrance_unique_together(self):
-        PersonalFragrances.objects.create(
-            product=self.product, size="50ml", fragrance_family="Woody",
-            gender="Male", strength="Eau de Toilette"
-        )
-        # Duplicate product+size should fail
-        with self.assertRaises(IntegrityError):
-            PersonalFragrances.objects.create(
-                product=self.product, size="50ml", fragrance_family="Floral",
-                gender="Female", strength="Eau de Parfum"
-            )
-
-    def test_fragrance_family_choices(self):
-        valid_choices = ['Floral', 'Oriental', 'Woody', 'Fresh', 'Citrus', 'Chypre']
-        pf = PersonalFragrances.objects.create(
-            product=self.product, size="30ml", fragrance_family="Citrus",
-            gender="Male", strength="Parfum"
-        )
-        self.assertIn(pf.fragrance_family, valid_choices)
-
-    def test_strength_choices(self):
-        valid_strengths = ['Eau de Parfum', 'Eau de Toilette', 'Parfum']
-        pf = PersonalFragrances.objects.create(
-            product=self.product, size="75ml", fragrance_family="Oriental",
-            gender="Female", strength="Parfum"
-        )
-        self.assertIn(pf.strength, valid_strengths)
-
-
-# --- HOME_FRAGRANCES ---
-class HomeFragrancesModelTests(TestCase):
-    def setUp(self):
-        self.product = Products.objects.create(
-            brand="Yankee Candle", product_name="Vanilla Cupcake", description="Sweet scent",
-            price=25.00, gift=True
-        )
-
-    def test_create_home_fragrance(self):
-        hf = HomeFragrances.objects.create(
-            product=self.product,
-            product_type="Scented Candles",
-            bundle=True
-        )
-        self.assertEqual(hf.product_type, "Scented Candles")
-        self.assertTrue(hf.bundle)
-
-    def test_home_fragrance_one_to_one(self):
-        HomeFragrances.objects.create(product=self.product, product_type="Room Sprays", bundle=False)
-        with self.assertRaises(IntegrityError):
-            HomeFragrances.objects.create(product=self.product, product_type="Diffusers", bundle=True)
-
-    def test_product_type_choices(self):
-        valid_types = ['Scent Diffuser', 'Air Freshener', 'Scented Candles', 'Room Sprays', 'Reed Diffusers']
-        hf = HomeFragrances.objects.create(product=self.product, product_type="Air Freshener", bundle=False)
-        self.assertIn(hf.product_type, valid_types)
 
 
 # --- PRODUCT_IMAGES ---
@@ -279,13 +193,13 @@ class ProductImagesModelTests(TestCase):
         )
 
     def test_create_product_image(self):
-        img_data = "data:image/png;base64,iVBORw0KGgoAAAANS..."
-        img = ProductImages.objects.create(product=self.product, image=img_data)
+        img_url = "http://example.com/photo.jpg"
+        img = ProductImages.objects.create(product=self.product, image_url=img_url)
         self.assertEqual(img.product, self.product)
-        self.assertIn("base64", img.image)
+        self.assertEqual(img.image_url, img_url)
 
     def test_product_image_cascade_delete(self):
-        img = ProductImages.objects.create(product=self.product, image="somebase64data")
+        img = ProductImages.objects.create(product=self.product, image_url="http://example.com/photo.jpg")
         self.product.delete()
         self.assertFalse(ProductImages.objects.filter(pk=img.image_id).exists())
 
@@ -644,18 +558,11 @@ class RelationshipCascadeTests(TestCase):
 
     def test_product_cascade_deletes(self):
         # Create related records
-        PersonalFragrances.objects.create(
-            product=self.product, size="100ml", fragrance_family="Fresh",
-            gender="Male", strength="Eau de Toilette"
-        )
-        HomeFragrances.objects.create(product=self.product, product_type="Reed Diffusers", bundle=False)
-        ProductImages.objects.create(product=self.product, image="imgdata")
+        ProductImages.objects.create(product=self.product, image_url="http://example.com/photo.jpg")
         ProductInventory.objects.create(inventory=self.inventory, product=self.product)
 
         self.product.delete()
 
-        self.assertFalse(PersonalFragrances.objects.exists())
-        self.assertFalse(HomeFragrances.objects.exists())
         self.assertFalse(ProductImages.objects.exists())
         self.assertFalse(ProductInventory.objects.exists())
 

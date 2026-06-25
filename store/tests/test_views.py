@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from store.models import (
     Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
-    Products, PersonalFragrances, HomeFragrances, ProductImages, Basket,
+    Products, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
     ProductInventory, Instalments, OrderRef
 )
@@ -368,13 +368,6 @@ class StoreViewTests(BaseViewTestCase):
         self.product3 = Products.objects.create(
             brand='BrandC', product_name='Product3', description='Desc3', price=75.00, gift=False
         )
-        PersonalFragrances.objects.create(
-            product=self.product1, size='100ml', fragrance_family='Floral',
-            gender='Female', strength='Eau de Parfum'
-        )
-        HomeFragrances.objects.create(
-            product=self.product2, product_type='Scented Candles', bundle=True
-        )
 
     def test_store_get_all_products(self):
         response = self.client.get(reverse('store'))
@@ -393,22 +386,7 @@ class StoreViewTests(BaseViewTestCase):
         self.assertEqual(page_obj.paginator.per_page, 6)
         self.assertTrue(page_obj.has_other_pages())
 
-    def test_store_filter_by_personal_fragrance_category(self):
-        response = self.client.get(reverse('store') + '?category=Personal%20Fragrances')
-        products = list(response.context['products'])
-        self.assertTrue(all(hasattr(p, 'personal_fragrance') for p in products))
 
-    def test_store_filter_by_home_fragrance_category(self):
-        response = self.client.get(reverse('store') + '?category=Home%20Fragrances')
-        products = list(response.context['products'])
-        self.assertTrue(all(hasattr(p, 'home_fragrance') for p in products))
-
-    def test_store_filter_by_gender(self):
-        response = self.client.get(reverse('store') + '?gender=Female')
-        products = list(response.context['products'])
-        # Only personal fragrances have gender; ensure all have gender Female
-        personal_frags = PersonalFragrances.objects.filter(product__in=products)
-        self.assertTrue(all(p.gender == 'Female' for p in personal_frags))
 
     def test_store_filter_by_price_range(self):
         response = self.client.get(reverse('store') + '?min_price=60&max_price=100')
@@ -438,11 +416,7 @@ class BasketViewTests(BaseViewTestCase):
             brand='TestBrand', product_name='TestProd', description='Test',
             price=25.00, gift=False
         )
-        ProductImages.objects.create(product=self.product, image='base64img')
-        PersonalFragrances.objects.create(
-            product=self.product, size='50ml', fragrance_family='Citrus',
-            gender='Male', strength='Eau de Toilette'
-        )
+        ProductImages.objects.create(product=self.product, image_url='http://example.com/img.png')
 
     def test_basket_requires_login(self):
         response = self.client.get(reverse('basket'))

@@ -1,4 +1,4 @@
-{% extends "store/base.html" %}
+{% extends "store/admin/promo_base.html" %}
 {% load static %}
 
 {% block content %}
@@ -22,17 +22,6 @@
 
   <!-- Generate Form -->
   <div class="bg-white border border-cream-300 rounded-brand p-6 mb-8">
-    {% if messages %}
-      {% for msg in messages %}
-      <div class="mb-4 px-4 py-3 rounded-brand text-sm font-medium
-        {% if msg.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}bg-green-50 border border-green-200 text-green-700
-        {% elif msg.level == DEFAULT_MESSAGE_LEVELS.ERROR %}bg-burgundy-50 border border-burgundy-200 text-burgundy-700
-        {% else %}bg-cream-200 text-charcoal-700{% endif %}">
-        {{ msg }}
-      </div>
-      {% endfor %}
-    {% endif %}
-
     <form method="POST" action="{% url 'promo_generate' %}">
       {% csrf_token %}
       <div class="flex gap-4 items-end">

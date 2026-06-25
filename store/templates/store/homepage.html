@@ -35,14 +35,14 @@
 </section>
 
 <!-- Editorial Divider -->
-<section class="bg-cream-100 py-20 text-center">
+<section class="bg-cream-100 dark:bg-charcoal-900 py-20 text-center transition-colors duration-300">
   <div class="max-w-4xl mx-auto px-6">
-    <p class="anim text-burgundy-700 text-xs tracking-wide-plus uppercase font-medium mb-4">Since 2023</p>
-    <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal-900 tracking-display leading-tight mb-8">
+    <p class="anim text-burgundy-700 dark:text-burgundy-400 text-xs tracking-wide-plus uppercase font-medium mb-4">Since 2023</p>
+    <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal-900 dark:text-cream-100 tracking-display leading-tight mb-8">
       The Art of Scent
     </h2>
     <div class="anim anim-delay-2 w-12 h-px bg-gold-500 mx-auto mb-8"></div>
-    <p class="anim anim-delay-2 text-charcoal-600 text-lg leading-relaxed max-w-2xl mx-auto">
+    <p class="anim anim-delay-2 text-charcoal-600 dark:text-charcoal-300 text-lg leading-relaxed max-w-2xl mx-auto">
       Having access to top international brands for fragrances is a luxury that many people enjoy. These brands offer a wide range of scents that cater to various tastes and preferences, from fresh and floral to spicy and musky.
     </p>
   </div>
@@ -64,24 +64,24 @@
 </section>
 
 <!-- For Him Section -->
-<section class="bg-cream-50 py-24">
+<section class="bg-cream-50 dark:bg-charcoal-900 py-24 transition-colors duration-300">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-16 items-center">
       <div class="anim anim-left order-2 lg:order-1">
-        <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
+        <div class="bg-charcoal-200 dark:bg-charcoal-800 aspect-[4/5] rounded-brand overflow-hidden">
           <img src="{% static 'store/Pictures/More/Man-Applying-Perfume.jpg' %}" alt="For Him" class="w-full h-full object-cover">
         </div>
       </div>
       <div class="anim anim-right order-1 lg:order-2">
-        <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Him</p>
-        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
+        <p class="text-gold-600 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-4">For Him</p>
+        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 dark:text-cream-100 tracking-display leading-tight mb-6">
           Command Your Presence
         </h2>
         <div class="w-10 h-px bg-gold-500 mb-6"></div>
-        <p class="text-charcoal-600 text-lg leading-relaxed mb-8">
+        <p class="text-charcoal-600 dark:text-charcoal-300 text-lg leading-relaxed mb-8">
           Fragrances for men are an essential part of their grooming routine. They help to enhance their personality and leave a lasting impression on others. From woody and earthy to fresh and citrus.
         </p>
-        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 hover:text-gold-600 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
+        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 dark:text-burgundy-400 hover:text-gold-600 dark:hover:text-gold-300 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
           Shop Men's
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -93,19 +93,19 @@
 </section>
 
 <!-- For Her Section -->
-<section class="bg-cream-100 py-24">
+<section class="bg-cream-100 dark:bg-charcoal-950 py-24 transition-colors duration-300">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-16 items-center">
       <div class="anim anim-left">
-        <p class="text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">For Her</p>
-        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight mb-6">
+        <p class="text-gold-600 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-4">For Her</p>
+        <h2 class="font-display text-4xl sm:text-5xl text-charcoal-900 dark:text-cream-100 tracking-display leading-tight mb-6">
           Embrace Your Essence
         </h2>
         <div class="w-10 h-px bg-gold-500 mb-6"></div>
-        <p class="text-charcoal-600 text-lg leading-relaxed mb-8">
+        <p class="text-charcoal-600 dark:text-charcoal-300 text-lg leading-relaxed mb-8">
           Fragrances are a quintessential part of any woman's beauty routine. They have the power to lift your mood, evoke emotions, and leave a lasting impression. From floral and fruity to spicy and musky.
         </p>
-        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 hover:text-gold-600 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
+        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-burgundy-700 dark:text-burgundy-400 hover:text-gold-600 dark:hover:text-gold-300 text-sm tracking-wide-plus uppercase font-semibold transition-colors group">
           Shop Women's
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -113,7 +113,7 @@
         </a>
       </div>
       <div class="anim anim-right">
-        <div class="bg-charcoal-200 aspect-[4/5] rounded-brand overflow-hidden">
+        <div class="bg-charcoal-200 dark:bg-charcoal-800 aspect-[4/5] rounded-brand overflow-hidden">
           <img src="{% static 'store/Pictures/More/Woman-Applying-Perfume.jpg' %}" alt="For Her" class="w-full h-full object-cover">
         </div>
       </div>
@@ -122,60 +122,60 @@
 </section>
 
 <!-- Featured Products / Our Picks -->
-<section class="bg-cream-50 py-24">
+<section class="bg-cream-50 dark:bg-charcoal-900 py-24 transition-colors duration-300">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-16">
-      <p class="anim text-gold-600 text-xs tracking-wide-plus uppercase font-medium mb-4">Handpicked</p>
-      <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl text-charcoal-900 tracking-display leading-tight">Our Picks</h2>
+      <p class="anim text-gold-600 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-4">Handpicked</p>
+      <h2 class="anim anim-delay-1 font-display text-4xl sm:text-5xl text-charcoal-900 dark:text-cream-100 tracking-display leading-tight">Our Picks</h2>
     </div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
       <!-- Product 1 -->
       <a href="{% url 'store' %}" class="anim anim-delay-1 group">
-        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 dark:from-charcoal-800 dark:to-charcoal-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">One Million</span>
           </div>
         </div>
-        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Paco Rabanne</p>
-        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">One Million</h3>
-        <p class="text-charcoal-500 text-sm">Eau de Toilette · 100ml</p>
-        <p class="text-charcoal-900 font-medium mt-2">£99.99</p>
+        <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1">Paco Rabanne</p>
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">One Million</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Eau de Toilette · 100ml</p>
+        <p class="text-charcoal-900 dark:text-cream-100 font-medium mt-2">£99.99</p>
       </a>
       <!-- Product 2 -->
       <a href="{% url 'store' %}" class="anim anim-delay-2 group">
-        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 dark:from-charcoal-800 dark:to-charcoal-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Stronger</span>
           </div>
         </div>
-        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Emporio Armani</p>
-        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Stronger With You</h3>
-        <p class="text-charcoal-500 text-sm">Eau de Parfum · 100ml</p>
-        <p class="text-charcoal-900 font-medium mt-2">£89.99</p>
+        <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1">Emporio Armani</p>
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">Stronger With You</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Eau de Parfum · 100ml</p>
+        <p class="text-charcoal-900 dark:text-cream-100 font-medium mt-2">£89.99</p>
       </a>
       <!-- Product 3 -->
       <a href="{% url 'store' %}" class="anim anim-delay-3 group">
-        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 dark:from-charcoal-800 dark:to-charcoal-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Prada</span>
           </div>
         </div>
-        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Prada</p>
-        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Luna Rossa</h3>
-        <p class="text-charcoal-500 text-sm">Eau de Toilette · 100ml</p>
-        <p class="text-charcoal-900 font-medium mt-2">£79.99</p>
+        <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1">Prada</p>
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">Luna Rossa</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Eau de Toilette · 100ml</p>
+        <p class="text-charcoal-900 dark:text-cream-100 font-medium mt-2">£79.99</p>
       </a>
       <!-- Product 4 -->
       <a href="{% url 'store' %}" class="anim anim-delay-4 group">
-        <div class="aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4">
-          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+        <div class="aspect-[3/4] bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-4">
+          <div class="w-full h-full bg-gradient-to-b from-charcoal-100 to-charcoal-200 dark:from-charcoal-800 dark:to-charcoal-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
             <span class="text-charcoal-400 text-xs uppercase tracking-wide">Black Opium</span>
           </div>
         </div>
-        <p class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium mb-1">Yves Saint Laurent</p>
-        <h3 class="font-display text-lg text-charcoal-900 mb-1 group-hover:text-burgundy-700 transition-colors">Black Opium</h3>
-        <p class="text-charcoal-500 text-sm">Eau de Parfum · 90ml</p>
-        <p class="text-charcoal-900 font-medium mt-2">£110.00</p>
+        <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1">Yves Saint Laurent</p>
+        <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">Black Opium</h3>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Eau de Parfum · 90ml</p>
+        <p class="text-charcoal-900 dark:text-cream-100 font-medium mt-2">£110.00</p>
       </a>
     </div>
   </div>

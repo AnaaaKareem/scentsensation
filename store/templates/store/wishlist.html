@@ -55,7 +55,7 @@
   }
 </style>
 
-<div class="max-w-5xl mx-auto px-6 lg:px-8 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
+<div class="max-w-[90rem] mx-auto px-6 lg:px-8 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
 
   {% if products %}
   <div class="flex-1 space-y-6">
@@ -65,7 +65,7 @@
       <!-- Product Image -->
       <a href="{% url 'product_detail' product.product_id %}" class="w-32 h-44 bg-charcoal-100 dark:bg-charcoal-800 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
         {% if image %}
-          <img src="data:image/png;base64,{{ image.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <img src="{{ image.image_url }}" alt="{{ product.product_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
         {% else %}
           <span class="text-charcoal-400 dark:text-charcoal-500 text-[10px] uppercase tracking-wide text-center px-1">{{ product.product_name }}</span>
         {% endif %}
@@ -73,9 +73,9 @@
 
       <!-- Product Info -->
       <div class="flex-1 min-w-0">
-        <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 text-xs tracking-wide-plus uppercase font-medium hover:text-gold-600 transition-colors">{{ product.brand }}</a>
+        <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ product.brand }}</a>
         <a href="{% url 'product_detail' product.product_id %}">
-          <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 transition-colors">{{ product.product_name }}</h3>
+          <h3 class="font-display text-xl text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ product.product_name }}</h3>
         </a>
 
         {% if product.release_year %}
