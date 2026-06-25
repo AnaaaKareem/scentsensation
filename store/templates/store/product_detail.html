@@ -5,7 +5,6 @@
 
 {% block body_extra_classes %}lg:h-screen lg:overflow-hidden{% endblock %}
 {% block main_class %}lg:overflow-hidden flex flex-col min-h-0{% endblock %}
-{% block footer %}{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex-1 flex flex-col min-h-0 w-full lg:overflow-hidden">
@@ -34,8 +33,7 @@
                class="gallery-img absolute inset-0 w-full h-full object-contain transition-opacity duration-500 {% if not forloop.first %}opacity-0{% endif %}"
                data-idx="{{ forloop.counter0 }}"
                onload="this.closest('.img-skeleton').classList.add('loaded')"
-               onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');"
-               loading="lazy">
+               onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=500&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
           {% endfor %}
           {% if images|length > 1 %}
           <button type="button" onclick="galleryPrev()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 hover:bg-white rounded-full flex items-center justify-center text-charcoal-700 shadow-md transition-colors z-10">
@@ -57,7 +55,7 @@
           {% for image in images %}
           <button type="button" onclick="galleryGo({{ forloop.counter0 }})"
             class="gallery-thumb w-16 h-16 aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 {% if forloop.first %}border-gold-500{% else %}border-transparent{% endif %} hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0">
-            <img src="{{ image.image_url }}" alt="" class="w-full h-full object-cover" loading="lazy"
+            <img src="{{ image.image_url }}" alt="" class="w-full h-full object-cover"
                  onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80') this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80';">
           </button>
           {% endfor %}
@@ -230,7 +228,7 @@
       {% for pa in accords %}
       <div class="accord-item group flex flex-col items-center text-center">
         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-gold-500 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pa.accord.bar_color|default:'#888888' }}20;">
-          <img src="{{ pa.accord.name|accord_image }}" alt="{{ pa.accord.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+          <img src="{{ pa.accord.name|accord_image }}" alt="{{ pa.accord.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                onload="this.closest('.img-skeleton').classList.add('loaded')"
                onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=150&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
         </div>
@@ -267,7 +265,7 @@
           <div class="note-item group flex flex-col items-center text-center">
             <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-gold-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#8B7355' }}20;">
               {% if pn.note.icon_url %}
-              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                    onload="this.closest('.img-skeleton').classList.add('loaded')"
                    onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
               <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
@@ -302,7 +300,7 @@
           <div class="note-item group flex flex-col items-center text-center">
             <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-burgundy-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#A0522D' }}20;">
               {% if pn.note.icon_url %}
-              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                    onload="this.closest('.img-skeleton').classList.add('loaded')"
                    onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
               <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
@@ -337,7 +335,7 @@
           <div class="note-item group flex flex-col items-center text-center">
             <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 border-2 border-transparent group-hover:border-charcoal-400 transition-all duration-300 shadow-md group-hover:shadow-lg relative img-skeleton" style="background-color: {{ pn.note.group_color|default:'#5C4033' }}20;">
               {% if pn.note.icon_url %}
-              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" 
+              <img src="{{ pn.note.icon_url }}" alt="{{ pn.note.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                    onload="this.closest('.img-skeleton').classList.add('loaded')"
                    onerror="this.style.display='none'; var fb = this.parentNode.querySelector('.fallback-emoji'); if (fb) fb.classList.remove('hidden'); this.closest('.img-skeleton').classList.add('loaded');">
               <div class="fallback-emoji hidden w-full h-full flex items-center justify-center">
@@ -379,7 +377,7 @@
         {% with sp.similar_product.product_images.first as sim_img %}
         <div class="aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden mb-3 relative {% if sim_img %}img-skeleton{% endif %}">
           {% if sim_img %}
-          <img src="{{ sim_img.image_url }}" alt="{{ sp.similar_product.product_name }}" class="w-full h-full object-cover" loading="lazy" 
+          <img src="{{ sim_img.image_url }}" alt="{{ sp.similar_product.product_name }}" class="w-full h-full object-cover" 
                onload="this.closest('.img-skeleton').classList.add('loaded')"
                onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
           {% else %}
@@ -402,11 +400,6 @@
     </div>
   </div>
   {% endif %}
-
-  <!-- Shared Footer inside scrollable column -->
-  <div class="mt-16 border-t border-charcoal-200 dark:border-charcoal-800 pt-8 -mx-6 lg:-mx-8">
-    {% include "store/includes/footer.html" %}
-  </div>
 
   </div> <!-- Close Right Column -->
   </div> <!-- Close split container -->

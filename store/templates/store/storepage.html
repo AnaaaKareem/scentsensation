@@ -5,7 +5,6 @@
 
 {% block body_extra_classes %}lg:h-screen lg:overflow-hidden{% endblock %}
 {% block main_class %}lg:overflow-hidden flex flex-col min-h-0{% endblock %}
-{% block footer %}{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex-1 flex flex-col min-h-0 w-full lg:overflow-hidden">
@@ -100,9 +99,10 @@
           {% if product_images %}
           <a href="{% url 'product_detail' product.product_id %}" class="block aspect-[3/4] rounded-brand overflow-hidden mb-4 relative store-card-imgs img-skeleton">
             {% for image in product_images %}
-            <img src="{{ image.image_url }}" alt="{{ product.product_name }}" loading="lazy"
+            <img src="{{ image.image_url }}" alt="{{ product.product_name }}"
                  class="store-card-img absolute inset-0 w-full h-full object-cover {% if forloop.first %}{% else %} sc-hidden{% endif %}"
-                 onload="this.closest('.img-skeleton').classList.add('loaded')">
+                 onload="this.closest('.img-skeleton').classList.add('loaded')"
+                 onerror="if (this.src !== 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80') { this.src='https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80'; } this.closest('.img-skeleton').classList.add('loaded');">
             {% endfor %}
             {% include "store/includes/wish_btn.html" with product_id=product.product_id wishlist_ids=wishlist_ids only %}
           </a>
@@ -197,11 +197,6 @@
         </div>
       </nav>
       {% endif %}
-      
-        <!-- Reusable Footer inside scrollable column -->
-        <div class="mt-20 -mx-6 lg:-mx-8">
-          {% include "store/includes/footer.html" %}
-        </div>
       </div>
     </div>
   </div>
