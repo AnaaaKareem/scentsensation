@@ -132,7 +132,7 @@
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-cream-100 dark:bg-charcoal-950 text-charcoal-900 dark:text-cream-200 font-body antialiased flex flex-col min-h-screen lg:h-screen lg:overflow-hidden transition-colors duration-300">
+<body class="bg-cream-100 dark:bg-charcoal-950 text-charcoal-900 dark:text-cream-200 font-body antialiased flex flex-col min-h-screen {% block body_extra_classes %}{% endblock %} transition-colors duration-300">
 
   <!-- Messages -->
   {% if messages %}
@@ -261,7 +261,7 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="pt-16 flex-1 {% block main_class %}overflow-y-auto lg:overflow-hidden flex flex-col min-h-0{% endblock %}">
+  <main class="pt-16 flex-1 {% block main_class %}flex flex-col min-h-0{% endblock %}">
     <div class="flex-1 min-h-0 flex flex-col">
       {% block content %}{% endblock %}
     </div>

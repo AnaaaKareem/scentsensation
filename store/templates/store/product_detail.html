@@ -3,7 +3,8 @@
 {% load currency_tags %}
 {% load vote_tags %}
 
-{% block main_class %}overflow-y-auto lg:overflow-hidden flex flex-col min-h-0{% endblock %}
+{% block body_extra_classes %}lg:h-screen lg:overflow-hidden{% endblock %}
+{% block main_class %}lg:overflow-hidden flex flex-col min-h-0{% endblock %}
 {% block footer %}{% endblock %}
 
 {% block content %}
