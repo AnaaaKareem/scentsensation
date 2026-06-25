@@ -3,13 +3,16 @@
 {% load brand_tags %}
 {% load currency_tags %}
 
+{% block main_class %}overflow-y-auto lg:overflow-hidden flex flex-col min-h-0{% endblock %}
+{% block footer %}{% endblock %}
+
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-  <div class="flex flex-col lg:flex-row gap-12">
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex-1 flex flex-col min-h-0 w-full lg:overflow-hidden">
+  <div class="flex flex-col lg:flex-row gap-12 flex-1 min-h-0 w-full lg:overflow-hidden">
 
     <!-- Filters Sidebar -->
-    <aside class="lg:w-64 shrink-0">
-      <div class="sticky top-24">
+    <aside class="w-full lg:w-64 shrink-0 lg:overflow-y-auto lg:max-h-full pr-2">
+      <div class="lg:sticky lg:top-0">
         <div class="flex items-center justify-between mb-6">
           <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100">Filters</h2>
           <a href="{% url 'store' %}" class="text-xs text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 underline">Clear all</a>
@@ -73,8 +76,8 @@
     </aside>
 
     <!-- Product Grid -->
-    <div class="flex-1">
-      <div class="flex items-center justify-between mb-8">
+    <div class="w-full lg:flex-1 lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden">
+      <div class="flex items-center justify-between mb-8 shrink-0">
         <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Showing <span class="text-charcoal-900 dark:text-cream-100 font-medium">{{ products.paginator.count }}</span> products</p>
         <label for="sort" class="sr-only">Sort by</label>
         <select id="sort" name="sort" class="border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand px-4 py-2 text-sm text-charcoal-700 dark:text-charcoal-300 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
@@ -86,7 +89,8 @@
         </select>
       </div>
 
-      {% if products %}
+      <div class="w-full lg:flex-1 lg:overflow-y-auto lg:pr-2 pb-12">
+        {% if products %}
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for product in products %}
         <div class="group">
@@ -192,6 +196,12 @@
         </div>
       </nav>
       {% endif %}
+      
+        <!-- Reusable Footer inside scrollable column -->
+        <div class="mt-20 -mx-6 lg:-mx-8">
+          {% include "store/includes/footer.html" %}
+        </div>
+      </div>
     </div>
   </div>
 </div>
