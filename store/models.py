@@ -61,6 +61,7 @@ class Customer(models.Model):
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female')])
     email_address = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=30, blank=True, null=True)
 
     class Meta:
         managed = True  # Let Django manage migrations
@@ -68,19 +69,6 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
-
-class PhoneNumbers(models.Model):
-    objects = models.Manager()
-    customer = models.ForeignKey(Customer, models.CASCADE, related_name='phonenumbers', db_column='customer_id')
-    phone_number = models.CharField(primary_key=True, max_length=20)
-
-    class Meta:
-        managed = True
-        db_table = 'PHONE_NUMBERS'
-
-    def __str__(self):
-        return self.phone_number
 
 
 class Addresses(models.Model):
@@ -201,21 +189,53 @@ class Brand(models.Model):
         return Products.objects.filter(brand=self.name).count()
 
 
-class Products(models.Model):
-    REGION_CHOICES = [
-        ('US', 'United States'),
-        ('UK', 'United Kingdom'),
-        ('EU', 'European Union'),
-    ]
+class Region(models.Model):
+    region_code = models.CharField(max_length=2, primary_key=True)  # 'US', 'UK'
+    name = models.CharField(max_length=50)
+    currency_code = models.CharField(max_length=3)  # 'USD', 'GBP'
+    currency_symbol = models.CharField(max_length=5)  # '$', '£'
 
-    objects = models.Manager()
+    class Meta:
+        managed = True
+        db_table = 'REGION'
+
+    def __str__(self):
+        return f"{self.name} ({self.region_code})"
+
+
+class ProductsManager(models.Manager):
+    def create(self, **kwargs):
+        price = kwargs.pop('price', None)
+        region_code = kwargs.pop('region', 'US')
+        
+        product = super().create(**kwargs)
+        
+        if price is not None:
+            region, _ = Region.objects.get_or_create(
+                region_code=region_code,
+                defaults={
+                    'name': 'United States' if region_code == 'US' else 'United Kingdom',
+                    'currency_code': 'USD' if region_code == 'US' else 'GBP',
+                    'currency_symbol': '$' if region_code == 'US' else '£'
+                }
+            )
+            ProductVariant.objects.get_or_create(
+                product=product,
+                size_ml=100,
+                region=region,
+                defaults={'price': price, 'stock': 100}
+            )
+        return product
+
+
+class Products(models.Model):
+    objects = ProductsManager()
     product_id = models.AutoField(primary_key=True)
     brand = models.CharField(max_length=50)
     product_name = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.FloatField()
     gift = models.BooleanField(default=False)
-    region = models.CharField(max_length=2, choices=REGION_CHOICES, default='US')
+    regions = models.ManyToManyField(Region, through='ProductVariant', related_name='products')
 
     # Fragrantica enrichment fields
     fragrantica_id = models.IntegerField(blank=True, null=True, unique=True, help_text="Fragrantica PID")
@@ -232,6 +252,39 @@ class Products(models.Model):
 
     def __str__(self):
         return f"{self.brand} - {self.product_name}"
+
+    @property
+    def price(self):
+        variant = self.variants.first()
+        return variant.price if variant else 0.00
+
+    @property
+    def region(self):
+        variant = self.variants.first()
+        return variant.region.region_code if variant else 'US'
+
+    def is_out_of_stock_in_region(self, region_code):
+        variants = self.variants.filter(region_id=region_code)
+        if not variants.exists():
+            return True
+        return sum(v.stock for v in variants) <= 0
+
+
+class ProductVariant(models.Model):
+    variant_id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(Products, models.CASCADE, related_name='variants', db_column='product_id')
+    size_ml = models.IntegerField()  # e.g. 50, 100, 150
+    region = models.ForeignKey(Region, models.CASCADE, related_name='variants', db_column='region_code')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField(default=0)
+
+    class Meta:
+        managed = True
+        db_table = 'PRODUCT_VARIANT'
+        unique_together = (('product', 'size_ml', 'region'),)
+
+    def __str__(self):
+        return f"{self.product} - {self.size_ml}ml ({self.region.region_code}) (£/{self.price})"
 
 
 class FragranceNote(models.Model):
@@ -411,16 +464,20 @@ class ProductImages(models.Model):
 class Basket(models.Model):
     objects = models.Manager()
     customer = models.ForeignKey(Customer, models.CASCADE, related_name='baskets', db_column='customer_id')
-    product = models.ForeignKey(Products, models.CASCADE, related_name='basket_items', db_column='product_id')
+    variant = models.ForeignKey('ProductVariant', models.CASCADE, related_name='basket_items', db_column='variant_id', null=True, blank=True)
     quantity = models.IntegerField(default=1)
 
     class Meta:
         managed = True
         db_table = 'BASKET'
-        unique_together = (('customer', 'product'),)
+        unique_together = (('customer', 'variant'),)
 
     def __str__(self):
-        return f"{self.customer} - {self.product} x{self.quantity}"
+        return f"{self.customer} - {self.variant} x{self.quantity}"
+
+    @property
+    def product(self):
+        return self.variant.product
 
 
 class Orders(models.Model):
@@ -445,17 +502,21 @@ class Orders(models.Model):
 class OrderItems(models.Model):
     objects = models.Manager()
     order = models.ForeignKey(Orders, models.CASCADE, related_name='items', db_column='order_id')
-    product = models.ForeignKey(Products, models.CASCADE, db_column='product_id')
+    variant = models.ForeignKey('ProductVariant', models.CASCADE, db_column='variant_id', null=True, blank=True)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         managed = True
         db_table = 'ORDER_ITEMS'
-        unique_together = (('order', 'product'),)
+        unique_together = (('order', 'variant'),)
 
     def __str__(self):
-        return f"Item {self.product} in Order #{self.order.order_id}"
+        return f"Item {self.variant} in Order #{self.order.order_id}"
+
+    @property
+    def product(self):
+        return self.variant.product
 
 
 class Places(models.Model):
@@ -476,35 +537,25 @@ class Places(models.Model):
 class GiftCards(models.Model):
     objects = models.Manager()
     gift_card_num = models.AutoField(primary_key=True)
-    customer = models.ForeignKey(Customer, models.CASCADE, related_name='gift_cards', db_column='customer_id')
+    code = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    customer = models.ForeignKey(Customer, models.CASCADE, related_name='gift_cards', db_column='customer_id', null=True, blank=True)
     amount = models.FloatField()
-    issue_date = models.DateField()
-    exp_date = models.DateField()
+    issue_date = models.DateField(auto_now_add=True)
+    exp_date = models.DateField(null=True, blank=True)
     redeemed_status = models.BooleanField(default=False)
+    redeemed_at = models.DateTimeField(null=True, blank=True)
+    redeemed_by = models.ForeignKey(Customer, models.SET_NULL, null=True, blank=True, related_name='redeemed_gift_cards')
+    redemption_channel = models.CharField(max_length=10, choices=[('Online', 'Online'), ('Store', 'Store')], null=True, blank=True)
+    redeemed_at_store = models.ForeignKey('Store', models.SET_NULL, null=True, blank=True, related_name='gift_card_redemptions')
 
     class Meta:
         managed = True
         db_table = 'GIFT_CARDS'
 
     def __str__(self):
+        if self.code:
+            return f"Promo Code: {self.code} (£{self.amount})"
         return f"Gift Card #{self.gift_card_num}"
-
-
-class PromoCode(models.Model):
-    objects = models.Manager()
-    promo_id = models.AutoField(primary_key=True)
-    code = models.CharField(max_length=20, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    redeemed = models.BooleanField(default=False)
-    redeemed_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        managed = True
-        db_table = 'PROMO_CODES'
-
-    def __str__(self):
-        return f"{self.code} (£{self.amount})"
 
 
 class Favourite(models.Model):
@@ -584,25 +635,7 @@ class ProductInventory(models.Model):
         return f"Product {self.product} in Inventory {self.inventory}"
 
 
-class Instalments(models.Model):
-    objects = models.Manager()
-    order = models.ForeignKey(Orders, models.CASCADE, db_column='order_id')
-    instalment_number = models.IntegerField()
-    instalment_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    pay_due = models.DateField(blank=True, null=True)
-    payment_status = models.CharField(
-        max_length=50,
-        default='Pending',
-        choices=[('Pending', 'Pending'), ('Paid', 'Paid'), ('Late', 'Late')]
-    )
-
-    class Meta:
-        managed = True
-        db_table = 'INSTALMENTS'
-        unique_together = (('order', 'instalment_number'),)
-
-    def __str__(self):
-        return f"Instalment {self.instalment_number} for Order #{self.order.order_id}"
+# Instalments model removed per request
 
 
 class OrderRef(models.Model):

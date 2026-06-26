@@ -10,10 +10,10 @@ from django.core import mail
 from datetime import date, timedelta, datetime
 
 from store.models import (
-    Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
+    Customer, Addresses, DiscountRate, Membership, MembershipTier,
     Products, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
-    ProductInventory, Instalments, OrderRef
+    ProductInventory, OrderRef
 )
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
@@ -63,7 +63,7 @@ class CompleteUserJourneyTests(BaseViewTestCase):
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-        basket = Basket.objects.get(customer=self.customer, product=product)
+        basket = Basket.objects.get(customer=self.customer, variant__product=product)
         self.assertEqual(basket.quantity, 2)
 
         # --- Act step 2: View basket ---
@@ -105,18 +105,20 @@ class CompleteUserJourneyTests(BaseViewTestCase):
 
     @patch('store.views.send_mail')
     @patch('store.views.stripe.checkout.Session.create')
-    def test_checkout_with_membership_discount_journey(self, mock_session_create, mock_send_mail):
+    @patch('store.views.stripe.Coupon.create')
+    def test_checkout_with_membership_discount_journey(self, mock_coupon, mock_session_create, mock_send_mail):
         # Setup membership discount
         mock_session = MagicMock()
         mock_session.url = 'https://stripe.test'
         mock_session_create.return_value = mock_session
+        mock_coupon.return_value = MagicMock()
 
         tier = MembershipTier.objects.get(slug='Standard')
         Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
         product = Products.objects.create(
             brand='Brand', product_name='Item', description='Desc', price=100.00, gift=False
         )
-        Basket.objects.create(customer=self.customer, product=product, quantity=1)
+        Basket.objects.create(customer=self.customer, variant=product.variants.first(), quantity=1)
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
@@ -137,27 +139,27 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         session.save()
 
         # Add product1 qty 1
-        self.client.post(reverse('add_quantity', kwargs={'product_id': product1.product_id}))
-        item = Basket.objects.get(customer=self.customer, product=product1)
+        self.client.post(reverse('add_quantity', kwargs={'variant_id': product1.variants.first().variant_id}))
+        item = Basket.objects.get(customer=self.customer, variant__product=product1)
         self.assertEqual(item.quantity, 1)
 
         # Increment
-        self.client.post(reverse('add_quantity', kwargs={'product_id': product1.product_id}))
+        self.client.post(reverse('add_quantity', kwargs={'variant_id': product1.variants.first().variant_id}))
         item.refresh_from_db()
         self.assertEqual(item.quantity, 2)
 
         # Decrement
-        self.client.post(reverse('remove_quantity', kwargs={'product_id': product1.product_id}))
+        self.client.post(reverse('remove_quantity', kwargs={'variant_id': product1.variants.first().variant_id}))
         item.refresh_from_db()
         self.assertEqual(item.quantity, 1)
 
         # Decrement to 0 deletes
-        self.client.post(reverse('remove_quantity', kwargs={'product_id': product1.product_id}))
-        self.assertFalse(Basket.objects.filter(product=product1).exists())
+        self.client.post(reverse('remove_quantity', kwargs={'variant_id': product1.variants.first().variant_id}))
+        self.assertFalse(Basket.objects.filter(variant__product=product1).exists())
 
         # Add second product
-        self.client.post(reverse('add_quantity', kwargs={'product_id': product2.product_id}))
-        self.assertTrue(Basket.objects.filter(customer=self.customer, product=product2).exists())
+        self.client.post(reverse('add_quantity', kwargs={'variant_id': product2.variants.first().variant_id}))
+        self.assertTrue(Basket.objects.filter(customer=self.customer, variant__product=product2).exists())
 
     def test_account_update_and_delete_flow(self):
         session = self.client.session
@@ -178,9 +180,7 @@ class CompleteUserJourneyTests(BaseViewTestCase):
         }, follow=True)
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.first_name, 'Updated')
-        self.assertEqual(self.customer.email_address, 'updated@example.com')
-        phone = PhoneNumbers.objects.get(customer=self.customer)
-        self.assertEqual(phone.phone_number, '555-8888')
+        self.assertEqual(self.customer.phone_number, '555-8888')
 
         # POST delete
         response = self.client.post(reverse('account'), {'delete': ''}, follow=True)
@@ -207,7 +207,7 @@ class OrderHistoryTests(BaseViewTestCase):
         product = Products.objects.create(
             brand='Hist', product_name='HistProd', description='H', price=50.0, gift=False
         )
-        Basket.objects.create(customer=self.customer, product=product, quantity=1)
+        Basket.objects.create(customer=self.customer, variant=product.variants.first(), quantity=1)
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()

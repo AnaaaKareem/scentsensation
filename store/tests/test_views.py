@@ -13,10 +13,10 @@ from django.conf import settings
 from django.utils import timezone
 
 from store.models import (
-    Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
+    Customer, Addresses, DiscountRate, Membership, MembershipTier,
     Products, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
-    ProductInventory, Instalments, OrderRef, ProductVote
+    ProductInventory, OrderRef, ProductVote
 )
 from store.views import (
     home, signup, signin, verify_2fa, signout, account,
@@ -108,7 +108,7 @@ class SignupViewTests(BaseViewTestCase):
         self.assertTrue(Customer.objects.filter(email_address='alice@example.com').exists())
         customer = Customer.objects.get(email_address='alice@example.com')
         self.assertTrue(Addresses.objects.filter(customer=customer).exists())
-        self.assertTrue(PhoneNumbers.objects.filter(customer=customer).exists())
+        self.assertTrue(customer.phone_number)
         self.assertTrue(Membership.objects.filter(customer=customer).exists())
 
     def test_signup_post_duplicate_email(self):
@@ -331,8 +331,8 @@ class AccountViewTests(BaseViewTestCase):
         if hasattr(response, 'context') and response.context and 'messages' in response.context:
             for msg in response.context['messages']:
                 print(f"Message: {msg.message}", file=sys.stderr)
-        phone = PhoneNumbers.objects.get(customer=self.customer_with_address)
-        self.assertEqual(phone.phone_number, '555-9999')
+        self.customer_with_address.refresh_from_db()
+        self.assertEqual(self.customer_with_address.phone_number, '555-9999')
 
     def test_account_update_address(self):
         session = self.client.session
@@ -431,7 +431,7 @@ class StoreViewTests(BaseViewTestCase):
         post_data = {'add_basket': '', 'product_id': self.product1.product_id, 'quantity': 2}
         response = self.client.post(reverse('store'), data=post_data, follow=True)
         self.assertRedirects(response, reverse('store'))
-        self.assertTrue(Basket.objects.filter(customer=self.customer, product=self.product1).exists())
+        self.assertTrue(Basket.objects.filter(customer=self.customer, variant__product=self.product1).exists())
 
 
 # --- Basket ---
@@ -442,6 +442,7 @@ class BasketViewTests(BaseViewTestCase):
             brand='TestBrand', product_name='TestProd', description='Test',
             price=25.00, gift=False
         )
+        self.variant = self.product.variants.first()
         ProductImages.objects.create(product=self.product, image_url='http://example.com/img.png')
 
     def test_basket_requires_login(self):
@@ -452,7 +453,7 @@ class BasketViewTests(BaseViewTestCase):
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=2)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=2)
         response = self.client.get(reverse('basket'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'store/basket.html')
@@ -466,7 +467,7 @@ class BasketViewTests(BaseViewTestCase):
         # Create membership with 10% discount
         tier = MembershipTier.objects.get(slug='Standard')
         Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=2)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=2)
         response = self.client.get(reverse('basket'))
         ctx = response.context
         self.assertEqual(ctx['subtotal'], 50.00)
@@ -481,14 +482,15 @@ class BasketOperationsTests(BaseViewTestCase):
         self.product = Products.objects.create(
             brand='BR', product_name='Prod', description='Desc', price=10.0, gift=False
         )
+        self.variant = self.product.variants.first()
 
     def test_delete_from_basket(self):
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
-        Basket.objects.create(customer=self.customer, product=self.product)
+        Basket.objects.create(customer=self.customer, variant=self.variant)
         response = self.client.get(
-            reverse('delete_from_basket', kwargs={'product_id': self.product.product_id})
+            reverse('delete_from_basket', kwargs={'variant_id': self.variant.variant_id})
         )
         self.assertRedirects(response, reverse('basket'))
         self.assertFalse(Basket.objects.exists())
@@ -497,21 +499,21 @@ class BasketOperationsTests(BaseViewTestCase):
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=1)
         response = self.client.post(
-            reverse('add_quantity', kwargs={'product_id': self.product.product_id})
+            reverse('add_quantity', kwargs={'variant_id': self.variant.variant_id})
         )
         self.assertRedirects(response, reverse('basket'))
-        item = Basket.objects.get(customer=self.customer, product=self.product)
+        item = Basket.objects.get(customer=self.customer, variant=self.variant)
         self.assertEqual(item.quantity, 2)
 
     def test_remove_quantity_decrements_and_deletes_at_one(self):
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=1)
         response = self.client.post(
-            reverse('remove_quantity', kwargs={'product_id': self.product.product_id})
+            reverse('remove_quantity', kwargs={'variant_id': self.variant.variant_id})
         )
         self.assertRedirects(response, reverse('basket'))
         self.assertFalse(Basket.objects.exists())
@@ -520,12 +522,12 @@ class BasketOperationsTests(BaseViewTestCase):
         session = self.client.session
         session['customer_id'] = self.customer.customer_id
         session.save()
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=3)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=3)
         response = self.client.post(
-            reverse('remove_quantity', kwargs={'product_id': self.product.product_id})
+            reverse('remove_quantity', kwargs={'variant_id': self.variant.variant_id})
         )
         self.assertRedirects(response, reverse('basket'))
-        item = Basket.objects.get(customer=self.customer, product=self.product)
+        item = Basket.objects.get(customer=self.customer, variant=self.variant)
         self.assertEqual(item.quantity, 2)
 
 
@@ -536,7 +538,8 @@ class CheckoutViewTests(BaseViewTestCase):
         self.product = Products.objects.create(
             brand='Brand', product_name='Product', description='Desc', price=100.00, gift=False
         )
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
+        self.variant = self.product.variants.first()
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=1)
 
     @patch('store.views.stripe.checkout.Session.create')
     @patch('store.views.stripe.Coupon.create')
@@ -566,7 +569,9 @@ class CheckoutViewTests(BaseViewTestCase):
         self.assertRedirects(response, reverse('basket'))
 
     @patch('store.views.stripe.checkout.Session.create')
-    def test_checkout_with_membership_discount(self, mock_session_create):
+    @patch('store.views.stripe.Coupon.create')
+    def test_checkout_with_membership_discount(self, mock_coupon, mock_session_create):
+        mock_coupon.return_value = MagicMock()
         tier = MembershipTier.objects.get(slug='Premium')
         Membership.objects.create(customer=self.customer, tier=tier, is_active=True)
         mock_session = MagicMock()
@@ -587,7 +592,8 @@ class PaymentSuccessViewTests(BaseViewTestCase):
         self.product = Products.objects.create(
             brand='Br', product_name='Pr', description='D', price=50.0, gift=False
         )
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
+        self.variant = self.product.variants.first()
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=1)
 
     @patch('store.views.stripe.checkout.Session.retrieve')
     @patch('store.views.send_mail')
@@ -661,7 +667,7 @@ class AdminDashboardViewTests(TestCase):
             gift_card=None, order_date=timezone.now(), order_status='Paid',
             order_type='Delivery', payment_method='Card', installment=False, total_payment=100.00
         )
-        OrderItems.objects.create(order=order, product=product, quantity=5, price=10.00)
+        OrderItems.objects.create(order=order, variant=product.variants.first(), quantity=5, price=10.00)
         Customer.objects.create(
             first_name='C', last_name='U', DOB=date(2000,1,1), gender='Female',
             email_address='c@example.com', password=make_password('pw')
@@ -687,7 +693,7 @@ class ViewEdgeCaseTests(BaseViewTestCase):
 
     def test_store_invalid_product_404(self):
         # The view for delete_from_basket redirects regardless; but if product_id not found, get_object_or_404 used? Actually delete_from_basket uses filter().delete() not 404
-        response = self.client.get(reverse('delete_from_basket', kwargs={'product_id': 99999}))
+        response = self.client.get(reverse('delete_from_basket', kwargs={'variant_id': 99999}))
         self.assertRedirects(response, reverse('signinAccount'))
 
     def test_basket_handles_deleted_product(self):
@@ -697,7 +703,7 @@ class ViewEdgeCaseTests(BaseViewTestCase):
         product = Products.objects.create(
             brand='Temp', product_name='TempProd', description='T', price=10.0, gift=False
         )
-        Basket.objects.create(customer=self.customer, product=product)
+        Basket.objects.create(customer=self.customer, variant=product.variants.first())
         product.delete()
         # Basket item also deleted via CASCADE
         response = self.client.get(reverse('basket'))

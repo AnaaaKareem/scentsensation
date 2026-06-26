@@ -120,7 +120,7 @@
       {% endif %}
 
       <!-- Price -->
-      <p class="text-charcoal-900 dark:text-cream-100 font-semibold text-2xl mb-6">{{ product.price|currency:currency }}</p>
+      <p class="text-charcoal-900 dark:text-cream-100 font-semibold text-2xl mb-6"><span id="variant-price">{{ default_variant.price|currency:currency }}</span></p>
 
       <!-- Description -->
       {% if product.description %}
@@ -213,6 +213,30 @@
       <form method="POST" action="{% url 'store' %}" class="mt-auto">
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        
+        <!-- Size selection -->
+        <div class="mb-6">
+          <span class="block text-charcoal-700 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-3">Select Size</span>
+          <div class="flex flex-wrap gap-3">
+            {% for var in variants %}
+            <label class="cursor-pointer">
+              <input type="radio" name="variant_id" value="{{ var.variant_id }}" class="sr-only size-radio" 
+                     data-price="{{ var.price|currency:currency }}" 
+                     data-stock="{{ var.stock }}"
+                     {% if forloop.first %}checked{% endif %}>
+              <span class="px-5 py-2.5 border border-charcoal-200 dark:border-charcoal-700 text-sm font-medium rounded-brand hover:border-gold-500 hover:text-gold-500 dark:text-cream-200 block transition-all duration-200 label-size-btn">
+                {{ var.size_ml }}ml
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Stock level warning message -->
+        <div id="stock-warning" class="text-sm font-semibold mb-6 min-h-[20px]">
+          <!-- Will be updated by JavaScript dynamically -->
+        </div>
+
         <div class="flex items-center gap-3 mb-4">
           <span class="text-charcoal-700 dark:text-cream-100 text-sm font-medium">Quantity</span>
           <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
@@ -527,5 +551,69 @@ function toggleWishDetail(btn) {
     fetch('/wishlist/add/' + productId + '/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' } });
   }
 }
+
+// Dynamic variant updates
+document.addEventListener('DOMContentLoaded', function() {
+  var radios = document.querySelectorAll('.size-radio');
+  var priceSpan = document.getElementById('variant-price');
+  var warningDiv = document.getElementById('stock-warning');
+  var addBtn = document.querySelector('button[name="add_basket"]');
+
+  function updateVariantDisplay(radio) {
+    if (!radio) return;
+    var price = radio.dataset.price;
+    var stock = parseInt(radio.dataset.stock || 0);
+
+    if (priceSpan) priceSpan.textContent = price;
+
+    document.querySelectorAll('.label-size-btn').forEach(function(el) {
+      el.classList.remove('border-gold-500', 'text-gold-500', 'bg-gold-500/5');
+      el.classList.add('border-charcoal-200', 'dark:border-charcoal-700');
+    });
+    var labelSpan = radio.nextElementSibling;
+    if (labelSpan) {
+      labelSpan.classList.remove('border-charcoal-200', 'dark:border-charcoal-700');
+      labelSpan.classList.add('border-gold-500', 'text-gold-500', 'bg-gold-500/5');
+    }
+
+    if (stock <= 0) {
+      if (warningDiv) {
+        warningDiv.textContent = 'Out of Stock';
+        warningDiv.className = 'text-sm font-semibold mb-6 text-burgundy-600 dark:text-wine-400';
+      }
+      if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.textContent = 'Out of Stock';
+        addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    } else {
+      if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.textContent = 'Add to Basket';
+        addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      if (stock <= 20) {
+        if (warningDiv) {
+          warningDiv.textContent = 'Only ' + stock + ' left in stock! Order soon.';
+          warningDiv.className = 'text-sm font-semibold mb-6 text-burgundy-600 dark:text-wine-400';
+        }
+      } else {
+        if (warningDiv) {
+          warningDiv.textContent = 'In Stock';
+          warningDiv.className = 'text-sm font-semibold mb-6 text-green-600 dark:text-green-400';
+        }
+      }
+    }
+  }
+
+  radios.forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      updateVariantDisplay(this);
+    });
+  });
+
+  var checkedRadio = document.querySelector('.size-radio:checked');
+  if (checkedRadio) updateVariantDisplay(checkedRadio);
+});
 </script>
 {% endblock content %}

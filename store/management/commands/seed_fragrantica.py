@@ -24,7 +24,7 @@ from django.db import transaction
 from store.models import (
     Products, Brand, FragranceNote, FragranceAccord,
     ProductNote, ProductAccord, Perfumer, ProductPerfumer,
-    ProductVote, ProductImages, SimilarProduct,
+    ProductVote, ProductImages, SimilarProduct, Region, ProductVariant
 )
 
 # Fragrantica gender mapping: dataset value -> our display value
@@ -339,12 +339,20 @@ class Command(BaseCommand):
             # Get or create brand
             brand_obj = brand_map.get(bf_id) if bf_id else None
 
+            # Create regions
+            us_region, _ = Region.objects.get_or_create(
+                region_code='US',
+                defaults={'name': 'United States', 'currency_code': 'USD', 'currency_symbol': '$'}
+            )
+            uk_region, _ = Region.objects.get_or_create(
+                region_code='UK',
+                defaults={'name': 'United Kingdom', 'currency_code': 'GBP', 'currency_symbol': '£'}
+            )
+
             product = Products.objects.create(
                 brand=brand_name,
                 product_name=row.get('name', ''),
                 description=row.get('description', ''),
-                price=PRICE_MAP.get(pid, 99.0),
-                region='US',
                 fragrantica_id=pid,
                 fragrantica_url=row.get('url', ''),
                 release_year=int(row['year']) if row.get('year', '').isdigit() else None,
@@ -353,6 +361,19 @@ class Command(BaseCommand):
                 rating_count=rating_count,
                 reviews_count=int(row['reviews_count']) if row.get('reviews_count', '').isdigit() else None,
             )
+
+            base_price = PRICE_MAP.get(pid, 99.0)
+
+            # Seed multiple variants for US and UK
+            # US Variants
+            ProductVariant.objects.get_or_create(product=product, size_ml=50, region=us_region, defaults={'price': base_price * 0.7, 'stock': 15})
+            ProductVariant.objects.get_or_create(product=product, size_ml=100, region=us_region, defaults={'price': base_price, 'stock': 5})
+            ProductVariant.objects.get_or_create(product=product, size_ml=150, region=us_region, defaults={'price': base_price * 1.3, 'stock': 0})
+
+            # UK Variants
+            ProductVariant.objects.get_or_create(product=product, size_ml=50, region=uk_region, defaults={'price': base_price * 0.6, 'stock': 22})
+            ProductVariant.objects.get_or_create(product=product, size_ml=100, region=uk_region, defaults={'price': base_price * 0.9, 'stock': 18})
+            ProductVariant.objects.get_or_create(product=product, size_ml=150, region=uk_region, defaults={'price': base_price * 1.2, 'stock': 40})
             product_map[pid] = product
 
             # Create ProductNotes (pyramid)

@@ -13,3 +13,12 @@ def currency(value, currency_config):
         return f"{symbol}{converted:.2f}"
     except (TypeError, ValueError, AttributeError):
         return f"${value}"
+
+
+@register.filter
+def is_out_of_stock(product, region_code):
+    """Check if the product is out of stock in the given region."""
+    try:
+        return product.is_out_of_stock_in_region(region_code)
+    except AttributeError:
+        return True

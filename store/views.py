@@ -89,12 +89,9 @@ def signup(request):
                         DOB=data['DOB'],
                         gender=data['gender'],
                         email_address=data['email_address'],
-                        password=make_password(data['password1'])
+                        password=make_password(data['password1']),
+                        phone_number=data.get('phone_numbers')
                     )
-                    # Phone number
-                    phone = data.get('phone_numbers')
-                    if phone:
-                        PhoneNumbers.objects.create(customer=customer, phone_number=phone)
                     # Address
                     if all(k in data for k in ['house', 'street_name', 'town_city', 'county', 'postcode', 'country']):
                         Addresses.objects.create(
@@ -206,7 +203,7 @@ def verify_2fa(request):
                         request.session['country'] = address.country
 
                     # Phone numbers
-                    phone_numbers = list(customer.phonenumbers.values_list('phone_number', flat=True))
+                    phone_numbers = [customer.phone_number] if customer.phone_number else []
                     request.session['phone_numbers'] = phone_numbers
 
                     # Membership
@@ -327,10 +324,11 @@ def account(request):
                             customer.password = make_password(data['password'])
                         customer.save()
 
-                        # Phone number (single, update or create)
+                        # Phone number (single)
                         phone = data.get('phone_numbers')
                         if phone is not None:
-                            PhoneNumbers.objects.update_or_create(customer=customer, defaults={'phone_number': phone})
+                            customer.phone_number = phone
+                            customer.save()
 
                         # Address (first record) – only if required fields provided and non-empty
                         if all(k in data and data[k] for k in ['house', 'street_name', 'town_city', 'country']):
@@ -459,19 +457,19 @@ def store(request):
             all_products = all_products.filter(top_time_of_day__in=db_tods)
 
     region_filter = get_request_region(request)
-    all_products = all_products.filter(region=region_filter)
+    all_products = all_products.filter(variants__region_id=region_filter).distinct()
 
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     if min_price:
-        all_products = all_products.filter(price__gte=min_price)
+        all_products = all_products.filter(variants__region_id=region_filter, variants__price__gte=min_price)
     if max_price:
-        all_products = all_products.filter(price__lte=max_price)
+        all_products = all_products.filter(variants__region_id=region_filter, variants__price__lte=max_price)
 
     sort_map = {
         'featured': None,
-        'price_low': 'price',
-        'price_high': '-price',
+        'price_low': 'variants__price',
+        'price_high': '-variants__price',
         'newest': '-product_id',
         'name_az': 'product_name',
     }
@@ -486,18 +484,39 @@ def store(request):
 
     if request.method == "POST" and "add_basket" in request.POST:
         product_id = request.POST.get("product_id")
+        variant_id = request.POST.get("variant_id")
         quantity = int(request.POST.get("quantity", 1))
         customer_id = request.session.get('customer_id')
         if not customer_id:
             return redirect('signinAccount')
+
+        region_filter = get_request_region(request)
+
+        if variant_id:
+            variant = get_object_or_404(ProductVariant, variant_id=variant_id)
+        else:
+            variant = ProductVariant.objects.filter(product_id=product_id, region_id=region_filter).first()
+            if not variant:
+                variant = ProductVariant.objects.filter(product_id=product_id).first()
+            if not variant:
+                messages.error(request, "Product variant not found.")
+                return redirect('store')
+
+        if variant.stock < quantity:
+            messages.error(request, f"Sorry, only {variant.stock} items left in stock.")
+            return redirect(request.META.get('HTTP_REFERER', 'store'))
+
         basket_item, created = Basket.objects.get_or_create(
             customer_id=customer_id,
-            product_id=product_id,
+            variant=variant,
             defaults={'quantity': quantity}
         )
         if not created:
-            basket_item.quantity += quantity
-            basket_item.save()
+            if variant.stock < basket_item.quantity + quantity:
+                messages.error(request, f"Sorry, you cannot add more. Only {variant.stock} items left in stock.")
+            else:
+                basket_item.quantity += quantity
+                basket_item.save()
         return redirect('store')
 
     # Get wishlist product IDs for the current user
@@ -603,8 +622,11 @@ def product_detail(request, product_id):
     top_season = _top_label('season', 'season_')
     top_time_of_day = _top_label('time_of_day', 'season_')
 
-    region = product.region or 'US'
-    currency = get_currency_config(region)
+    region_filter = get_request_region(request)
+    currency = get_currency_config(region_filter)
+    variants = product.variants.filter(region_id=region_filter).order_by('size_ml')
+    if not variants.exists():
+        variants = product.variants.all().order_by('size_ml')
 
     context = {
         'product': product,
@@ -620,6 +642,8 @@ def product_detail(request, product_id):
         'top_sillage': top_sillage,
         'top_season': top_season,
         'top_time_of_day': top_time_of_day,
+        'variants': variants,
+        'default_variant': variants.first(),
     }
     return render(request, 'store/product_detail.html', context)
 
@@ -643,21 +667,23 @@ def basket(request):
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
-        basket_items = Basket.objects.filter(customer=customer).select_related('product')
+        basket_items = Basket.objects.filter(customer=customer).select_related('variant', 'variant__product')
         items = []
         subtotal = 0
 
         for item in basket_items:
             product = item.product
             image = ProductImages.objects.filter(product=product).first()
-            total_price = product.price * item.quantity
+            total_price = float(item.variant.price) * item.quantity
             subtotal += total_price
             items.append({
                 'product': {
                     'product_id': product.product_id,
                     'brand': product.brand,
                     'product_name': product.product_name,
-                    'price': product.price
+                    'price': float(item.variant.price),
+                    'size_ml': item.variant.size_ml,
+                    'variant_id': item.variant.variant_id
                 },
                 'quantity': item.quantity,
                 'image': image,
@@ -691,29 +717,34 @@ def basket(request):
     return render(request, 'store/basket.html', context)
 
 
-def delete_from_basket(request, product_id):
+def delete_from_basket(request, variant_id):
     customer_id = request.session.get('customer_id')
     if not customer_id:
         return redirect('signinAccount')
-    Basket.objects.filter(customer_id=customer_id, product_id=product_id).delete()
+    Basket.objects.filter(customer_id=customer_id, variant_id=variant_id).delete()
     # Recalculate basket count
     request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
         total=models.Sum('quantity'))['total'] or 0
     return redirect('basket')
 
 
-def add_quantity(request, product_id):
+def add_quantity(request, variant_id):
     customer_id = request.session.get('customer_id')
     if request.method == 'POST' and customer_id:
         try:
+            variant = get_object_or_404(ProductVariant, variant_id=variant_id)
             basket_item, created = Basket.objects.get_or_create(
                 customer_id=customer_id,
-                product_id=product_id,
+                variant_id=variant_id,
                 defaults={'quantity': 1}
             )
             if not created:
-                basket_item.quantity = F('quantity') + 1
-                basket_item.save()
+                basket_item.refresh_from_db()
+                if variant.stock < basket_item.quantity + 1:
+                    messages.error(request, f"Sorry, only {variant.stock} items left in stock.")
+                else:
+                    basket_item.quantity += 1
+                    basket_item.save()
         except Exception as e:
             messages.error(request, f"Error: {e}")
     # Recalculate basket count
@@ -722,11 +753,11 @@ def add_quantity(request, product_id):
     return redirect('basket')
 
 
-def remove_quantity(request, product_id):
+def remove_quantity(request, variant_id):
     customer_id = request.session.get('customer_id')
     if request.method == 'POST' and customer_id:
         try:
-            basket_item = Basket.objects.get(customer_id=customer_id, product_id=product_id)
+            basket_item = Basket.objects.get(customer_id=customer_id, variant_id=variant_id)
             if basket_item.quantity > 1:
                 basket_item.quantity = F('quantity') - 1
                 basket_item.save()
@@ -765,7 +796,7 @@ def checkout(request):
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
-        basket_items = list(Basket.objects.filter(customer=customer).select_related('product'))
+        basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
         if not basket_items:
             messages.error(request, "Your basket is empty.")
             return redirect('basket')
@@ -773,7 +804,7 @@ def checkout(request):
         membership = getattr(customer, 'membership', None)
         discount_rate = membership.tier.discount_rate if membership and membership.tier else 0
 
-        subtotal = sum(item.product.price * item.quantity for item in basket_items)
+        subtotal = sum(float(item.variant.price) * item.quantity for item in basket_items)
         discount = round(subtotal * (discount_rate / 100), 2)
         total = round(subtotal - discount + shipping_cost + gift_wrap_cost, 2)
 
@@ -782,8 +813,8 @@ def checkout(request):
         promo_discount = 0
         if promo_code_str:
             try:
-                promo_code_obj = PromoCode.objects.get(code=promo_code_str)
-                if promo_code_obj.redeemed:
+                promo_code_obj = GiftCards.objects.get(code=promo_code_str)
+                if promo_code_obj.redeemed_status:
                     messages.warning(request, f"Promo code {promo_code_str} has already been redeemed.")
                     promo_code_obj = None
                     promo_code_str = ''
@@ -792,7 +823,7 @@ def checkout(request):
                     total = round(total - promo_discount, 2)
                     if total < 0:
                         total = 0
-            except PromoCode.DoesNotExist:
+            except GiftCards.DoesNotExist:
                 messages.warning(request, f"Promo code {promo_code_str} is not valid.")
                 promo_code_str = ''
 
@@ -805,7 +836,9 @@ def checkout(request):
                     'product_id': item.product.product_id,
                     'brand': item.product.brand,
                     'product_name': item.product.product_name,
-                    'price': item.product.price,
+                    'price': float(item.variant.price),
+                    'size_ml': item.variant.size_ml,
+                    'variant_id': item.variant.variant_id
                 },
                 'quantity': item.quantity,
                 'image': image,
@@ -839,10 +872,10 @@ def checkout(request):
 
                 item_list = []
                 for item in basket_items:
-                    converted_price = round(item.product.price * pp_rate, 2)
+                    converted_price = round(float(item.variant.price) * pp_rate, 2)
                     item_list.append({
-                        "name": f"{item.product.brand} - {item.product.product_name}",
-                        "sku": str(item.product.product_id),
+                        "name": f"{item.product.brand} - {item.product.product_name} ({item.variant.size_ml}ml)",
+                        "sku": f"{item.product.product_id}-{item.variant.size_ml}",
                         "price": f"{converted_price:.2f}",
                         "currency": pp_currency_code,
                         "quantity": item.quantity,
@@ -914,21 +947,26 @@ def checkout(request):
                     for item in basket_items:
                         OrderItems.objects.create(
                             order=order,
-                            product=item.product,
+                            variant=item.variant,
                             quantity=item.quantity,
-                            price=item.product.price
+                            price=item.variant.price
                         )
                         Places.objects.create(
                             customer=customer,
                             product=item.product,
                             order=order
                         )
+                        # Deduct stock
+                        item.variant.stock = max(0, item.variant.stock - item.quantity)
+                        item.variant.save()
                     # Clear basket
                     Basket.objects.filter(customer=customer).delete()
                     # Redeem promo code
                     if promo_code_obj:
-                        promo_code_obj.redeemed = True
+                        promo_code_obj.redeemed_status = True
                         promo_code_obj.redeemed_at = timezone.now()
+                        promo_code_obj.redeemed_by = customer
+                        promo_code_obj.redemption_channel = 'Online'
                         promo_code_obj.save()
 
                 request.session['last_order_id'] = order.order_id
@@ -944,13 +982,13 @@ def checkout(request):
 
                 line_items = []
                 for item in basket_items:
-                    converted_price = round(item.product.price * fx_rate, 2)
+                    converted_price = round(float(item.variant.price) * fx_rate, 2)
                     line_items.append({
                         'price_data': {
                             'currency': currency_code,
                             'unit_amount': int(converted_price * 100),
                             'product_data': {
-                                'name': f"{item.product.brand} - {item.product.product_name}",
+                                'name': f"{item.product.brand} - {item.product.product_name} ({item.variant.size_ml}ml)",
                             },
                         },
                         'quantity': item.quantity,
@@ -1083,7 +1121,7 @@ def payment_success(request):
 
         with transaction.atomic():
             customer = Customer.objects.get(customer_id=customer_id)
-            basket_items = list(Basket.objects.filter(customer=customer).select_related('product'))
+            basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
             if not basket_items:
                 messages.error(request, "Your basket is empty.")
                 return redirect('basket')
@@ -1103,15 +1141,18 @@ def payment_success(request):
             for item in basket_items:
                 OrderItems.objects.create(
                     order=order,
-                    product=item.product,
+                    variant=item.variant,
                     quantity=item.quantity,
-                    price=item.product.price
+                    price=item.variant.price
                 )
                 Places.objects.create(
                     customer=customer,
                     product=item.product,
                     order=order
                 )
+                # Deduct stock
+                item.variant.stock = max(0, item.variant.stock - item.quantity)
+                item.variant.save()
 
             # If pickup, store the selected store in session for receipt
             selected_store_id = metadata.get('selected_store_id', '')
@@ -1128,11 +1169,13 @@ def payment_success(request):
             promo_code_str = metadata.get('promo_code', '')
             if promo_code_str:
                 try:
-                    promo = PromoCode.objects.get(code=promo_code_str)
-                    promo.redeemed = True
+                    promo = GiftCards.objects.get(code=promo_code_str)
+                    promo.redeemed_status = True
                     promo.redeemed_at = timezone.now()
+                    promo.redeemed_by = customer
+                    promo.redemption_channel = 'Online'
                     promo.save()
-                except PromoCode.DoesNotExist:
+                except GiftCards.DoesNotExist:
                     pass
 
             # Extract totals for email/receipt
@@ -1460,7 +1503,7 @@ def paypal_success(request):
             # Payment executed successfully — create the order
             customer_id = pending['customer_id']
             customer = Customer.objects.get(customer_id=customer_id)
-            basket_items = list(Basket.objects.filter(customer=customer).select_related('product'))
+            basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
 
             subtotal = float(pending['subtotal'])
             discount = float(pending['discount'])
@@ -1482,15 +1525,18 @@ def paypal_success(request):
                 for item in basket_items:
                     OrderItems.objects.create(
                         order=order,
-                        product=item.product,
+                        variant=item.variant,
                         quantity=item.quantity,
-                        price=item.product.price,
+                        price=item.variant.price,
                     )
                     Places.objects.create(
                         customer=customer,
                         product=item.product,
                         order=order,
                     )
+                    # Deduct stock
+                    item.variant.stock = max(0, item.variant.stock - item.quantity)
+                    item.variant.save()
 
                 # If pickup, store the selected store name for receipt
                 if selected_store_id:
@@ -1506,11 +1552,13 @@ def paypal_success(request):
                 promo_code_used = pending.get('promo_code', '')
                 if promo_code_used:
                     try:
-                        promo = PromoCode.objects.get(code=promo_code_used)
-                        promo.redeemed = True
+                        promo = GiftCards.objects.get(code=promo_code_used)
+                        promo.redeemed_status = True
                         promo.redeemed_at = timezone.now()
+                        promo.redeemed_by = customer
+                        promo.redemption_channel = 'Online'
                         promo.save()
-                    except PromoCode.DoesNotExist:
+                    except GiftCards.DoesNotExist:
                         pass
 
             # Clear pending checkout

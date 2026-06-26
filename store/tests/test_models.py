@@ -7,10 +7,10 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from datetime import date, timedelta
 from store.models import (
-    Customer, PhoneNumbers, Addresses, DiscountRate, Membership,
+    Customer, Addresses, DiscountRate, Membership,
     Products, ProductImages,
     Basket, Orders, OrderItems, Places, GiftCards, Favourite,
-    Store, Inventory, ProductInventory, Instalments, OrderRef
+    Store, Inventory, ProductInventory, OrderRef
 )
 
 
@@ -52,29 +52,13 @@ class CustomerModelTests(TestCase):
         )
         self.assertIsNone(c2.middle_name)
 
-
-# --- PHONE_NUMBERS ---
-class PhoneNumbersModelTests(TestCase):
-    def setUp(self):
-        self.customer = Customer.objects.create(
-            first_name="Alice", last_name="Wonder", DOB=date(1992,7,7),
-            gender="Female", email_address="alice@example.com", password="pw"
+    def test_customer_phone_number(self):
+        c = Customer.objects.create(
+            first_name="Jane", last_name="Smith", DOB=date(1995,5,15),
+            gender="Female", email_address="jane@example.com", password="pw",
+            phone_number="+44 7911 123456"
         )
-
-    def test_create_phone(self):
-        phone = PhoneNumbers.objects.create(customer=self.customer, phone_number="+1234567890")
-        self.assertEqual(phone.phone_number, "+1234567890")
-        self.assertEqual(str(phone), "+1234567890")
-        self.assertEqual(phone.customer, self.customer)
-
-    def test_phone_primary_key(self):
-        phone = PhoneNumbers.objects.create(customer=self.customer, phone_number="555-1234")
-        self.assertEqual(phone.pk, "555-1234")
-
-    def test_phone_cascade_delete(self):
-        phone = PhoneNumbers.objects.create(customer=self.customer, phone_number="555-9999")
-        self.customer.delete()
-        self.assertFalse(PhoneNumbers.objects.filter(pk="555-9999").exists())
+        self.assertEqual(c.phone_number, "+44 7911 123456")
 
 
 # --- ADDRESSES ---
@@ -215,23 +199,24 @@ class BasketModelTests(TestCase):
             brand="Versace", product_name="Bright Crystal", description="Fresh floral",
             price=70.00, gift=False
         )
+        self.variant = self.product.variants.first()
 
     def test_create_basket_item(self):
-        item = Basket.objects.create(customer=self.customer, product=self.product, quantity=2)
+        item = Basket.objects.create(customer=self.customer, variant=self.variant, quantity=2)
         self.assertEqual(item.quantity, 2)
-        self.assertEqual(str(item), f"{self.customer} - {self.product} x2")
+        self.assertEqual(str(item), f"{self.customer} - {self.variant} x2")
 
     def test_basket_default_quantity(self):
-        item = Basket.objects.create(customer=self.customer, product=self.product)
+        item = Basket.objects.create(customer=self.customer, variant=self.variant)
         self.assertEqual(item.quantity, 1)
 
     def test_basket_unique_together(self):
-        Basket.objects.create(customer=self.customer, product=self.product, quantity=1)
+        Basket.objects.create(customer=self.customer, variant=self.variant, quantity=1)
         with self.assertRaises(IntegrityError):
-            Basket.objects.create(customer=self.customer, product=self.product, quantity=3)
+            Basket.objects.create(customer=self.customer, variant=self.variant, quantity=3)
 
     def test_basket_cascade_delete_customer(self):
-        item = Basket.objects.create(customer=self.customer, product=self.product)
+        item = Basket.objects.create(customer=self.customer, variant=self.variant)
         self.customer.delete()
         self.assertFalse(Basket.objects.filter(pk=item.id).exists())
 
@@ -281,6 +266,7 @@ class OrderItemsModelTests(TestCase):
             brand="Givenchy", product_name="L'Interdit", description="Mysterious",
             price=110.00, gift=False
         )
+        self.variant = self.product.variants.first()
         self.order = Orders.objects.create(
             gift_card=None, order_date=timezone.now(), order_status="Pending",
             order_type="Delivery", payment_method="Card", installment=False, total_payment=110.00
@@ -288,15 +274,15 @@ class OrderItemsModelTests(TestCase):
 
     def test_create_order_item(self):
         item = OrderItems.objects.create(
-            order=self.order, product=self.product, quantity=1, price=110.00
+            order=self.order, variant=self.variant, quantity=1, price=110.00
         )
         self.assertEqual(item.quantity, 1)
         self.assertEqual(item.price, 110.00)
 
     def test_order_item_unique_together(self):
-        OrderItems.objects.create(order=self.order, product=self.product, quantity=1, price=50.00)
+        OrderItems.objects.create(order=self.order, variant=self.variant, quantity=1, price=50.00)
         with self.assertRaises(IntegrityError):
-            OrderItems.objects.create(order=self.order, product=self.product, quantity=2, price=50.00)
+            OrderItems.objects.create(order=self.order, variant=self.variant, quantity=2, price=50.00)
 
 
 # --- PLACES ---
@@ -446,43 +432,6 @@ class ProductInventoryModelTests(TestCase):
             ProductInventory.objects.create(inventory=self.inventory, product=self.product)
 
 
-# --- INSTALMENTS ---
-class InstalmentsModelTests(TestCase):
-    def setUp(self):
-        self.customer = Customer.objects.create(
-            first_name="Jack", last_name="Ma", DOB=date(1964,9,10),
-            gender="Male", email_address="jack@example.com", password="pw"
-        )
-        self.product = Products.objects.create(
-            brand="Hugo Boss", product_name="Boss Bottled", description="Classic",
-            price=60.00, gift=False
-        )
-        self.order = Orders.objects.create(
-            gift_card=None, order_date=timezone.now(), order_status="Pending",
-            order_type="Delivery", payment_method="Card", installment=True, total_payment=120.00
-        )
-
-    def test_create_instalment(self):
-        inst = Instalments.objects.create(
-            order=self.order,
-            instalment_number=1,
-            instalment_amount=60.00,
-            pay_due=date(2026,6,1),
-            payment_status="Pending"
-        )
-        self.assertEqual(inst.instalment_number, 1)
-        self.assertEqual(inst.payment_status, "Pending")
-
-    def test_instalment_default_payment_status(self):
-        inst = Instalments.objects.create(order=self.order, instalment_number=1, instalment_amount=50.00)
-        self.assertEqual(inst.payment_status, "Pending")
-
-    def test_instalments_unique_together(self):
-        Instalments.objects.create(order=self.order, instalment_number=1, instalment_amount=60.00)
-        with self.assertRaises(IntegrityError):
-            Instalments.objects.create(order=self.order, instalment_number=1, instalment_amount=60.00)
-
-
 # --- ORDER_REF ---
 class OrderRefModelTests(TestCase):
     def setUp(self):
@@ -499,7 +448,7 @@ class OrderRefModelTests(TestCase):
             order_type="Pickup", payment_method="Paypal", installment=False, total_payment=150.00
         )
         self.order_item = OrderItems.objects.create(
-            order=self.order, product=self.product, quantity=1, price=150.00
+            order=self.order, variant=self.product.variants.first(), quantity=1, price=150.00
         )
 
     def test_create_order_ref(self):
@@ -526,12 +475,12 @@ class RelationshipCascadeTests(TestCase):
             brand="Prada", product_name="Luna Rossa", description="Sporty",
             price=65.00, gift=False
         )
+        self.variant = self.product.variants.first()
         self.store = Store.objects.create()
         self.inventory = Inventory.objects.create(store=self.store, product=self.product)
 
     def test_customer_cascade_deletes_all_related(self):
         # Create related records
-        PhoneNumbers.objects.create(customer=self.customer, phone_number="555-0001")
         Addresses.objects.create(
             customer=self.customer, house="1", street_name="Elm", town_city="Town",
             county="C", postcode="00000", country="US"
@@ -542,14 +491,13 @@ class RelationshipCascadeTests(TestCase):
             customer=self.customer, amount=25.00,
             issue_date=date(2026,1,1), exp_date=date(2027,1,1), redeemed_status=False
         )
-        Basket.objects.create(customer=self.customer, product=self.product)
+        Basket.objects.create(customer=self.customer, variant=self.variant)
         Favourite.objects.create(customer=self.customer, product=self.product)
 
         # Delete customer
         self.customer.delete()
 
         # Verify cascades
-        self.assertFalse(PhoneNumbers.objects.exists())
         self.assertFalse(Addresses.objects.exists())
         self.assertFalse(Membership.objects.exists())
         self.assertFalse(GiftCards.objects.exists())
@@ -571,14 +519,12 @@ class RelationshipCascadeTests(TestCase):
             gift_card=None, order_date=timezone.now(), order_status="Completed",
             order_type="Delivery", payment_method="Card", installment=False, total_payment=100.00
         )
-        OrderItems.objects.create(order=order, product=self.product, quantity=1, price=100.00)
+        OrderItems.objects.create(order=order, variant=self.variant, quantity=1, price=100.00)
         Places.objects.create(customer=self.customer, product=self.product, order=order)
-        Instalments.objects.create(order=order, instalment_number=1, instalment_amount=50.00)
         OrderRef.objects.create(order=order, product=self.product)
 
         order.delete()
 
         self.assertFalse(OrderItems.objects.exists())
         self.assertFalse(Places.objects.exists())
-        self.assertFalse(Instalments.objects.exists())
         self.assertFalse(OrderRef.objects.exists())

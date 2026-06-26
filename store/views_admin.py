@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from .models import (
     Customer, Products, ProductImages,
     Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory,
-    PromoCode, GiftCards
+    GiftCards
 )
 from .supabase_client import get_supabase_client
 
@@ -94,7 +94,9 @@ def admin_dashboard(request):
     total_products = Products.objects.count()
     total_customers = Customer.objects.count()
     total_revenue = OrderItems.objects.aggregate(total=Sum(F('quantity') * F('price')))['total'] or 0
-    top_product = OrderItems.objects.values('product__product_name').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
+    top_product = OrderItems.objects.values(
+        product__product_name=F('variant__product__product_name')
+    ).annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
     membership_data = Membership.objects.filter(is_active=True, tier__isnull=False).values('tier__name').annotate(count=Count('member_id')).order_by('tier__name')
     membership_tiers = MembershipTier.objects.all().order_by('monthly_price')
     total_members = Membership.objects.filter(is_active=True).count()
@@ -104,7 +106,8 @@ def admin_dashboard(request):
 
     # Top products by sales
     top_products = OrderItems.objects.values(
-        'product__product_name', 'product__brand'
+        product__product_name=F('variant__product__product_name'),
+        product__brand=F('variant__product__brand')
     ).annotate(
         total_sold=Sum('quantity')
     ).order_by('-total_sold')[:5]
@@ -446,22 +449,22 @@ def promo_generate(request):
         chars = string.ascii_uppercase + string.digits
         while True:
             code = 'PROMO-' + ''.join(random.choices(chars, k=8))
-            if not PromoCode.objects.filter(code=code).exists():
+            if not GiftCards.objects.filter(code=code).exists():
                 break
 
-        promo = PromoCode.objects.create(code=code, amount=amount)
+        promo = GiftCards.objects.create(code=code, amount=amount)
         messages.success(request, f"Promo code {promo.code} created for £{promo.amount:.2f}")
         return redirect('promo_generate')
 
     # GET — show the form + recently generated codes
-    recent_codes = PromoCode.objects.order_by('-created_at')[:10]
+    recent_codes = GiftCards.objects.filter(code__isnull=False).order_by('-issue_date')[:10]
     return render(request, 'store/admin/promo_generate.html', {'recent_codes': recent_codes})
 
 
 @promo_required
 def promo_list(request):
     """List all promo codes with their status."""
-    all_codes = PromoCode.objects.order_by('-created_at')
+    all_codes = GiftCards.objects.filter(code__isnull=False).order_by('-issue_date')
     return render(request, 'store/admin/promo_list.html', {'promo_codes': all_codes})
 
 

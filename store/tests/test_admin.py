@@ -6,7 +6,7 @@ from datetime import date
 from store.models import (
     Customer, Products, ProductImages,
     Orders, OrderItems, MembershipTier, Membership, DiscountRate, Store, Inventory,
-    PromoCode, GiftCards
+    GiftCards
 )
 
 class AdminPortalTests(TestCase):
