@@ -233,20 +233,22 @@
             {% csrf_token %}
             <input type="hidden" name="product_id" value="{{ product.product_id }}">
             <div class="flex items-center gap-3">
-              <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
-                <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
-                <input type="number" name="quantity" value="1" min="1"
-                  class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 focus:outline-none appearance-none m-0 p-0" readonly>
-                <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
-              </div>
               {% if product|is_out_of_stock:region_filter %}
-              <button type="button" disabled class="px-4 py-2 bg-charcoal-300 dark:bg-charcoal-800 text-charcoal-500 dark:text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium rounded-brand cursor-not-allowed opacity-50">
+              <button type="button" disabled class="w-full py-2.5 bg-charcoal-300 dark:bg-charcoal-800 text-charcoal-500 dark:text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium rounded-brand cursor-not-allowed opacity-50">
                 Out of Stock
               </button>
               {% else %}
+              {% with max_stock=product|default_variant_stock:region_filter %}
+              <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
+                <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
+                <input type="number" name="quantity" value="1" min="1" max="{{ max_stock }}"
+                  class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 focus:outline-none appearance-none m-0 p-0" readonly>
+                <button type="button" onclick="this.previousElementSibling.value = Math.min(parseInt(this.previousElementSibling.max) || 999, parseInt(this.previousElementSibling.value) + 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
+              </div>
               <button type="submit" name="add_basket" class="px-4 py-2 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
                 Add to Basket
               </button>
+              {% endwith %}
               {% endif %}
             </div>
           </form>

@@ -3,8 +3,8 @@
 {% load currency_tags %}
 {% load vote_tags %}
 
-{% block body_extra_classes %}lg:h-screen lg:overflow-hidden{% endblock %}
-{% block main_class %}lg:overflow-hidden flex flex-col min-h-0{% endblock %}
+{% block body_extra_classes %}{% endblock %}
+{% block main_class %}flex flex-col{% endblock %}
 
 {% block content %}
 <!-- Skeleton Placeholder -->
@@ -34,7 +34,7 @@
   </div>
 </div>
 
-<div id="page-content" class="hidden max-w-7xl mx-auto px-6 lg:px-8 py-12 flex-1 flex flex-col min-h-0 w-full lg:overflow-hidden">
+<div id="page-content" class="hidden max-w-7xl mx-auto px-6 lg:px-8 py-12 flex-1 flex flex-col w-full">
 
   <!-- Breadcrumb -->
   <nav class="mb-8">
@@ -48,13 +48,13 @@
   </nav>
 
   <!-- Product Section -->
-  <div class="flex flex-col lg:flex-row gap-12 flex-1 min-h-0 w-full lg:overflow-hidden mb-8">
+  <div class="flex flex-col lg:flex-row gap-12 w-full mb-8">
 
     <!-- Left: Image Gallery -->
-    <div class="w-full lg:w-1/2 shrink-0">
+    <div class="w-full lg:w-1/2 shrink-0 lg:sticky lg:top-24 self-start">
       {% if images %}
       <div class="flex flex-col gap-4" id="gallery-wrap">
-        <div class="w-full aspect-square bg-charcoal-100 dark:bg-charcoal-900 rounded-brand overflow-hidden relative img-skeleton" id="gallery-main">
+        <div class="w-full aspect-square bg-white rounded-brand overflow-hidden relative img-skeleton border border-cream-200 dark:border-charcoal-800" id="gallery-main">
           {% for image in images %}
           <img src="{{ image.image_url }}" alt="{{ product.product_name }}"
                class="gallery-img absolute inset-0 w-full h-full object-contain transition-opacity duration-500 {% if not forloop.first %}opacity-0{% endif %}"
@@ -97,7 +97,7 @@
     </div>
 
     <!-- Right: Product Info & Sections (Scrollable on desktop) -->
-    <div class="w-full lg:flex-1 lg:overflow-y-auto lg:pr-4 pb-12 flex flex-col gap-8">
+    <div class="w-full lg:flex-1 pb-12 flex flex-col gap-8">
       <div class="flex flex-col">
       <a href="{% url 'brand_detail' product.brand|slugify %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-2 hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ product.brand }}</a>
       <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display mb-4">{{ product.product_name }}</h1>
@@ -237,12 +237,12 @@
           <!-- Will be updated by JavaScript dynamically -->
         </div>
 
-        <div class="flex items-center gap-3 mb-4">
+        <div id="quantity-selector-container" class="flex items-center gap-3 mb-4">
           <span class="text-charcoal-700 dark:text-cream-100 text-sm font-medium">Quantity</span>
           <div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand">
-            <button type="button" onclick="this.nextElementSibling.value = Math.max(1, parseInt(this.nextElementSibling.value) - 1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
-            <input type="number" name="quantity" value="1" min="1" class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-950 text-charcoal-900 dark:text-cream-100 focus:outline-none" readonly>
-            <button type="button" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
+            <button type="button" id="qty-minus" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">−</button>
+            <input type="number" id="qty-input" name="quantity" value="1" min="1" class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-950 text-charcoal-900 dark:text-cream-100 focus:outline-none" readonly>
+            <button type="button" id="qty-plus" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button>
           </div>
         </div>
         <button type="submit" name="add_basket" class="w-full py-4 bg-charcoal-900 dark:bg-charcoal-800 hover:bg-charcoal-800 dark:hover:bg-charcoal-700 text-cream-100 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors">
@@ -522,7 +522,13 @@
     if (idx >= total) idx = 0;
     current = idx;
     for (var i = 0; i < total; i++) {
-      imgs[i].style.opacity = (i === idx) ? '1' : '0';
+      if (i === idx) {
+        imgs[i].classList.remove('opacity-0');
+        imgs[i].classList.add('opacity-100', 'z-10');
+      } else {
+        imgs[i].classList.remove('opacity-100', 'z-10');
+        imgs[i].classList.add('opacity-0');
+      }
       if (dots[i]) dots[i].className = 'gallery-dot ' + (i === idx ? 'bg-white w-5' : 'bg-white/50');
       if (thumbs[i]) {
         thumbs[i].className = 'gallery-thumb w-16 h-16 aspect-square bg-charcoal-100 dark:bg-charcoal-800 rounded-brand overflow-hidden border-2 ' + (i === idx ? 'border-gold-500' : 'border-transparent') + ' hover:border-gold-400 dark:hover:border-gold-500 transition-colors shrink-0';
@@ -558,6 +564,24 @@ document.addEventListener('DOMContentLoaded', function() {
   var priceSpan = document.getElementById('variant-price');
   var warningDiv = document.getElementById('stock-warning');
   var addBtn = document.querySelector('button[name="add_basket"]');
+  var qtyInput = document.getElementById('qty-input');
+  var qtyMinus = document.getElementById('qty-minus');
+  var qtyPlus = document.getElementById('qty-plus');
+  var qtyContainer = document.getElementById('quantity-selector-container');
+
+  if (qtyMinus && qtyInput) {
+    qtyMinus.addEventListener('click', function() {
+      var val = parseInt(qtyInput.value) || 1;
+      qtyInput.value = Math.max(1, val - 1);
+    });
+  }
+  if (qtyPlus && qtyInput) {
+    qtyPlus.addEventListener('click', function() {
+      var val = parseInt(qtyInput.value) || 1;
+      var maxStock = parseInt(qtyInput.max) || 999;
+      qtyInput.value = Math.min(maxStock, val + 1);
+    });
+  }
 
   function updateVariantDisplay(radio) {
     if (!radio) return;
@@ -586,11 +610,20 @@ document.addEventListener('DOMContentLoaded', function() {
         addBtn.textContent = 'Out of Stock';
         addBtn.classList.add('opacity-50', 'cursor-not-allowed');
       }
+      if (qtyContainer) qtyContainer.classList.add('hidden');
+      if (qtyInput) qtyInput.value = 1;
     } else {
       if (addBtn) {
         addBtn.disabled = false;
         addBtn.textContent = 'Add to Basket';
         addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      if (qtyContainer) qtyContainer.classList.remove('hidden');
+      if (qtyInput) {
+        qtyInput.max = stock;
+        if (parseInt(qtyInput.value) > stock) {
+          qtyInput.value = stock;
+        }
       }
       if (stock <= 20) {
         if (warningDiv) {

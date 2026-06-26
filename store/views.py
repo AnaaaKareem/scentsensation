@@ -584,6 +584,7 @@ def brand_detail(request, slug):
         'brand_name': brand_name,
         'products': products,
         'currency': currency,
+        'region_filter': region,
     }
     return render(request, 'store/brand_detail.html', context)
 
