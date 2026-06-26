@@ -16,7 +16,7 @@ from store.models import (
     Customer, PhoneNumbers, Addresses, DiscountRate, Membership, MembershipTier,
     Products, ProductImages, Basket,
     Orders, OrderItems, Places, GiftCards, Favourite, Store, Inventory,
-    ProductInventory, Instalments, OrderRef
+    ProductInventory, Instalments, OrderRef, ProductVote
 )
 from store.views import (
     home, signup, signin, verify_2fa, signout, account,
@@ -392,6 +392,32 @@ class StoreViewTests(BaseViewTestCase):
         response = self.client.get(reverse('store') + '?min_price=60&max_price=100')
         products = list(response.context['products'])
         self.assertTrue(all(60 <= p.price <= 100 for p in products))
+
+    def test_store_filter_by_gender_season_time_of_day(self):
+        # Create gender votes for product1 (Unisex)
+        ProductVote.objects.create(product=self.product1, vote_type='gender_votes', vote_label='gvotes_unisex', votes_count=100)
+        # Create season votes for product2 (Summer)
+        ProductVote.objects.create(product=self.product2, vote_type='season', vote_label='season_summer', votes_count=100)
+        # Create time of day votes for product3 (Day)
+        ProductVote.objects.create(product=self.product3, vote_type='time_of_day', vote_label='season_day', votes_count=100)
+
+        # Test filtering by Gender Unisex
+        response = self.client.get(reverse('store') + '?gender=Unisex')
+        products = list(response.context['products'])
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0], self.product1)
+
+        # Test filtering by Season Summer
+        response = self.client.get(reverse('store') + '?season=Summer')
+        products = list(response.context['products'])
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0], self.product2)
+
+        # Test filtering by Time of Day Day
+        response = self.client.get(reverse('store') + '?time_of_day=Day')
+        products = list(response.context['products'])
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0], self.product3)
 
     def test_store_post_add_to_basket_requires_login(self):
         post_data = {'add_basket': '', 'product_id': self.product1.product_id, 'quantity': 1}

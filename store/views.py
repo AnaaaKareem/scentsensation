@@ -395,8 +395,68 @@ def store(request):
     # Build a mapping of brand name -> brand slug for linking
     brand_slug_map = {b.name: b.slug for b in Brand.objects.all()}
 
+    from django.db.models import Subquery, OuterRef
+
     gender_filter = request.GET.getlist('gender')
-    # Gender filter removed — products no longer have a personal_fragrance.gender field
+    season_filter = request.GET.getlist('season')
+    time_of_day_filter = request.GET.getlist('time_of_day')
+
+    # Annotate products with top voted gender, season, and time of day
+    gender_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='gender_votes'
+    ).order_by('-votes_count', '-percentage')
+
+    season_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='season'
+    ).order_by('-votes_count', '-percentage')
+
+    tod_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='time_of_day'
+    ).order_by('-votes_count', '-percentage')
+
+    all_products = all_products.annotate(
+        top_gender=Subquery(gender_subquery.values('vote_label')[:1]),
+        top_season=Subquery(season_subquery.values('vote_label')[:1]),
+        top_time_of_day=Subquery(tod_subquery.values('vote_label')[:1])
+    )
+
+    # Apply gender filter
+    if gender_filter:
+        gender_map = {
+            'Man': ['gvotes_male', 'gvotes_more_male'],
+            'Woman': ['gvotes_female', 'gvotes_more_female'],
+            'Unisex': ['gvotes_unisex']
+        }
+        db_genders = []
+        for g in gender_filter:
+            db_genders.extend(gender_map.get(g, []))
+        if db_genders:
+            all_products = all_products.filter(top_gender__in=db_genders)
+
+    # Apply season filter
+    if season_filter:
+        season_map = {
+            'Summer': 'season_summer',
+            'Fall': 'season_fall',
+            'Winter': 'season_winter',
+            'Spring': 'season_spring',
+        }
+        db_seasons = [season_map[s] for s in season_filter if s in season_map]
+        if db_seasons:
+            all_products = all_products.filter(top_season__in=db_seasons)
+
+    # Apply time of day filter
+    if time_of_day_filter:
+        tod_map = {
+            'Day': 'season_day',
+            'Night': 'season_night',
+        }
+        db_tods = [tod_map[t] for t in time_of_day_filter if t in tod_map]
+        if db_tods:
+            all_products = all_products.filter(top_time_of_day__in=db_tods)
 
     region_filter = get_request_region(request)
     all_products = all_products.filter(region=region_filter)
@@ -460,6 +520,9 @@ def store(request):
         'wishlist_ids': wishlist_ids,
         'region_filter': region_filter,
         'currency': currency,
+        'selected_genders': gender_filter,
+        'selected_seasons': season_filter,
+        'selected_times_of_day': time_of_day_filter,
     }
     return render(request, 'store/storepage.html', context)
 

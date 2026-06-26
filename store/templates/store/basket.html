@@ -3,98 +3,115 @@
 {% load currency_tags %}
 
 {% block content %}
-<div class="max-w-[90rem] mx-auto px-6 lg:px-8 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
+<div class="w-full px-6 lg:px-12 py-12 min-h-[calc(100vh-8rem)] flex flex-col">
+
+  <div class="mb-10 text-left">
+    <h1 class="font-display text-3xl sm:text-4xl text-charcoal-900 dark:text-cream-100 tracking-display">Your Basket</h1>
+  </div>
 
   {% if items %}
   <div class="flex-1">
-    <div class="grid lg:grid-cols-3 gap-10">
+    <div class="grid lg:grid-cols-4 gap-12">
 
-      <!-- Cart Items -->
-      <div class="lg:col-span-2 space-y-6">
+      <!-- Cart Items - takes 3 out of 4 columns to utilize the width fully -->
+      <div class="lg:col-span-3 space-y-6">
         {% for item in items %}
-        <a href="{% url 'product_detail' item.product.product_id %}" class="flex gap-6 p-6 bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand hover:border-gold-400 hover:shadow-md transition-all group">
-          <!-- Product Image -->
-          <div class="w-24 h-32 bg-charcoal-100 dark:bg-charcoal-800 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
-            {% if item.image %}
-              <img src="{{ item.image.image_url }}" alt="{{ item.product.product_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            {% else %}
-              <span class="text-charcoal-400 dark:text-charcoal-500 text-[10px] uppercase tracking-wide text-center px-1">{{ item.product.product_name }}</span>
-            {% endif %}
+        <div class="wish-card flex flex-col sm:flex-row sm:items-center justify-between gap-8 p-6 md:p-8 bg-white dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-800 rounded-brand hover:border-gold-400 hover:shadow-md transition-all group">
+          <div class="flex items-center gap-8 flex-1 min-w-0">
+            <!-- Product Image -->
+            <a href="{% url 'product_detail' item.product.product_id %}" class="w-24 h-32 sm:w-28 sm:h-36 bg-charcoal-100 dark:bg-charcoal-800 rounded-brand shrink-0 flex items-center justify-center overflow-hidden">
+              {% if item.image %}
+                <img src="{{ item.image.image_url }}" alt="{{ item.product.product_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              {% else %}
+                <span class="text-charcoal-400 dark:text-charcoal-500 text-[10px] uppercase tracking-wide text-center px-1">{{ item.product.product_name }}</span>
+              {% endif %}
+            </a>
+
+            <!-- Product Info -->
+            <div class="flex-1 min-w-0">
+              <a href="{% url 'brand_detail' item.product.brand|slugify %}" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium hover:text-gold-600 dark:hover:text-gold-300 transition-colors">{{ item.product.brand }}</a>
+              <a href="{% url 'product_detail' item.product.product_id %}">
+                <h3 class="font-display text-lg sm:text-xl text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ item.product.product_name }}</h3>
+              </a>
+
+              {% if item.product.release_year %}
+              <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm text-charcoal-500 dark:text-charcoal-400 mt-1">
+                <span>{{ item.product.release_year }}</span>
+              </div>
+              {% endif %}
+
+              <div class="flex items-center gap-3 mt-3">
+                <span class="text-lg sm:text-xl text-charcoal-900 dark:text-cream-100 font-semibold">{{ item.product.price|currency:currency }}</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Product Info -->
-          <div class="flex-1 min-w-0">
-            <p class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium">{{ item.product.brand }}</p>
-            <h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 mb-1 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 transition-colors">{{ item.product.product_name }}</h3>
-
-            <!-- Fragrance details -->
-            {% if item.product.release_year %}
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-charcoal-500 dark:text-charcoal-400 mt-1">
-              <span>{{ item.product.release_year }}</span>
-            </div>
-            {% endif %}
-
-            <!-- Price + Quantity + Remove -->
-            <div class="flex items-center justify-between mt-3">
-              <span class="font-display text-lg text-charcoal-900 dark:text-cream-100">{{ item.product.price|currency:currency }}</span>
-              <div class="flex items-center gap-3">
-                <form action="{% url 'remove_quantity' item.product.product_id %}" method="POST" class="m-0" onclick="event.preventDefault(); event.stopPropagation(); this.submit();">
-                  {% csrf_token %}
-                  <button type="submit" class="w-8 h-8 border border-charcoal-200 dark:border-charcoal-700 rounded-brand flex items-center justify-center text-charcoal-500 dark:text-charcoal-400 hover:border-charcoal-400 dark:hover:border-charcoal-500 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors"
-                    {% if item.quantity <= 1 %}onclick="return confirm('Remove this item from basket?')"{% endif %}>−</button>
-                </form>
-                <span class="font-medium text-charcoal-900 dark:text-cream-100 w-6 text-center">{{ item.quantity }}</span>
-                <form action="{% url 'add_quantity' item.product.product_id %}" method="POST" class="m-0" onclick="event.preventDefault(); event.stopPropagation(); this.submit();">
-                  {% csrf_token %}
-                  <button type="submit" class="w-8 h-8 border border-charcoal-200 dark:border-charcoal-700 rounded-brand flex items-center justify-center text-charcoal-500 dark:text-charcoal-400 hover:border-charcoal-400 dark:hover:border-charcoal-500 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors">+</button>
-                </form>
-              </div>
-              <form action="{% url 'delete_from_basket' item.product.product_id %}" method="POST" class="m-0" onclick="event.preventDefault(); event.stopPropagation(); this.submit();">
+          <!-- Quantity, Price & Remove Section -->
+          <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-4 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-4 sm:pt-0 border-cream-200 dark:border-charcoal-800">
+            <!-- Quantity controls -->
+            <div class="flex items-center gap-3">
+              <form action="{% url 'remove_quantity' item.product.product_id %}" method="POST" class="m-0">
                 {% csrf_token %}
-                <button type="submit" class="text-burgundy-600 dark:text-burgundy-400 hover:text-burgundy-800 dark:hover:text-burgundy-300 text-xs font-medium transition-colors">Remove</button>
+                <button type="submit" class="w-8 h-8 border border-charcoal-200 dark:border-charcoal-700 rounded-brand flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:border-charcoal-400 dark:hover:border-charcoal-500 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-sm font-medium"
+                  {% if item.quantity <= 1 %}onclick="return confirm('Remove this item from basket?')"{% endif %}>−</button>
+              </form>
+              <span class="font-semibold text-charcoal-900 dark:text-cream-100 w-6 text-center text-sm">{{ item.quantity }}</span>
+              <form action="{% url 'add_quantity' item.product.product_id %}" method="POST" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="w-8 h-8 border border-charcoal-200 dark:border-charcoal-700 rounded-brand flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:border-charcoal-400 dark:hover:border-charcoal-500 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-sm font-medium">+</button>
+              </form>
+            </div>
+
+            <!-- Price and Remove -->
+            <div class="flex flex-col items-end gap-1">
+              <form action="{% url 'delete_from_basket' item.product.product_id %}" method="POST" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="text-burgundy-600 dark:text-burgundy-400 hover:text-burgundy-800 dark:hover:text-burgundy-300 text-xs font-medium transition-colors underline">Remove</button>
               </form>
             </div>
           </div>
-        </a>
+        </div>
         {% endfor %}
 
-        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Continue Shopping
-        </a>
+        <div class="pt-6">
+          <a href="{% url 'store' %}" class="inline-flex items-center gap-2 text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Continue Shopping
+          </a>
+        </div>
       </div>
 
-      <!-- Order Summary Sidebar -->
+      <!-- Order Summary Sidebar - spans 1 column on wide screens -->
       <div>
-        <div class="bg-cream-200 dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-6 sticky top-24">
-          <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100 mb-6">Order Summary</h2>
+        <div class="bg-cream-200 dark:bg-charcoal-900 border border-cream-300 dark:border-charcoal-700 rounded-brand p-8 md:p-10 sticky top-24 shadow-sm">
+          <h2 class="font-display text-2xl text-charcoal-900 dark:text-cream-100 mb-8 border-b border-cream-300 dark:border-charcoal-800 pb-4">Order Summary</h2>
 
-          <div class="space-y-3 text-sm">
+          <div class="space-y-4 text-base">
             <div class="flex justify-between items-baseline">
               <span class="text-charcoal-500 dark:text-charcoal-400">Subtotal</span>
-              <span class="text-charcoal-900 dark:text-cream-100">{{ subtotal|currency:currency }}</span>
+              <span class="text-charcoal-900 dark:text-cream-100 font-medium">{{ subtotal|currency:currency }}</span>
             </div>
             {% if discount > 0 %}
             <div class="flex justify-between items-baseline">
               <span class="text-charcoal-500 dark:text-charcoal-400">Discount ({{ discount_rate }}%)</span>
-              <span class="text-burgundy-700 dark:text-burgundy-400">−{{ discount|currency:currency }}</span>
+              <span class="text-burgundy-700 dark:text-burgundy-400 font-medium">−{{ discount|currency:currency }}</span>
             </div>
             {% endif %}
             <div class="flex justify-between items-baseline">
               <span class="text-charcoal-500 dark:text-charcoal-400">Shipping</span>
-              <span class="text-charcoal-900 dark:text-cream-100">Free</span>
+              <span class="text-charcoal-900 dark:text-cream-100 font-medium">Free</span>
             </div>
-            <div class="border-t border-cream-300 dark:border-charcoal-700 pt-3 mt-3">
+            <div class="border-t border-cream-300 dark:border-charcoal-700 pt-4 mt-4">
               <div class="flex justify-between items-baseline">
-                <span class="text-charcoal-900 dark:text-cream-100 font-semibold">Total</span>
-                <span class="font-display text-2xl text-charcoal-900 dark:text-cream-100">{{ total|currency:currency }}</span>
+                <span class="text-charcoal-900 dark:text-cream-100 font-bold text-lg">Total</span>
+                <span class="text-3xl text-charcoal-900 dark:text-cream-100 font-bold">{{ total|currency:currency }}</span>
               </div>
             </div>
           </div>
 
-          <a href="{% url 'checkout' %}" class="block w-full mt-6 py-4 bg-gold-500 hover:bg-gold-600 text-charcoal-950 text-sm tracking-wide-plus uppercase font-semibold rounded-brand transition-colors text-center">
+          <a href="{% url 'checkout' %}" class="block w-full mt-8 py-5 px-8 bg-gold-500 hover:bg-gold-600 active:bg-gold-700 text-charcoal-950 text-base tracking-widest font-bold uppercase rounded-brand shadow-md hover:shadow-lg transition-all text-center hover:scale-[1.02]">
             Proceed to Checkout
           </a>
 
