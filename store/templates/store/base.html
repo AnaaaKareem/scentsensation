@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="{% if request.COOKIES.theme == 'dark' %}dark{% endif %}">
 <head>
   <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
@@ -401,31 +401,35 @@
     function toggleDarkMode() {
       var html = document.documentElement;
       var isDark = html.classList.contains('dark');
-      if (isDark) {
+      var newTheme = isDark ? 'light' : 'dark';
+      if (newTheme === 'light') {
         html.classList.remove('dark');
-        sessionStorage.setItem('darkMode', 'light');
         document.getElementById('sunIcon').classList.remove('hidden');
         document.getElementById('moonIcon').classList.add('hidden');
       } else {
         html.classList.add('dark');
-        sessionStorage.setItem('darkMode', 'dark');
         document.getElementById('sunIcon').classList.add('hidden');
         document.getElementById('moonIcon').classList.remove('hidden');
       }
+      document.cookie = "theme=" + newTheme + ";path=/;max-age=" + (365*24*60*60) + ";SameSite=Lax";
     }
 
     (function(){
-      var saved = sessionStorage.getItem('darkMode');
-      var isDark = saved === 'dark';
-      // Default: light mode unless user previously chose dark
+      var match = document.cookie.match('(^|;)\\s*theme\\s*=\\s*([^;]+)');
+      var saved = match ? match[2] : null;
+      var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
       if (isDark) {
         document.documentElement.classList.add('dark');
-        document.getElementById('sunIcon').classList.add('hidden');
-        document.getElementById('moonIcon').classList.remove('hidden');
+        var sun = document.getElementById('sunIcon');
+        var moon = document.getElementById('moonIcon');
+        if (sun) sun.classList.add('hidden');
+        if (moon) moon.classList.remove('hidden');
       } else {
         document.documentElement.classList.remove('dark');
-        document.getElementById('sunIcon').classList.remove('hidden');
-        document.getElementById('moonIcon').classList.add('hidden');
+        var sun = document.getElementById('sunIcon');
+        var moon = document.getElementById('moonIcon');
+        if (sun) sun.classList.remove('hidden');
+        if (moon) moon.classList.add('hidden');
       }
     })();
 

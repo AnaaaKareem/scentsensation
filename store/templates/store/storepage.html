@@ -54,7 +54,7 @@
           <a href="{% url 'store' %}" class="text-xs text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 underline">Clear all</a>
         </div>
 
-        <form method="GET" action="{% url 'store' %}">
+        <form id="filter-form" method="GET" action="{% url 'store' %}">
           <!-- Preserve existing query params (like page) -->
           {% if request.GET.page %}<input type="hidden" name="page" value="1">{% endif %}
           <input type="hidden" name="sort" value="{{ sort|default:'featured' }}">
@@ -62,24 +62,29 @@
           <!-- Gender -->
           <div class="mb-8">
             <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Gender</h3>
-            <div class="space-y-3">
-              <label class="flex items-center gap-3 cursor-pointer group">
+            <div class="flex flex-col gap-3">
+              <label class="flex items-center gap-3 px-4 py-3 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Man' in selected_genders %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="gender" value="Man"
                   {% if "Man" in selected_genders %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Man</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-charcoal-400 dark:text-charcoal-500 group-hover:text-gold-500 transition-colors has-[:checked]:text-gold-500 dark:has-[:checked]:text-gold-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="14" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M14 10l6-6m0 0h-4m4 0v4"></path></svg>
+                <span class="text-sm font-medium">Man</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-3 px-4 py-3 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Woman' in selected_genders %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="gender" value="Woman"
                   {% if "Woman" in selected_genders %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Woman</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-charcoal-400 dark:text-charcoal-500 group-hover:text-gold-500 transition-colors has-[:checked]:text-gold-500 dark:has-[:checked]:text-gold-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="9" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 14v7m-3-3h6"></path></svg>
+                <span class="text-sm font-medium">Woman</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-3 px-4 py-3 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Unisex' in selected_genders %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="gender" value="Unisex"
                   {% if "Unisex" in selected_genders %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Unisex</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-charcoal-400 dark:text-charcoal-500 group-hover:text-gold-500 transition-colors has-[:checked]:text-gold-500 dark:has-[:checked]:text-gold-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 12m-3 0a3 3 0 1 0 6 0 3 3 0 1 0 -6 0M12 9V3M9 6h6M12 15v6M9 18h6"></path></svg>
+                <span class="text-sm font-medium">Unisex</span>
               </label>
             </div>
           </div>
@@ -87,30 +92,37 @@
           <!-- Season -->
           <div class="mb-8">
             <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Season</h3>
-            <div class="space-y-3">
-              <label class="flex items-center gap-3 cursor-pointer group">
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Spring' in selected_seasons %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="season" value="Spring"
                   {% if "Spring" in selected_seasons %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Spring</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-emerald-500/80 group-hover:text-emerald-500 transition-colors has-[:checked]:text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 009-9M12 21a9 9 0 01-9-9M12 21V10m0 0a4 4 0 10-4-4m4 4a4 4 0 114-4"></path></svg>
+                <span class="text-sm font-medium">Spring</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Summer' in selected_seasons %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="season" value="Summer"
                   {% if "Summer" in selected_seasons %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Summer</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-amber-500/80 group-hover:text-amber-500 transition-colors has-[:checked]:text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m12.72-12.72l-1.41 1.41"></path></svg>
+                <span class="text-sm font-medium">Summer</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Fall' in selected_seasons %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="season" value="Fall"
                   {% if "Fall" in selected_seasons %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Fall</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-orange-500/80 group-hover:text-orange-500 transition-colors has-[:checked]:text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M19 2c-3 2-6 5-8 8l-4 4-3 3 3 1 3-3 4-4c3-2 6-5 8-8zM11 10c-2 2-4 5-5 7m3-1l-3 3"></path></svg>
+                <span class="text-sm font-medium">Fall</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Winter' in selected_seasons %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="season" value="Winter"
                   {% if "Winter" in selected_seasons %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Winter</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-sky-500/80 group-hover:text-sky-500 transition-colors has-[:checked]:text-sky-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v22M2 12h20m-3-4l-3 4 3 4M5 8l3 4-3 4M16 4l-4 4-4-4M8 20l4-4 4 4"></path></svg>
+                <span class="text-sm font-medium">Winter</span>
               </label>
             </div>
           </div>
@@ -118,45 +130,50 @@
           <!-- Time of Day -->
           <div class="mb-8">
             <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Time of Day</h3>
-            <div class="space-y-3">
-              <label class="flex items-center gap-3 cursor-pointer group">
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Day' in selected_times_of_day %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="time_of_day" value="Day"
                   {% if "Day" in selected_times_of_day %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Day</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-yellow-500/80 group-hover:text-yellow-500 transition-colors has-[:checked]:text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m12.72-12.72l-1.41 1.41"></path></svg>
+                <span class="text-sm font-medium">Day</span>
               </label>
-              <label class="flex items-center gap-3 cursor-pointer group">
+              
+              <label class="flex items-center gap-2 px-3 py-2.5 border rounded-brand cursor-pointer select-none transition-all duration-200 hover:border-gold-500 hover:text-gold-500 dark:hover:text-gold-400 group {% if 'Night' in selected_times_of_day %}border-gold-500 text-gold-500 bg-gold-500/5 dark:bg-gold-500/10{% else %}border-charcoal-200 dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200{% endif %} has-[:checked]:border-gold-500 has-[:checked]:text-gold-500 has-[:checked]:bg-gold-500/5 dark:has-[:checked]:bg-gold-500/10">
                 <input type="checkbox" name="time_of_day" value="Night"
                   {% if "Night" in selected_times_of_day %}checked{% endif %}
-                  class="w-4 h-4 border-charcoal-300 dark:border-charcoal-600 rounded text-gold-500 focus:ring-gold-500">
-                <span class="text-charcoal-600 dark:text-charcoal-300 group-hover:text-charcoal-900 dark:hover:text-cream-100 text-sm transition-colors">Night</span>
+                  class="w-4 h-4 rounded border-charcoal-300 dark:border-charcoal-600 text-gold-500 focus:ring-gold-500 dark:bg-charcoal-900 bg-transparent cursor-pointer">
+                <svg class="w-4 h-4 text-indigo-400/80 group-hover:text-indigo-400 transition-colors has-[:checked]:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <span class="text-sm font-medium">Night</span>
               </label>
             </div>
           </div>
 
-          <!-- Price Range -->
+          <!-- Price Range (Double Slider) -->
           <div class="mb-8">
-            <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold mb-4">Price Range</h3>
-            <div class="flex items-center gap-3">
-              <div class="relative flex-1">
-                <label for="min_price" class="sr-only">Min price</label>
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 dark:text-charcoal-500 text-sm">£</span>
-                <input type="number" id="min_price" name="min_price" value="{{ request.GET.min_price|default:'' }}" min="0" placeholder="0"
-                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-              </div>
-              <span class="text-charcoal-400 dark:text-charcoal-500">—</span>
-              <div class="relative flex-1">
-                <label for="max_price" class="sr-only">Max price</label>
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400 dark:text-charcoal-500 text-sm">£</span>
-                <input type="number" id="max_price" name="max_price" value="{{ request.GET.max_price|default:'' }}" min="0" placeholder="500"
-                  class="w-full pl-7 pr-3 py-2 border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand text-sm focus:outline-none focus:border-gold-500 transition-colors">
-              </div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-charcoal-900 dark:text-cream-100 text-xs tracking-wide-plus uppercase font-semibold">Price Range</h3>
+              <span id="price-slider-value" class="text-xs font-semibold text-gold-600 dark:text-gold-400">
+                {{ currency.symbol }}{{ request.GET.min_price|default:'0' }} — {{ currency.symbol }}{{ request.GET.max_price|default:max_price_limit }}
+              </span>
+            </div>
+            
+            <div class="relative min-h-[24px] flex items-center">
+              <!-- Custom Track -->
+              <div class="absolute left-0 right-0 h-1 bg-charcoal-200 dark:bg-charcoal-800 rounded-lg"></div>
+              <!-- Selected Range Highlight -->
+              <div id="slider-connect" class="absolute h-1 bg-gold-500 rounded-lg"></div>
+              
+              <!-- Two Range Inputs overlapping -->
+              <input type="range" id="min_price_slider" name="min_price" min="0" max="{{ max_price_limit }}" step="10" 
+                value="{{ request.GET.min_price|default:'0' }}"
+                class="absolute pointer-events-none appearance-none w-full h-1 bg-transparent accent-gold-500 focus:outline-none">
+              
+              <input type="range" id="max_price_slider" name="max_price" min="0" max="{{ max_price_limit }}" step="10" 
+                value="{{ request.GET.max_price|default:max_price_limit }}"
+                class="absolute pointer-events-none appearance-none w-full h-1 bg-transparent accent-gold-500 focus:outline-none">
             </div>
           </div>
-
-          <button type="submit" class="w-full py-3 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-sm tracking-wide-plus uppercase font-medium rounded-brand transition-colors">
-            Apply Filters
-          </button>
         </form>
       </div>
     </aside>
@@ -421,6 +438,50 @@
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+  
+  /* Double Range Slider overlapping handles styling */
+  #min_price_slider, #max_price_slider {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  #min_price_slider::-webkit-slider-thumb, 
+  #max_price_slider::-webkit-slider-thumb {
+    pointer-events: auto !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #d4a824; /* gold-500 */
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 0.1s ease;
+  }
+  #min_price_slider::-webkit-slider-thumb:hover, 
+  #max_price_slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+  #min_price_slider::-moz-range-thumb, 
+  #max_price_slider::-moz-range-thumb {
+    pointer-events: auto !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #d4a824; /* gold-500 */
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 0.1s ease;
+  }
+  #min_price_slider::-moz-range-thumb:hover, 
+  #max_price_slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+  }
 </style>
 
 <script>
@@ -430,6 +491,61 @@ function applySort(value) {
   params.delete('page');
   window.location.search = params.toString();
 }
+
+// Auto-submit filter form on inputs change
+document.addEventListener('DOMContentLoaded', function() {
+  const filterForm = document.getElementById('filter-form');
+  if (filterForm) {
+    // Checkboxes auto-submit
+    const checkboxes = filterForm.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        filterForm.submit();
+      });
+    });
+
+    // Double Slider display updates & auto-submit
+    const minSlider = document.getElementById('min_price_slider');
+    const maxSlider = document.getElementById('max_price_slider');
+    const connect = document.getElementById('slider-connect');
+    const priceDisplay = document.getElementById('price-slider-value');
+
+    function updateSlider() {
+      let minVal = parseInt(minSlider.value);
+      let maxVal = parseInt(maxSlider.value);
+
+      if (minVal > maxVal) {
+        let temp = minVal;
+        minVal = maxVal;
+        maxVal = temp;
+        minSlider.value = minVal;
+        maxSlider.value = maxVal;
+      }
+
+      priceDisplay.textContent = '{{ currency.symbol }}' + minVal + ' — ' + '{{ currency.symbol }}' + maxVal;
+
+      const minPercent = (minVal / minSlider.max) * 100;
+      const maxPercent = (maxVal / maxSlider.max) * 100;
+      connect.style.left = minPercent + '%';
+      connect.style.width = (maxPercent - minPercent) + '%';
+    }
+
+    if (minSlider && maxSlider && connect && priceDisplay) {
+      minSlider.addEventListener('input', updateSlider);
+      maxSlider.addEventListener('input', updateSlider);
+
+      minSlider.addEventListener('change', function() {
+        filterForm.submit();
+      });
+      maxSlider.addEventListener('change', function() {
+        filterForm.submit();
+      });
+
+      // Initialize
+      updateSlider();
+    }
+  }
+});
 
 // === Store Card Image Hover Scroll ===
 (function(){

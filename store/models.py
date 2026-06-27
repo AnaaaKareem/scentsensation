@@ -477,7 +477,7 @@ class Basket(models.Model):
 
     @property
     def product(self):
-        return self.variant.product
+        return self.variant.product if self.variant else None
 
 
 class Orders(models.Model):
@@ -516,7 +516,7 @@ class OrderItems(models.Model):
 
     @property
     def product(self):
-        return self.variant.product
+        return self.variant.product if self.variant else None
 
 
 class Places(models.Model):

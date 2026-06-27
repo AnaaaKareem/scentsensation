@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Q, Count, Sum, F, Sum as _Sum
+from django.db.models import Q, Count, Sum, F, Max, Sum as _Sum
 from django.db import transaction
 from .models import *
 from .forms import *
@@ -528,6 +528,14 @@ def store(request):
         ).values_list('product_id', flat=True))
         request.session['wishlist_count'] = len(wishlist_ids)
 
+    # Calculate max price limit based on the most expensive product variant in the active region (rounded to nearest 1000)
+    max_variant_price = ProductVariant.objects.filter(region_id=region_filter).aggregate(Max('price'))['price__max']
+    if not max_variant_price:
+        max_variant_price = ProductVariant.objects.aggregate(Max('price'))['price__max'] or 500
+    
+    import math
+    max_price_limit = int(math.ceil(float(max_variant_price) / 1000.0) * 1000)
+
     currency = get_currency_config(region_filter)
 
     context = {
@@ -542,6 +550,7 @@ def store(request):
         'selected_genders': gender_filter,
         'selected_seasons': season_filter,
         'selected_times_of_day': time_of_day_filter,
+        'max_price_limit': max_price_limit,
     }
     return render(request, 'store/storepage.html', context)
 
@@ -668,6 +677,8 @@ def basket(request):
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
+        # Clean up any invalid basket items with a missing variant
+        Basket.objects.filter(customer=customer, variant__isnull=True).delete()
         basket_items = Basket.objects.filter(customer=customer).select_related('variant', 'variant__product')
         items = []
         subtotal = 0
@@ -797,6 +808,8 @@ def checkout(request):
 
     try:
         customer = Customer.objects.get(customer_id=customer_id)
+        # Clean up any invalid basket items with a missing variant
+        Basket.objects.filter(customer=customer, variant__isnull=True).delete()
         basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
         if not basket_items:
             messages.error(request, "Your basket is empty.")
@@ -1122,6 +1135,8 @@ def payment_success(request):
 
         with transaction.atomic():
             customer = Customer.objects.get(customer_id=customer_id)
+            # Clean up any invalid basket items with a missing variant
+            Basket.objects.filter(customer=customer, variant__isnull=True).delete()
             basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
             if not basket_items:
                 messages.error(request, "Your basket is empty.")
@@ -1504,6 +1519,8 @@ def paypal_success(request):
             # Payment executed successfully — create the order
             customer_id = pending['customer_id']
             customer = Customer.objects.get(customer_id=customer_id)
+            # Clean up any invalid basket items with a missing variant
+            Basket.objects.filter(customer=customer, variant__isnull=True).delete()
             basket_items = list(Basket.objects.filter(customer=customer).select_related('variant', 'variant__product'))
 
             subtotal = float(pending['subtotal'])
