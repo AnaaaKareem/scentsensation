@@ -15,6 +15,7 @@ urlpatterns = [
     path('brands/', views.brand_list, name='brand_list'),
     path('brands/<slug:slug>/', views.brand_detail, name='brand_detail'),
     path('store/', views.store, name='store'),
+    path('store/api/', views.store_api, name='store_api'),
     path('store/product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('basket/', views.basket, name='basket'),
     path('basket/delete/<int:variant_id>/', views.delete_from_basket, name='delete_from_basket'),

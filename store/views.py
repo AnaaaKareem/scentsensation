@@ -555,6 +555,149 @@ def store(request):
     return render(request, 'store/storepage.html', context)
 
 
+def store_api(request):
+    """API endpoint that returns filtered products as JSON for live filter updates."""
+    from django.db.models import Subquery, OuterRef
+    from django.http import JsonResponse
+
+    all_products = Products.objects.all()
+
+    gender_filter = request.GET.getlist('gender')
+    season_filter = request.GET.getlist('season')
+    time_of_day_filter = request.GET.getlist('time_of_day')
+
+    gender_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='gender_votes'
+    ).order_by('-votes_count', '-percentage')
+
+    season_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='season'
+    ).order_by('-votes_count', '-percentage')
+
+    tod_subquery = ProductVote.objects.filter(
+        product=OuterRef('pk'),
+        vote_type='time_of_day'
+    ).order_by('-votes_count', '-percentage')
+
+    all_products = all_products.annotate(
+        top_gender=Subquery(gender_subquery.values('vote_label')[:1]),
+        top_season=Subquery(season_subquery.values('vote_label')[:1]),
+        top_time_of_day=Subquery(tod_subquery.values('vote_label')[:1])
+    )
+
+    if gender_filter:
+        gender_map = {
+            'Man': ['gvotes_male', 'gvotes_more_male'],
+            'Woman': ['gvotes_female', 'gvotes_more_female'],
+            'Unisex': ['gvotes_unisex']
+        }
+        db_genders = []
+        for g in gender_filter:
+            db_genders.extend(gender_map.get(g, []))
+        if db_genders:
+            all_products = all_products.filter(top_gender__in=db_genders)
+
+    if season_filter:
+        season_map = {
+            'Summer': 'season_summer',
+            'Fall': 'season_fall',
+            'Winter': 'season_winter',
+            'Spring': 'season_spring',
+        }
+        db_seasons = [season_map[s] for s in season_filter if s in season_map]
+        if db_seasons:
+            all_products = all_products.filter(top_season__in=db_seasons)
+
+    if time_of_day_filter:
+        tod_map = {
+            'Day': 'season_day',
+            'Night': 'season_night',
+        }
+        db_tods = [tod_map[t] for t in time_of_day_filter if t in tod_map]
+        if db_tods:
+            all_products = all_products.filter(top_time_of_day__in=db_tods)
+
+    region_filter = get_request_region(request)
+    all_products = all_products.filter(variants__region_id=region_filter).distinct()
+
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        all_products = all_products.filter(variants__region_id=region_filter, variants__price__gte=min_price)
+    if max_price:
+        all_products = all_products.filter(variants__region_id=region_filter, variants__price__lte=max_price)
+
+    sort_map = {
+        'featured': None,
+        'price_low': 'variants__price',
+        'price_high': '-variants__price',
+        'newest': '-product_id',
+        'name_az': 'product_name',
+    }
+    sort_param = request.GET.get('sort', 'featured')
+    order_field = sort_map.get(sort_param)
+    if order_field:
+        all_products = all_products.order_by(order_field)
+
+    paginator = Paginator(all_products, 6)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Get wishlist IDs
+    wishlist_ids = set()
+    customer_id_session = request.session.get('customer_id')
+    if customer_id_session:
+        wishlist_ids = set(Wishlist.objects.filter(
+            customer_id=customer_id_session
+        ).values_list('product_id', flat=True))
+
+    brand_slug_map = {b.name: b.slug for b in Brand.objects.all()}
+    currency = get_currency_config(region_filter)
+
+    products_data = []
+    for product in page_obj:
+        images = list(product.product_images.all().values('image_url', 'is_primary'))
+        variant = product.variants.filter(region_id=region_filter).order_by('size_ml').first()
+        if not variant:
+            variant = product.variants.order_by('size_ml').first()
+
+        out_of_stock = product.is_out_of_stock_in_region(region_filter)
+        max_stock = variant.stock if variant and not out_of_stock else 0
+
+        price_converted = float(product.price) * currency.get('rate', 1.0)
+        price_formatted = f"{currency.get('symbol', '$')}{price_converted:.2f}"
+
+        brand_slug_val = brand_slug_map.get(product.brand, product.brand.lower().replace(' ', '-'))
+
+        products_data.append({
+            'product_id': product.product_id,
+            'brand': product.brand,
+            'brand_slug': brand_slug_val,
+            'product_name': product.product_name,
+            'price': price_formatted,
+            'images': images,
+            'release_year': product.release_year,
+            'rating_avg': product.rating_avg,
+            'reviews_count': product.reviews_count,
+            'out_of_stock': out_of_stock,
+            'max_stock': max_stock,
+            'in_wishlist': product.product_id in wishlist_ids,
+        })
+
+    return JsonResponse({
+        'products': products_data,
+        'total_count': paginator.count,
+        'page': page_obj.number,
+        'num_pages': paginator.num_pages,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'currency': currency,
+        'region': region_filter,
+    })
+
+
 def brand_list(request):
     brands = Brand.objects.all()
     # Also get distinct brand names from Products that might not have a Brand record yet
@@ -1643,31 +1786,34 @@ def wishlist(request):
     customer = Customer.objects.get(customer_id=customer_id)
     wishlist_items = Wishlist.objects.filter(customer=customer).select_related('product')
 
+    region = get_request_region(request)
+    currency = get_currency_config(region)
+
     products = []
+    wishlist_subtotal = 0
     for item in wishlist_items:
         product = item.product
         image = ProductImages.objects.filter(product=product).first()
+        
+        # Get region-specific price
+        variant = product.variants.filter(region_id=region).first()
+        if not variant:
+            variant = product.variants.first()
+        price = variant.price if variant else 0
+        wishlist_subtotal += price
+
         products.append({
             'product': product,
             'image': image,
+            'price': price,
         })
-
-    from django.db.models import Sum
-    wishlist_subtotal = Wishlist.objects.filter(
-        customer=customer
-    ).select_related('product').aggregate(
-        total=models.Sum('product__price')
-    )['total'] or 0
-
-    region = get_request_region(request)
-    currency = get_currency_config(region)
 
     request.session['wishlist_count'] = len(products)
 
     return render(request, 'store/wishlist.html', {
         'products': products,
         'wishlist_count': len(products),
-        'wishlist_subtotal': round(wishlist_subtotal, 2),
+        'wishlist_subtotal': round(float(wishlist_subtotal), 2),
         'currency': currency,
     })
 
