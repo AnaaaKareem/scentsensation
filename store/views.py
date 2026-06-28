@@ -877,9 +877,11 @@ def delete_from_basket(request, variant_id):
     if not customer_id:
         return redirect('signinAccount')
     Basket.objects.filter(customer_id=customer_id, variant_id=variant_id).delete()
-    # Recalculate basket count
     request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
         total=models.Sum('quantity'))['total'] or 0
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        return JsonResponse({'status': 'deleted', 'basket_count': request.session['basket_count']})
     return redirect('basket')
 
 
@@ -902,9 +904,51 @@ def add_quantity(request, variant_id):
                     basket_item.save()
         except Exception as e:
             messages.error(request, f"Error: {e}")
-    # Recalculate basket count
     request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
         total=models.Sum('quantity'))['total'] or 0
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        # Return updated basket state
+        basket_items = Basket.objects.filter(customer_id=customer_id).select_related('variant', 'variant__product')
+        items_data = []
+        subtotal = 0
+        for item in basket_items:
+            product = item.variant.product
+            price = float(item.variant.price)
+            total_price = price * item.quantity
+            subtotal += total_price
+            image = ProductImages.objects.filter(product=product).first()
+            items_data.append({
+                'product_id': product.product_id,
+                'variant_id': item.variant.variant_id,
+                'brand': product.brand,
+                'product_name': product.product_name,
+                'price': price,
+                'size_ml': item.variant.size_ml,
+                'quantity': item.quantity,
+                'image_url': image.image_url if image else None,
+                'release_year': product.release_year,
+            })
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            membership = getattr(customer, 'membership', None)
+            discount_rate = membership.tier.discount_rate if membership and membership.tier else 0
+        except Customer.DoesNotExist:
+            discount_rate = 0
+        discount = subtotal * (discount_rate / 100)
+        total = subtotal - discount
+        region = get_request_region(request)
+        currency = get_currency_config(region)
+        return JsonResponse({
+            'status': 'updated',
+            'basket_count': request.session['basket_count'],
+            'items': items_data,
+            'subtotal': round(subtotal, 2),
+            'discount': round(discount, 2),
+            'total': round(total, 2),
+            'discount_rate': discount_rate,
+            'currency': currency,
+        })
     return redirect('basket')
 
 
@@ -922,9 +966,50 @@ def remove_quantity(request, variant_id):
             pass
         except Exception as e:
             messages.error(request, f"Error: {e}")
-    # Recalculate basket count
     request.session['basket_count'] = Basket.objects.filter(customer_id=customer_id).aggregate(
         total=models.Sum('quantity'))['total'] or 0
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        basket_items = Basket.objects.filter(customer_id=customer_id).select_related('variant', 'variant__product')
+        items_data = []
+        subtotal = 0
+        for item in basket_items:
+            product = item.variant.product
+            price = float(item.variant.price)
+            total_price = price * item.quantity
+            subtotal += total_price
+            image = ProductImages.objects.filter(product=product).first()
+            items_data.append({
+                'product_id': product.product_id,
+                'variant_id': item.variant.variant_id,
+                'brand': product.brand,
+                'product_name': product.product_name,
+                'price': price,
+                'size_ml': item.variant.size_ml,
+                'quantity': item.quantity,
+                'image_url': image.image_url if image else None,
+                'release_year': product.release_year,
+            })
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            membership = getattr(customer, 'membership', None)
+            discount_rate = membership.tier.discount_rate if membership and membership.tier else 0
+        except Customer.DoesNotExist:
+            discount_rate = 0
+        discount = subtotal * (discount_rate / 100)
+        total = subtotal - discount
+        region = get_request_region(request)
+        currency = get_currency_config(region)
+        return JsonResponse({
+            'status': 'updated',
+            'basket_count': request.session['basket_count'],
+            'items': items_data,
+            'subtotal': round(subtotal, 2),
+            'discount': round(discount, 2),
+            'total': round(total, 2),
+            'discount_rate': discount_rate,
+            'currency': currency,
+        })
     return redirect('basket')
 
 

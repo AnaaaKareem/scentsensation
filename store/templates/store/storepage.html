@@ -51,7 +51,7 @@
       <div class="lg:sticky lg:top-24">
         <div class="flex items-center justify-between mb-6">
           <h2 class="font-display text-xl text-charcoal-900 dark:text-cream-100">Filters</h2>
-          <a href="{% url 'store' %}" class="text-xs text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 underline">Clear all</a>
+          <a href="{% url 'store' %}" id="clear-filters" class="text-xs text-charcoal-500 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 underline">Clear all</a>
         </div>
 
         <form id="filter-form" method="GET" action="{% url 'store' %}">
@@ -181,9 +181,9 @@
     <!-- Product Grid -->
     <div class="w-full lg:flex-1 lg:flex lg:flex-col">
       <div class="flex items-center justify-between mb-8 shrink-0">
-        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Showing <span class="text-charcoal-900 dark:text-cream-100 font-medium">{{ products.paginator.count }}</span> products</p>
+        <p class="text-charcoal-500 dark:text-charcoal-400 text-sm">Showing <span id="product-count" class="text-charcoal-900 dark:text-cream-100 font-medium">{{ products.paginator.count }}</span> products</p>
         <label for="sort" class="sr-only">Sort by</label>
-        <select id="sort" name="sort" class="border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand px-4 py-2 text-sm text-charcoal-700 dark:text-charcoal-300 focus:outline-none focus:border-gold-500" onchange="applySort(this.value)">
+        <select id="sort" name="sort" class="border border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 rounded-brand px-4 py-2 text-sm text-charcoal-700 dark:text-charcoal-300 focus:outline-none focus:border-gold-500">
           <option value="featured" {% if sort == 'featured' or not sort %}selected{% endif %}>Featured</option>
           <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
           <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
@@ -194,7 +194,7 @@
 
       <div class="w-full lg:flex-1 lg:pr-2 pb-12">
         {% if products %}
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div id="product-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for product in products %}
         <div class="group">
           <!-- Product Image Carousel -->
@@ -279,6 +279,7 @@
       </div>
       {% endif %}
 
+      <div id="pagination-container">
       <!-- Pagination -->
       {% if is_paginated %}
       <nav class="mt-16 flex justify-center">
@@ -308,6 +309,7 @@
         </div>
       </nav>
       {% endif %}
+      </div>
       </div>
     </div>
   </div>
@@ -485,26 +487,241 @@
 </style>
 
 <script>
-function applySort(value) {
-  const params = new URLSearchParams(window.location.search);
-  params.set('sort', value);
-  params.delete('page');
-  window.location.search = params.toString();
+// === Live Filter System (no page refresh) ===
+const STORE_API_URL = '{% url "store_api" %}';
+const STORE_URL = '{% url "store" %}';
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=300&auto=format&fit=crop&q=80';
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
 }
 
-// Auto-submit filter form on inputs change
+function buildFilterParams() {
+  const params = new URLSearchParams();
+  const form = document.getElementById('filter-form');
+  if (!form) return params;
+
+  // Checkboxes (gender, season, time_of_day)
+  form.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+    params.append(cb.name, cb.value);
+  });
+
+  // Price sliders
+  const minSlider = document.getElementById('min_price_slider');
+  const maxSlider = document.getElementById('max_price_slider');
+  if (minSlider && maxSlider) {
+    params.set('min_price', minSlider.value);
+    params.set('max_price', maxSlider.value);
+  }
+
+  // Sort
+  const sortSelect = document.getElementById('sort');
+  if (sortSelect) params.set('sort', sortSelect.value);
+
+  // Page (reset to 1 on filter change unless explicitly paginating)
+  params.set('page', '1');
+
+  return params;
+}
+
+function updateURL(params) {
+  const url = STORE_URL + (params.toString() ? '?' + params.toString() : '');
+  history.pushState({}, '', url);
+}
+
+function renderStars(rating) {
+  let html = '<div class="flex items-center gap-0.5">';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= rating) {
+      html += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" class="w-3.5 h-3.5 text-gold-500"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg>';
+    } else {
+      html += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" class="w-3.5 h-3.5 text-charcoal-300 dark:text-charcoal-600"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderProductCard(p, region) {
+  const wishActive = p.in_wishlist ? 'active' : '';
+  const wishDataActive = p.in_wishlist ? 'true' : 'false';
+  const wishFill = p.in_wishlist ? 'fill="#e04d76" stroke="#e04d76"' : 'fill="none" stroke="#888"';
+
+  let imagesHtml = '';
+  if (p.images && p.images.length > 0) {
+    imagesHtml = '<a href="/store/product/' + p.product_id + '/" class="block aspect-[3/4] rounded-brand overflow-hidden mb-4 relative store-card-imgs img-skeleton">';
+    p.images.forEach(function(img, idx) {
+      imagesHtml += '<img src="' + img.image_url + '" alt="' + escapeHtml(p.product_name) + '" class="store-card-img absolute inset-0 w-full h-full object-cover' + (idx === 0 ? '' : ' sc-hidden') + '" onload="this.closest(\'.img-skeleton\').classList.add(\'loaded\')" onerror="if(this.src!==\'' + FALLBACK_IMG + '\'){this.src=\'' + FALLBACK_IMG + '\';}this.closest(\'.img-skeleton\').classList.add(\'loaded\');">';
+    });
+    imagesHtml += wishBtnHtml(p.product_id, wishActive, wishDataActive, wishFill);
+    imagesHtml += '</a>';
+  } else {
+    imagesHtml = '<a href="/store/product/' + p.product_id + '/" class="block aspect-[3/4] bg-charcoal-100 rounded-brand overflow-hidden mb-4 relative">';
+    imagesHtml += '<div class="w-full h-full bg-gradient-to-b from-cream-200 to-charcoal-100 flex items-center justify-center"><span class="text-charcoal-400 text-xs uppercase tracking-wide">' + escapeHtml(p.product_name) + '</span></div>';
+    imagesHtml += wishBtnHtml(p.product_id, wishActive, wishDataActive, wishFill);
+    imagesHtml += '</a>';
+  }
+
+  let ratingHtml = '';
+  if (p.rating_avg) {
+    ratingHtml = '<div class="flex items-center gap-2 mb-1">' + renderStars(p.rating_avg) + '<span class="text-charcoal-500 dark:text-charcoal-400 text-xs">' + p.rating_avg.toFixed(1) + ' (' + (p.reviews_count || 0) + ')</span></div>';
+  }
+
+  let yearHtml = '';
+  if (p.release_year) {
+    yearHtml = '<p class="text-charcoal-400 dark:text-charcoal-500 text-xs mb-1">' + p.release_year + '</p>';
+  }
+
+  let addToBasketHtml = '';
+  const csrfToken = getCookie('csrftoken');
+  if (p.out_of_stock) {
+    addToBasketHtml = '<button type="button" disabled class="w-full py-2.5 bg-charcoal-300 dark:bg-charcoal-800 text-charcoal-500 dark:text-charcoal-600 text-xs tracking-wide-plus uppercase font-medium rounded-brand cursor-not-allowed opacity-50">Out of Stock</button>';
+  } else {
+    addToBasketHtml = '<div class="flex items-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand"><button type="button" onclick="this.nextElementSibling.value=Math.max(1,parseInt(this.nextElementSibling.value)-1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">\u2212</button><input type="number" name="quantity" value="1" min="1" max="' + p.max_stock + '" class="w-10 h-9 text-center text-sm font-medium border-x border-charcoal-200 dark:border-charcoal-700 dark:bg-charcoal-900 dark:text-cream-100 focus:outline-none appearance-none m-0 p-0" readonly><button type="button" onclick="this.previousElementSibling.value=Math.min(parseInt(this.previousElementSibling.max)||999,parseInt(this.previousElementSibling.value)+1)" class="w-9 h-9 flex items-center justify-center text-charcoal-600 dark:text-charcoal-400 hover:text-charcoal-900 dark:hover:text-cream-100 transition-colors text-lg font-medium">+</button></div><button type="submit" name="add_basket" class="px-4 py-2 bg-charcoal-900 dark:bg-charcoal-700 hover:bg-charcoal-800 dark:hover:bg-charcoal-600 text-cream-100 text-xs tracking-wide-plus uppercase font-medium rounded-brand transition-colors">Add to Basket</button>';
+  }
+
+  return '<div class="group">' +
+    imagesHtml +
+    '<a href="/store/brands/' + p.brand_slug + '/" class="text-gold-700 dark:text-gold-400 text-xs tracking-wide-plus uppercase font-medium mb-1 hover:text-gold-600 dark:hover:text-gold-300 transition-colors">' + escapeHtml(p.brand) + '</a>' +
+    '<a href="/store/product/' + p.product_id + '/"><h3 class="font-display text-lg text-charcoal-900 dark:text-cream-100 group-hover:text-burgundy-700 dark:group-hover:text-wine-400 mb-1 transition-colors">' + escapeHtml(p.product_name) + '</h3></a>' +
+    ratingHtml +
+    yearHtml +
+    '<p class="text-charcoal-900 dark:text-cream-100 font-medium">' + p.price + '</p>' +
+    '<form method="POST" action="' + STORE_URL + '" class="mt-3"><input type="hidden" name="csrfmiddlewaretoken" value="' + csrfToken + '"><input type="hidden" name="product_id" value="' + p.product_id + '"><div class="flex items-center gap-3">' + addToBasketHtml + '</div></form>' +
+    '</div>';
+}
+
+function wishBtnHtml(productId, wishActive, wishDataActive, wishFill) {
+  return '<button class="wish-btn ' + wishActive + '" data-product-id="' + productId + '" data-active="' + wishDataActive + '" onclick="toggleWish(event,this)">' +
+    '<svg viewBox="0 0 24 24" stroke-width="1.5" ' + wishFill + '><path d="M21 8.25c0-2.485-2.015-4.5-4.5-4.5-1.645 0-3.09.903-3.884 2.25-.794-1.347-2.24-2.25-3.884-2.25-2.485 0-4.5 2.015-4.5 4.5 0 3.087 3.924 6.75 8.384 11.25 4.46-4.5 8.384-8.163 8.384-11.25z"/></svg>' +
+    '<div class="wish-particles"><span></span><span></span><span></span><span></span><span></span><span></span></div>' +
+    '</button>';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderPagination(data) {
+  if (data.num_pages <= 1) return '';
+
+  let html = '<nav class="mt-16 flex justify-center"><div class="flex items-center gap-2">';
+
+  const currentParams = buildFilterParams();
+
+  if (data.has_previous) {
+    currentParams.set('page', '1');
+    html += '<a href="?' + currentParams.toString() + '" class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-400 dark:text-charcoal-500 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors" data-page="1">First</a>';
+    currentParams.set('page', String(data.page - 1));
+    html += '<a href="?' + currentParams.toString() + '" class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-400 dark:text-charcoal-500 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors" data-page="' + (data.page - 1) + '">Previous</a>';
+  }
+
+  for (let num = 1; num <= data.num_pages; num++) {
+    if (num === data.page) {
+      html += '<span class="w-10 h-10 flex items-center justify-center bg-charcoal-900 dark:bg-charcoal-700 text-cream-100 rounded-brand text-sm font-medium">' + num + '</span>';
+    } else if (num > data.page - 3 && num < data.page + 3) {
+      currentParams.set('page', String(num));
+      html += '<a href="?' + currentParams.toString() + '" class="w-10 h-10 flex items-center justify-center border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors" data-page="' + num + '">' + num + '</a>';
+    }
+  }
+
+  if (data.has_next) {
+    currentParams.set('page', String(data.page + 1));
+    html += '<a href="?' + currentParams.toString() + '" class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors" data-page="' + (data.page + 1) + '">Next</a>';
+    currentParams.set('page', String(data.num_pages));
+    html += '<a href="?' + currentParams.toString() + '" class="px-4 py-2 border border-charcoal-200 dark:border-charcoal-700 rounded-brand text-charcoal-600 dark:text-charcoal-400 text-sm hover:border-charcoal-400 dark:hover:border-charcoal-500 transition-colors" data-page="' + data.num_pages + '">Last</a>';
+  }
+
+  html += '</div></nav>';
+  return html;
+}
+
+let filterDebounceTimer = null;
+
+function liveFilterUpdate(changedPage) {
+  // Debounce rapid changes (e.g. slider dragging)
+  clearTimeout(filterDebounceTimer);
+  filterDebounceTimer = setTimeout(function() {
+    const params = buildFilterParams();
+    if (changedPage) params.set('page', changedPage);
+
+    // Show a brief loading indicator
+    const grid = document.getElementById('product-grid');
+    const paginationNav = document.getElementById('pagination-container');
+    if (grid) grid.style.opacity = '0.5';
+
+    fetch(STORE_API_URL + '?' + params.toString(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Update product count display
+      const countEl = document.getElementById('product-count');
+      if (countEl) countEl.textContent = data.total_count;
+
+      // Update product grid
+      if (grid) {
+        if (data.products.length > 0) {
+          grid.innerHTML = data.products.map(p => renderProductCard(p, data.region)).join('');
+        } else {
+          grid.innerHTML = '<div class="col-span-full text-center py-20"><p class="text-charcoal-500 dark:text-charcoal-400 text-lg">No products found matching your criteria.</p><a href="' + STORE_URL + '" class="mt-4 inline-block text-gold-600 hover:text-gold-700 text-sm font-medium underline">Clear filters</a></div>';
+        }
+        grid.style.opacity = '1';
+        // Re-initialize image hover scroll for newly injected cards
+        initCardImageHover();
+      }
+
+      // Update pagination
+      if (paginationNav) {
+        paginationNav.innerHTML = renderPagination(data);
+        // Wire up pagination links for live navigation
+        paginationNav.querySelectorAll('a[data-page]').forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.dataset.page;
+            const p = buildFilterParams();
+            p.set('page', page);
+            updateURL(p);
+            liveFilterUpdate(page);
+          });
+        });
+      }
+
+      // Update browser URL
+      updateURL(params);
+    })
+    .catch(err => {
+      console.error('Filter update failed:', err);
+      if (grid) grid.style.opacity = '1';
+    });
+  }, 200);
+}
+
+function applySort(value) {
+  liveFilterUpdate();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const filterForm = document.getElementById('filter-form');
   if (filterForm) {
-    // Checkboxes auto-submit
+    // Prevent form from ever submitting traditionally
+    filterForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      liveFilterUpdate();
+    });
+
+    // Checkboxes trigger live update
     const checkboxes = filterForm.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(function(cb) {
       cb.addEventListener('change', function() {
-        filterForm.submit();
+        liveFilterUpdate();
       });
     });
 
-    // Double Slider display updates & auto-submit
+    // Double Slider display updates & live filter on change
     const minSlider = document.getElementById('min_price_slider');
     const maxSlider = document.getElementById('max_price_slider');
     const connect = document.getElementById('slider-connect');
@@ -522,33 +739,97 @@ document.addEventListener('DOMContentLoaded', function() {
         maxSlider.value = maxVal;
       }
 
-      priceDisplay.textContent = '{{ currency.symbol }}' + minVal + ' — ' + '{{ currency.symbol }}' + maxVal;
+      priceDisplay.textContent = '{{ currency.symbol }}' + minVal + ' \u2014 ' + '{{ currency.symbol }}' + maxVal;
 
       const minPercent = (minVal / minSlider.max) * 100;
       const maxPercent = (maxVal / maxSlider.max) * 100;
       connect.style.left = minPercent + '%';
       connect.style.width = (maxPercent - minPercent) + '%';
     }
+    // Expose for Clear All handler
+    window.updateSliderVisual = updateSlider;
 
     if (minSlider && maxSlider && connect && priceDisplay) {
       minSlider.addEventListener('input', updateSlider);
       maxSlider.addEventListener('input', updateSlider);
 
+      // Live filter on slider release (change event)
       minSlider.addEventListener('change', function() {
-        filterForm.submit();
+        liveFilterUpdate();
       });
       maxSlider.addEventListener('change', function() {
-        filterForm.submit();
+        liveFilterUpdate();
       });
 
       // Initialize
       updateSlider();
     }
   }
+
+  // Sort dropdown
+  const sortSelect = document.getElementById('sort');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      liveFilterUpdate();
+    });
+  }
+
+  // Clear all filters link
+  const clearLink = document.getElementById('clear-filters');
+  if (clearLink) {
+    clearLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      const form = document.getElementById('filter-form');
+      if (form) {
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+      }
+      const minS = document.getElementById('min_price_slider');
+      const maxS = document.getElementById('max_price_slider');
+      if (minS) minS.value = minS.min;
+      if (maxS) maxS.value = maxS.max;
+      const sortEl = document.getElementById('sort');
+      if (sortEl) sortEl.value = 'featured';
+      // Update slider visual
+      if (typeof updateSliderVisual === 'function') updateSliderVisual();
+      history.pushState({}, '', STORE_URL);
+      liveFilterUpdate();
+    });
+  }
+
+  // Handle back/forward browser navigation
+  window.addEventListener('popstate', function() {
+    // Re-apply filters from URL
+    const params = new URLSearchParams(window.location.search);
+    const form = document.getElementById('filter-form');
+    if (!form) return;
+
+    // Uncheck all checkboxes first
+    form.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+    // Check ones in URL
+    params.forEach((value, key) => {
+      if (key === 'gender' || key === 'season' || key === 'time_of_day') {
+        const cb = form.querySelector('input[name="' + key + '"][value="' + value + '"]');
+        if (cb) cb.checked = true;
+      }
+    });
+
+    // Sliders
+    const minS = document.getElementById('min_price_slider');
+    const maxS = document.getElementById('max_price_slider');
+    if (minS && params.has('min_price')) minS.value = params.get('min_price');
+    if (maxS && params.has('max_price')) maxS.value = params.get('max_price');
+
+    // Sort
+    if (sortSelect && params.has('sort')) sortSelect.value = params.get('sort');
+
+    // Re-render
+    const page = params.get('page') || '1';
+    liveFilterUpdate(page);
+  });
 });
 
 // === Store Card Image Hover Scroll ===
-(function(){
+function initCardImageHover() {
   var STORE_CARD_STYLE = document.getElementById('store-card-style');
   if (!STORE_CARD_STYLE) {
     STORE_CARD_STYLE = document.createElement('style');
@@ -557,6 +838,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(STORE_CARD_STYLE);
   }
   document.querySelectorAll('.store-card-imgs').forEach(function(container){
+    if (container.dataset.hoverInit) return; // already initialized
+    container.dataset.hoverInit = 'true';
     var imgs = container.querySelectorAll('.store-card-img');
     if (imgs.length <= 1) return;
     var idx = 0, timer = null;
@@ -578,12 +861,8 @@ document.addEventListener('DOMContentLoaded', function() {
       show(0);
     });
   });
-})();
-
-function getCookie(name) {
-  var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-  return v ? v.pop() : '';
 }
+initCardImageHover();
 
 function toggleWish(e, btn) {
   e.preventDefault();
